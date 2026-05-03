@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Tenor Sans';
+  src: url('/fonts/TenorSans-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --bg-primary:    #0A0805;
+  --bg-surface:    #14110D;
+  --bg-elevated:   #1F1A14;
+  --text-primary:   #F5F1E8;
+  --text-secondary: #9A9082;
+  --text-muted:     #5C5448;
+  --accent-gold:        #C9A961;
+  --accent-gold-deep:   #8B7339;
+  --accent-copper:      #B87333;
+  --color-success: #7A8B5C;
+  --color-error:   #8B4040;
+  --border-subtle: rgba(201, 169, 97, 0.15);
+  --border-medium: rgba(201, 169, 97, 0.30);
+  --border-strong: rgba(201, 169, 97, 0.55);
+  --font-serif:    'Cormorant Garamond', Georgia, serif;
+  --font-sans:     'Inter', system-ui, sans-serif;
+  --font-display:  'Tenor Sans', serif;
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast:   180ms;
+  --dur-base:   300ms;
+  --dur-slow:   600ms;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior: none;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  max-width: 430px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Scrollable inner areas */
+.scroll-area {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.scroll-area::-webkit-scrollbar { display: none; }
+
+/* Typewriter animation */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.cursor-blink { animation: blink 1s step-end infinite; }
+
+/* Safe area insets for iOS */
+.safe-top    { padding-top: env(safe-area-inset-top, 0px); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 20px); }
+
+/* Reading typography */
+.reading-text {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  line-height: 1.75;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+.reading-text p + p { margin-top: 20px; }
