@@ -41,7 +41,7 @@ export function BasicData({ onContinue }: Props) {
         </p>
       </div>
 
-      <div className="flex-1 flex flex-col px-6 overflow-y-auto scroll-area">
+      <div className="flex-1 flex flex-col justify-center px-6 overflow-y-auto scroll-area">
 
         {/* Title */}
         <div className="flex flex-col gap-3 mt-4 mb-8">
