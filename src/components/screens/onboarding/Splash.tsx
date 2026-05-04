@@ -16,7 +16,7 @@ export function Splash({ onContinue }: Props) {
         {/* Wordmark — "l" + gold "i" + "nhas" */}
         <div style={{ fontFamily: 'var(--font-serif)', fontSize: 56, fontWeight: 300, letterSpacing: '-0.03em', lineHeight: 1 }}>
           <span style={{ color: 'var(--text-primary)' }}>l</span>
-          <span style={{ color: 'var(--accent-gold)' }}>i</span>
+          <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>i</em>
           <span style={{ color: 'var(--text-primary)' }}>nhas</span>
         </div>
 
