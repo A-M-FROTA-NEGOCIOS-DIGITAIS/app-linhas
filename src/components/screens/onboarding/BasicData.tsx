@@ -41,10 +41,11 @@ export function BasicData({ onContinue }: Props) {
         </p>
       </div>
 
-      <div className="flex-1 flex flex-col justify-center px-6 overflow-y-auto scroll-area">
+      <div className="flex-1 flex flex-col px-6 overflow-y-auto scroll-area">
+        <div className="my-auto flex flex-col gap-8 py-6">
 
         {/* Title */}
-        <div className="flex flex-col gap-3 mt-4 mb-8">
+        <div className="flex flex-col gap-3">
           <h2 style={{
             fontFamily: 'var(--font-serif)',
             fontSize: 34,
@@ -139,6 +140,7 @@ export function BasicData({ onContinue }: Props) {
           </div>
 
         </div>
+        </div>{/* end my-auto wrapper */}
       </div>
 
       {/* CTA + privacy */}
