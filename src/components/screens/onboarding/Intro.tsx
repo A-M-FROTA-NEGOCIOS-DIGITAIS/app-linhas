@@ -4,50 +4,55 @@ import { Button, Eyebrow } from '@/components/ui'
 interface Props { onContinue: () => void }
 
 const PalmIcon = () => (
-  <svg width="72" height="90" viewBox="0 0 72 92" fill="none">
+  <svg width="110" height="128" viewBox="0 0 76 90" fill="none">
     {/* Thumb */}
-    <path d="M10,70 C8,57 10,45 14,39 C17,33 23,34 25,41 L25,63"
-      stroke="#C9A961" strokeWidth="1.3" strokeLinecap="round"/>
+    <path d="M2,58 L2,36 C2,28 14,28 14,36 L14,60"
+      stroke="#C9A961" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
     {/* Index */}
-    <path d="M25,63 L25,20 C25,14 30,14 33,20 L33,61"
-      stroke="#C9A961" strokeWidth="1.3" strokeLinecap="round"/>
-    {/* Middle */}
-    <path d="M33,61 L33,12 C33,7 38,7 41,12 L41,61"
-      stroke="#C9A961" strokeWidth="1.3" strokeLinecap="round"/>
+    <path d="M16,60 L16,16 C16,8 26,8 26,16 L26,60"
+      stroke="#C9A961" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
+    {/* Middle — tallest */}
+    <path d="M28,60 L28,8 C28,1 38,1 38,8 L38,60"
+      stroke="#C9A961" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
     {/* Ring */}
-    <path d="M41,61 L41,18 C41,13 46,13 49,18 L49,63"
-      stroke="#C9A961" strokeWidth="1.3" strokeLinecap="round"/>
+    <path d="M40,60 L40,16 C40,8 50,8 50,16 L50,60"
+      stroke="#C9A961" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
     {/* Pinky */}
-    <path d="M49,63 L49,30 C49,25 54,25 57,30 L57,67"
-      stroke="#C9A961" strokeWidth="1.3" strokeLinecap="round"/>
+    <path d="M52,60 L52,26 C52,18 62,18 62,26 L62,64"
+      stroke="#C9A961" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
     {/* Palm base */}
-    <path d="M57,67 C59,77 55,88 47,90 C39,92 25,90 17,84 C11,80 10,74 10,70"
-      stroke="#C9A961" strokeWidth="1.3" strokeLinecap="round"/>
-    {/* Heart line (horizontal, upper palm) */}
-    <path d="M26,67 C33,63 45,63 56,67"
-      stroke="#C9A961" strokeWidth="1" strokeLinecap="round" opacity="0.75"/>
-    {/* Head line (horizontal, mid palm) */}
-    <path d="M22,76 C31,72 45,72 55,75"
-      stroke="#C9A961" strokeWidth="0.9" strokeLinecap="round" opacity="0.6"/>
+    <path d="M62,64 C64,74 60,84 50,87 C40,89 22,87 13,80 C6,75 2,68 2,58"
+      stroke="#C9A961" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
+    {/* Heart line — horizontal across upper palm */}
+    <path d="M5,66 C22,63 50,63 64,66"
+      stroke="#C9A961" strokeWidth="1.1" strokeLinecap="round" fill="none" opacity="0.85"/>
+    {/* Head line — horizontal across mid palm */}
+    <path d="M5,75 C22,72 50,72 63,75"
+      stroke="#C9A961" strokeWidth="1" strokeLinecap="round" fill="none" opacity="0.7"/>
   </svg>
 )
 
 const ScanIcon = () => (
-  <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+  <svg width="100" height="100" viewBox="0 0 72 72" fill="none">
     <circle cx="36" cy="36" r="30" stroke="#C9A961" strokeWidth="0.8" opacity="0.2" strokeDasharray="4 4"/>
-    <circle cx="36" cy="36" r="20" stroke="#C9A961" strokeWidth="0.8" opacity="0.4"/>
+    <circle cx="36" cy="36" r="20" stroke="#C9A961" strokeWidth="0.9" opacity="0.4"/>
     <circle cx="36" cy="36" r="10" stroke="#C9A961" strokeWidth="1" opacity="0.65"/>
     <circle cx="36" cy="36" r="2.5" fill="#C9A961" opacity="0.9"/>
-    <path d="M36 6v6M36 60v6M6 36h6M60 36h6" stroke="#C9A961" strokeWidth="1" strokeLinecap="round" opacity="0.35"/>
+    <path d="M36 6v6M36 60v6M6 36h6M60 36h6"
+      stroke="#C9A961" strokeWidth="1" strokeLinecap="round" opacity="0.35"/>
   </svg>
 )
 
 const ReadingIcon = () => (
-  <svg width="60" height="72" viewBox="0 0 60 72" fill="none">
-    <rect x="8" y="4" width="44" height="64" rx="7" stroke="#C9A961" strokeWidth="1" opacity="0.3"/>
-    <path d="M18 26 h24M18 38 h16M18 50 h20" stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" opacity="0.7"/>
-    <circle cx="46" cy="54" r="9" fill="var(--bg-primary)" stroke="#C9A961" strokeWidth="1" opacity="0.9"/>
-    <path d="M42 54 l3 3 5-6" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+  <svg width="86" height="100" viewBox="0 0 60 72" fill="none">
+    <rect x="8" y="4" width="44" height="64" rx="7"
+      stroke="#C9A961" strokeWidth="1" opacity="0.3" fill="none"/>
+    <path d="M18 26 h24M18 38 h16M18 50 h20"
+      stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" opacity="0.7"/>
+    <circle cx="46" cy="54" r="9"
+      fill="var(--bg-primary)" stroke="#C9A961" strokeWidth="1" opacity="0.9"/>
+    <path d="M42 54 l3 3 5-6"
+      stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 )
 
@@ -78,63 +83,58 @@ export function Intro({ onContinue }: Props) {
   const s = SLIDES[slide]
 
   return (
-    <div className="h-full flex flex-col px-6 pt-10 pb-8">
+    <div className="h-full flex flex-col pb-8">
 
-      {/* Progress bars + counter */}
-      <div className="flex items-center gap-3">
-        <div className="flex gap-1.5 flex-1">
-          {SLIDES.map((_, i) => (
-            <div
-              key={i}
-              className="h-px flex-1 transition-all duration-500"
-              style={{ background: i <= slide ? 'var(--accent-gold)' : 'var(--border-subtle)' }}
-            />
-          ))}
-        </div>
-        <p style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.06em', flexShrink: 0 }}>
-          {slide + 1}/{SLIDES.length}
-        </p>
+      {/* Progress bars — topo */}
+      <div className="flex gap-1.5 px-6 pt-6">
+        {SLIDES.map((_, i) => (
+          <div
+            key={i}
+            className="h-px flex-1 transition-all duration-500"
+            style={{ background: i <= slide ? 'var(--accent-gold)' : 'var(--border-subtle)' }}
+          />
+        ))}
       </div>
 
-      {/* Center: everything grouped */}
+      {/* Conteúdo central */}
       <div
         key={slide}
-        className="flex-1 flex flex-col items-center justify-center gap-6"
+        className="flex-1 flex flex-col px-6"
         style={{ animation: 'fade-in 350ms ease forwards' }}
       >
-        {/* Glyph */}
-        {s.glyph}
+        {/* Glyph + chapter — upper half */}
+        <div className="flex flex-col items-center gap-5" style={{ paddingTop: '10%' }}>
+          {s.glyph}
+          <Eyebrow>{s.chapter}</Eyebrow>
+        </div>
 
-        {/* Chapter label */}
-        <Eyebrow>{s.chapter}</Eyebrow>
-
-        {/* Title + body */}
-        <div className="w-full flex flex-col gap-3">
+        {/* Title + body — below glyph */}
+        <div className="flex flex-col gap-4 mt-8">
           <h2 style={{
             fontFamily: 'var(--font-serif)',
-            fontSize: 34,
+            fontSize: 36,
             fontWeight: 300,
             lineHeight: 1.2,
             letterSpacing: '-0.01em',
             color: 'var(--text-primary)',
             whiteSpace: 'pre-line',
           }}>
-            {s.title[0]}
-            <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>{s.title[1]}</em>
+            {s.title[0]}<em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>{s.title[1]}</em>
           </h2>
           <p style={{
             fontFamily: 'var(--font-sans)',
             fontSize: 14,
             color: 'var(--text-secondary)',
             lineHeight: 1.65,
+            textAlign: 'center',
           }}>
             {s.body}
           </p>
         </div>
       </div>
 
-      {/* CTA */}
-      <div className="pt-6">
+      {/* Botão */}
+      <div className="px-6">
         <Button
           variant="primary"
           fullWidth
