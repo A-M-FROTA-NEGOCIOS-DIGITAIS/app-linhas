@@ -17,9 +17,9 @@ const TYPE_LABELS: Record<string, string> = {
 const SECTION_DIVIDER = /\n{2,}/
 
 export function ReadingDetail({ reading, onBack }: Props) {
-  const paragraphs = (reading.full_content || reading.preview_content || '')
+  const paragraphs = ((reading.full_content ?? reading.preview_content) || '')
     .split(SECTION_DIVIDER)
-    .filter(Boolean)
+    .filter((p: string) => p.trim().length > 0)
 
   return (
     <div className="h-full flex flex-col">
@@ -42,7 +42,7 @@ export function ReadingDetail({ reading, onBack }: Props) {
         <div className="flex flex-col gap-6">
           {paragraphs.map((para, i) => {
             // Detect section headers (lines ending with : or all-caps short lines)
-            const isHeader = para.length < 60 && (para.endsWith(':') || para === para.toUpperCase())
+            const isHeader = para.trim().length < 60 && (para.trim().endsWith(':') || para.trim() === para.trim().toUpperCase())
             if (isHeader) {
               return (
                 <Eyebrow key={i} className="mt-2">

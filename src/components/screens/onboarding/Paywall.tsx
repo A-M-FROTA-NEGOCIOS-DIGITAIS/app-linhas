@@ -14,7 +14,7 @@ const FEATURES = [
   'Daily personalized insight',
   'Monthly re-scan',
   'AI Chat with Madame Aurora 24/7',
-  'Compatibility — scan someone else's hand',
+  "Compatibility — scan someone else's hand",
 ]
 
 const CheckIcon = () => (

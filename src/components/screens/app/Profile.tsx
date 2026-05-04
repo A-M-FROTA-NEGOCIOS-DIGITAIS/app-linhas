@@ -34,6 +34,7 @@ export function Profile({ profile, onReScan, onSignOut }: Props) {
   const reset = useAppStore((s) => s.reset)
 
   const zodiac = profile.date_of_birth ? getZodiacSign(profile.date_of_birth) : null
+
   const subLabel = SUBSCRIPTION_LABELS[profile.subscription_status] ?? 'Free'
   const isActive = profile.subscription_status === 'active' || profile.subscription_status === 'trial'
 

@@ -5,13 +5,13 @@ import { track, Events } from '@/lib/analytics'
 import { Splash } from './onboarding/Splash'
 import { Intro } from './onboarding/Intro'
 import { BasicData } from './onboarding/BasicData'
-import { Intention } from './onboarding/Intention'
+import { IntentionScreen } from './onboarding/Intention'
 import { PalmScan } from './onboarding/PalmScan'
 import { Scanning } from './onboarding/Scanning'
 import { Revelation } from './onboarding/Revelation'
 import { Paywall } from './onboarding/Paywall'
 import { Welcome } from './onboarding/Welcome'
-import type { PalmAnalysis, Intention as IntentionType } from '@/types'
+import type { PalmAnalysis, Intention } from '@/types'
 
 type Step =
   | 'splash'
@@ -26,9 +26,9 @@ type Step =
 
 interface BasicDataValues {
   name: string
-  dateOfBirth: string
-  timeOfBirth?: string
-  cityOfBirth?: string
+  birthDate: string
+  birthTime?: string
+  birthCity?: string
 }
 
 interface Props {
@@ -38,7 +38,7 @@ interface Props {
 export function Onboarding({ onComplete }: Props) {
   const [step, setStep] = useState<Step>('splash')
   const [basicData, setBasicData] = useState<BasicDataValues | null>(null)
-  const [intention, setIntention] = useState<IntentionType | null>(null)
+  const [intention, setIntention] = useState<Intention | null>(null)
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null)
   const [analysis, setAnalysis] = useState<PalmAnalysis | null>(null)
   const [readingPreview, setReadingPreview] = useState('')
@@ -58,9 +58,9 @@ export function Onboarding({ onComplete }: Props) {
     await supabase.from('profiles').insert({
       id: uid,
       name: data.name,
-      date_of_birth: data.dateOfBirth,
-      time_of_birth: data.timeOfBirth ?? null,
-      city_of_birth: data.cityOfBirth ?? null,
+      date_of_birth: data.birthDate,
+      time_of_birth: data.birthTime ?? null,
+      city_of_birth: data.birthCity ?? null,
     })
 
     return uid
@@ -76,7 +76,7 @@ export function Onboarding({ onComplete }: Props) {
     setStep('intention')
   }
 
-  const handleIntentionNext = async (chosen: IntentionType) => {
+  const handleIntentionNext = async (chosen: Intention) => {
     setIntention(chosen)
     if (userId) {
       await supabase.from('profiles').update({ intention: chosen }).eq('id', userId)
@@ -123,39 +123,23 @@ export function Onboarding({ onComplete }: Props) {
     setStep('welcome')
   }
 
-  const handleWelcomeReadNow = () => {
-    onComplete()
-  }
-
-  const handleSetupPush = () => {
-    if ('Notification' in window) {
-      Notification.requestPermission()
-    }
-    onComplete()
-  }
-
   const name = basicData?.name ?? ''
 
   switch (step) {
     case 'splash':
-      return <Splash onComplete={() => { track(Events.ONBOARDING_STARTED, {}); setStep('intro') }} />
+      return <Splash onContinue={() => { track(Events.ONBOARDING_STARTED, {}); setStep('intro') }} />
 
     case 'intro':
-      return <Intro onComplete={() => setStep('basic-data')} />
+      return <Intro onContinue={() => setStep('basic-data')} />
 
     case 'basic-data':
-      return <BasicData onNext={handleBasicDataNext} />
+      return <BasicData onContinue={handleBasicDataNext} />
 
     case 'intention':
-      return <Intention onNext={handleIntentionNext} />
+      return <IntentionScreen onContinue={handleIntentionNext} />
 
     case 'palm-scan':
-      return (
-        <PalmScan
-          onCapture={handleScanComplete}
-          onBack={() => setStep('intention')}
-        />
-      )
+      return <PalmScan onCapture={handleScanComplete} />
 
     case 'scanning':
       return (
@@ -191,8 +175,11 @@ export function Onboarding({ onComplete }: Props) {
       return (
         <Welcome
           name={name}
-          onReadNow={handleWelcomeReadNow}
-          onSetupPush={handleSetupPush}
+          onReadNow={onComplete}
+          onSetupPush={() => {
+            if ('Notification' in window) Notification.requestPermission()
+            onComplete()
+          }}
         />
       )
 

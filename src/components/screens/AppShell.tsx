@@ -57,10 +57,18 @@ export function AppShell({ onSignOut }: Props) {
     }
     if (overlay.type === 'rescan') {
       return (
-        <PalmScan
-          onCapture={handleScanCapture}
-          onBack={() => setOverlay(null)}
-        />
+        <div className="h-full flex flex-col">
+          <button
+            onClick={() => setOverlay(null)}
+            className="absolute top-14 left-5 z-10 p-2"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <PalmScan onCapture={handleScanCapture} />
+        </div>
       )
     }
     if (overlay.type === 'scanning') {

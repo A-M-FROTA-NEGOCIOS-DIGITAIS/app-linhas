@@ -1,4 +1,4 @@
-export type SubscriptionStatus = 'none' | 'trial' | 'active' | 'past_due' | 'cancelled' | 'expired'
+export type SubscriptionStatus = 'none' | 'trial' | 'active' | 'expired'
 export type HandType = 'dominant' | 'non_dominant'
 export type HandShape = 'earth' | 'air' | 'fire' | 'water'
 export type Intention =
@@ -9,22 +9,20 @@ export type Intention =
   | 'repeating_cycles'
   | 'everything'
 
-export type ReadingType = 'master' | 'daily_insight' | 'line_focus' | 'compatibility' | 'themed'
+export type ReadingType = 'master' | 'daily' | 'themed' | 'compatibility'
 
 export interface Profile {
   id: string
   name: string
-  email: string
-  birth_date?: string
-  birth_time?: string
-  birth_city?: string
-  zodiac_sign?: string
+  date_of_birth?: string
+  time_of_birth?: string
+  city_of_birth?: string
   intention?: Intention
   subscription_status: SubscriptionStatus
   trial_ends_at?: string
-  onboarding_completed: boolean
-  push_token?: string
+  deleted_at?: string
   created_at: string
+  updated_at: string
 }
 
 export interface PalmScan {
@@ -32,37 +30,30 @@ export interface PalmScan {
   user_id: string
   hand_type: HandType
   image_url: string
-  ai_analysis: PalmAnalysis
-  hand_shape?: HandShape
-  rarity_score?: number
+  analysis?: PalmAnalysis
   created_at: string
 }
 
 export interface PalmAnalysis {
   hand_shape: HandShape
-  hand_shape_meaning: string
+  dominant_hand?: boolean
+  image_quality?: string
+  is_palm?: boolean
   main_lines: {
-    life_line: PalmLine & { length: string; depth: string; breaks: boolean; branches: boolean }
-    heart_line: PalmLine & { length: string; depth: string; breaks: boolean; branches: boolean; starts_at: string }
-    head_line: PalmLine & { length: string; depth: string; connected_to_life_line: boolean }
-    fate_line: { present: boolean; starts_at: string | null; characteristic: string; interpretation: string }
+    life_line?: PalmLine & { length?: string; depth?: string }
+    heart_line?: PalmLine & { length?: string; depth?: string }
+    head_line?: PalmLine & { length?: string; depth?: string }
+    fate_line?: { present?: boolean; length?: string; characteristic?: string; interpretation?: string }
   }
-  mounts: Record<string, 'underdeveloped' | 'normal' | 'developed'>
-  fingers: {
-    thumb_flexibility: 'rigid' | 'medium' | 'flexible'
-    index_length: 'short' | 'medium' | 'long'
-    middle_length: 'short' | 'medium' | 'long'
-    ring_length: 'short' | 'medium' | 'long'
-    pinky_length: 'short' | 'medium' | 'long'
-  }
-  notable_features: string[]
-  rarity_score: number
+  mounts?: Record<string, string>
+  special_marks?: string[]
+  overall_character?: string
   error?: string
 }
 
 export interface PalmLine {
-  characteristic: string
-  interpretation: string
+  characteristic?: string
+  interpretation?: string
 }
 
 export interface Reading {
@@ -71,10 +62,9 @@ export interface Reading {
   scan_id?: string
   reading_type: ReadingType
   theme?: string
-  content: string
+  full_content?: string
   preview_content?: string
   word_count?: number
-  is_locked: boolean
   created_at: string
 }
 
@@ -93,5 +83,4 @@ export interface DailyInsight {
   focused_line?: string
   scheduled_for: string
   delivered_at?: string
-  opened_at?: string
 }
