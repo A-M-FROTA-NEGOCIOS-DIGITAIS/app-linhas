@@ -18,8 +18,8 @@ export function BasicData({ onContinue }: Props) {
     background: 'var(--bg-surface)',
     border: `1px solid ${focusedField === id ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
     boxShadow: focusedField === id ? '0 0 0 2px rgba(201,169,97,0.18)' : 'none',
-    borderRadius: 6,
-    padding: '13px 14px',
+    borderRadius: 8,
+    padding: '14px 16px',
     fontSize: 15,
     color: 'var(--text-primary)',
     fontFamily: 'var(--font-sans)',
@@ -29,36 +29,49 @@ export function BasicData({ onContinue }: Props) {
   } as React.CSSProperties)
 
   return (
-    <div className="h-full flex flex-col px-6 pt-14 pb-8">
-      <div className="flex-1 flex flex-col gap-8 overflow-y-auto scroll-area">
-        {/* Header */}
-        <div className="flex flex-col gap-3">
-          <Eyebrow>Step 1 of 2</Eyebrow>
+    <div className="h-full flex flex-col pb-8">
+
+      {/* Top bar: chapter + counter */}
+      <div className="flex items-center justify-between px-6 pt-6 pb-2">
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-sans)' }}>
+          Chapter 03
+        </p>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.06em', fontFamily: 'var(--font-sans)' }}>
+          3 of 9
+        </p>
+      </div>
+
+      <div className="flex-1 flex flex-col px-6 overflow-y-auto scroll-area">
+
+        {/* Title */}
+        <div className="flex flex-col gap-3 mt-4 mb-8">
           <h2 style={{
             fontFamily: 'var(--font-serif)',
-            fontSize: 30,
+            fontSize: 34,
             fontWeight: 300,
             lineHeight: 1.2,
             letterSpacing: '-0.01em',
             color: 'var(--text-primary)',
           }}>
-            Tell me a little<br />
-            <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>about you.</em>
+            Before anything —<br />
+            tell me a little about{' '}
+            <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>you.</em>
           </h2>
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)', lineHeight: 1.55 }}>
-            Your birth details help calibrate the reading to your unique cosmic moment.
+            Five fields. We'll calculate the rest.
           </p>
         </div>
 
         {/* Fields */}
         <div className="flex flex-col gap-5">
+
           {/* Name */}
-          <div className="flex flex-col gap-1.5">
-            <Eyebrow>First name <span style={{ color: 'var(--accent-gold)' }}>*</span></Eyebrow>
+          <div className="flex flex-col gap-2">
+            <Eyebrow>Name</Eyebrow>
             <input
               type="text"
               value={name}
-              placeholder="e.g. Maya"
+              placeholder="What Aurora should call you"
               onChange={(e) => setName(e.target.value)}
               onFocus={() => setFocusedField('name')}
               onBlur={() => setFocusedField(null)}
@@ -66,10 +79,10 @@ export function BasicData({ onContinue }: Props) {
             />
           </div>
 
-          {/* Date + Time side by side */}
+          {/* Date + Time */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <Eyebrow>Date of birth <span style={{ color: 'var(--accent-gold)' }}>*</span></Eyebrow>
+            <div className="flex flex-col gap-2">
+              <Eyebrow>Date of birth</Eyebrow>
               <input
                 type="date"
                 value={birthDate}
@@ -79,8 +92,8 @@ export function BasicData({ onContinue }: Props) {
                 style={{ ...fieldStyle('date'), colorScheme: 'dark' }}
               />
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Eyebrow>Time <span style={{ color: 'var(--text-muted)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(opt.)</span></Eyebrow>
+            <div className="flex flex-col gap-2">
+              <Eyebrow>Time</Eyebrow>
               <input
                 type="time"
                 value={birthTime}
@@ -93,39 +106,60 @@ export function BasicData({ onContinue }: Props) {
           </div>
 
           {/* City */}
-          <div className="flex flex-col gap-1.5">
-            <Eyebrow>City of birth <span style={{ color: 'var(--text-muted)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></Eyebrow>
+          <div className="flex flex-col gap-2">
+            <Eyebrow>City of birth</Eyebrow>
             <input
               type="text"
               value={birthCity}
-              placeholder="e.g. São Paulo, New York"
+              placeholder="City, state"
               onChange={(e) => setBirthCity(e.target.value)}
               onFocus={() => setFocusedField('city')}
               onBlur={() => setFocusedField(null)}
               style={fieldStyle('city')}
             />
           </div>
+
+          {/* Time tip box */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 10,
+            padding: '12px 14px',
+            borderRadius: 8,
+            border: '1px solid var(--border-subtle)',
+            background: 'var(--bg-surface)',
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
+              <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+            </svg>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+              <em style={{ fontFamily: 'var(--font-serif)', color: 'var(--accent-gold)', fontStyle: 'italic' }}>Exact time</em>{' '}
+              is optional, but sharpens the reading. Ask your mom.
+            </p>
+          </div>
+
         </div>
       </div>
 
-      {/* Privacy note + CTA */}
-      <div className="pt-6 flex flex-col gap-4">
-        <div className="flex items-center justify-center gap-2">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-          <p style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'var(--font-sans)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            Your data is never shared or sold
-          </p>
-        </div>
+      {/* CTA + privacy */}
+      <div className="px-6 pt-6 flex flex-col gap-3">
         <Button
           variant="primary"
           fullWidth
           disabled={!valid}
           onClick={() => onContinue({ name, birthDate, birthTime: birthTime || undefined, birthCity: birthCity || undefined })}
         >
-          Continue
+          Continue →
         </Button>
+        <p style={{
+          textAlign: 'center',
+          fontSize: 11,
+          color: 'var(--text-muted)',
+          fontFamily: 'var(--font-sans)',
+          letterSpacing: '0.04em',
+        }}>
+          Your data is private. Never sold.
+        </p>
       </div>
     </div>
   )
