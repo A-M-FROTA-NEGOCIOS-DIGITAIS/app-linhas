@@ -85,12 +85,12 @@ export function Intro({ onContinue }: Props) {
   return (
     <div className="h-full flex flex-col pb-8">
 
-      {/* Contador + barras no topo */}
-      <div className="flex items-center justify-between px-6 pt-6">
+      {/* Contador + barras no topo — grid 3 colunas: counter | bars centralizadas | vazio */}
+      <div className="grid grid-cols-3 items-center px-6 pt-6">
         <p style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.06em' }}>
           {slide + 1}/{SLIDES.length}
         </p>
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5 justify-center">
           {SLIDES.map((_, i) => (
             <div
               key={i}
@@ -104,6 +104,7 @@ export function Intro({ onContinue }: Props) {
             />
           ))}
         </div>
+        <div />
       </div>
 
       {/* Conteúdo */}
@@ -129,6 +130,7 @@ export function Intro({ onContinue }: Props) {
             color: 'var(--text-primary)',
             whiteSpace: 'pre-line',
             textAlign: 'center',
+            width: '100%',
           }}>
             {s.title[0]}
             <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>{s.title[1]}</em>
