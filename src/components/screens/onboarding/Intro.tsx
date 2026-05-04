@@ -3,53 +3,37 @@ import { Button, Eyebrow } from '@/components/ui'
 
 interface Props { onContinue: () => void }
 
-/* Hand drawn as one continuous outline path — gaps between fingers are V-shapes */
 const PalmIcon = () => (
-  <svg width="90" height="130" viewBox="0 0 64 92" fill="none">
-    <path
-      d="
-        M 2,60
-        C 0,48 0,36 4,28
-        C 6,22 10,22 12,28
-        C 14,34 12,46 12,60
-        L 13,64 L 14,60
-        L 14,18
-        C 14,10 24,10 24,18
-        L 24,60
-        L 25,64 L 26,60
-        L 26,10
-        C 26,2 36,2 36,10
-        L 36,60
-        L 37,64 L 38,60
-        L 38,18
-        C 38,10 48,10 48,18
-        L 48,60
-        L 49,64 L 50,60
-        L 50,30
-        C 50,22 60,22 60,30
-        L 60,64
-        C 62,74 58,86 46,90
-        C 34,93 18,91 10,85
-        C 4,80 2,72 2,60
-        Z
-      "
-      stroke="#C9A961"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill="none"
-    />
+  <svg width="80" height="110" viewBox="0 0 60 84" fill="none">
+    {/* Thumb */}
+    <path d="M4,52 C3,42 4,32 7,25 C9,19 15,19 15,25 L15,52"
+      stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+    {/* Index */}
+    <path d="M17,52 L17,15 C17,7 25,7 25,15 L25,52"
+      stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+    {/* Middle — tallest */}
+    <path d="M27,52 L27,7 C27,1 35,1 35,7 L35,52"
+      stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+    {/* Ring */}
+    <path d="M37,52 L37,15 C37,7 45,7 45,15 L45,52"
+      stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+    {/* Pinky */}
+    <path d="M47,52 L47,26 C47,18 55,18 55,26 L55,56"
+      stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+    {/* Palm base */}
+    <path d="M55,56 C57,66 53,76 44,79 C34,82 20,80 12,74 C5,68 3,60 4,52"
+      stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
     {/* Heart line */}
-    <path d="M 6,68 C 22,64 44,64 60,68"
-      stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity="0.9"/>
+    <path d="M8,61 C22,57 42,57 54,60"
+      stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity="0.85"/>
     {/* Head line */}
-    <path d="M 5,78 C 20,74 44,74 58,78"
-      stroke="#C9A961" strokeWidth="1.1" strokeLinecap="round" fill="none" opacity="0.75"/>
+    <path d="M7,71 C20,67 43,67 53,70"
+      stroke="#C9A961" strokeWidth="1.1" strokeLinecap="round" fill="none" opacity="0.7"/>
   </svg>
 )
 
 const ScanIcon = () => (
-  <svg width="90" height="90" viewBox="0 0 72 72" fill="none">
+  <svg width="88" height="88" viewBox="0 0 72 72" fill="none">
     <circle cx="36" cy="36" r="30" stroke="#C9A961" strokeWidth="0.8" opacity="0.2" strokeDasharray="4 4"/>
     <circle cx="36" cy="36" r="20" stroke="#C9A961" strokeWidth="0.9" opacity="0.4"/>
     <circle cx="36" cy="36" r="10" stroke="#C9A961" strokeWidth="1" opacity="0.65"/>
@@ -60,7 +44,7 @@ const ScanIcon = () => (
 )
 
 const ReadingIcon = () => (
-  <svg width="80" height="96" viewBox="0 0 60 72" fill="none">
+  <svg width="78" height="96" viewBox="0 0 60 72" fill="none">
     <rect x="8" y="4" width="44" height="64" rx="7"
       stroke="#C9A961" strokeWidth="1" opacity="0.3" fill="none"/>
     <path d="M18 26 h24M18 38 h16M18 50 h20"
@@ -101,7 +85,7 @@ export function Intro({ onContinue }: Props) {
   return (
     <div className="h-full flex flex-col pb-8">
 
-      {/* Topo: contador à esquerda, barras à direita */}
+      {/* Contador + barras no topo */}
       <div className="flex items-center justify-between px-6 pt-6">
         <p style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.06em' }}>
           {slide + 1}/{SLIDES.length}
@@ -114,6 +98,7 @@ export function Intro({ onContinue }: Props) {
                 width: 28,
                 height: 1.5,
                 background: i <= slide ? 'var(--accent-gold)' : 'var(--border-subtle)',
+                borderRadius: 1,
                 transition: 'background 0.5s',
               }}
             />
@@ -121,19 +106,21 @@ export function Intro({ onContinue }: Props) {
         </div>
       </div>
 
-      {/* Conteúdo centralizado */}
+      {/* Conteúdo */}
       <div
         key={slide}
         className="flex-1 flex flex-col justify-center px-6"
-        style={{ animation: 'fade-in 350ms ease forwards' }}
+        style={{
+          animation: 'fade-in 350ms ease forwards',
+        }}
       >
-        {/* Ícone + capítulo — centralizados */}
+        {/* Glyph + chapter — centralizados */}
         <div className="flex flex-col items-center gap-5 mb-8">
           {s.glyph}
           <Eyebrow>{s.chapter}</Eyebrow>
         </div>
 
-        {/* Título */}
+        {/* Título — alinhado à esquerda */}
         <h2 style={{
           fontFamily: 'var(--font-serif)',
           fontSize: 36,
@@ -148,7 +135,7 @@ export function Intro({ onContinue }: Props) {
           <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>{s.title[1]}</em>
         </h2>
 
-        {/* Corpo */}
+        {/* Corpo — centralizado */}
         <p style={{
           fontFamily: 'var(--font-sans)',
           fontSize: 14,
