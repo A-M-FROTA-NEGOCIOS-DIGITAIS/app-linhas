@@ -3,37 +3,53 @@ import { Button, Eyebrow } from '@/components/ui'
 
 interface Props { onContinue: () => void }
 
+/* Hand drawn as one continuous outline path — gaps between fingers are V-shapes */
 const PalmIcon = () => (
-  <svg width="110" height="128" viewBox="0 0 76 90" fill="none">
-    {/* Thumb */}
-    <path d="M2,58 L2,36 C2,28 14,28 14,36 L14,60"
-      stroke="#C9A961" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
-    {/* Index */}
-    <path d="M16,60 L16,16 C16,8 26,8 26,16 L26,60"
-      stroke="#C9A961" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
-    {/* Middle — tallest */}
-    <path d="M28,60 L28,8 C28,1 38,1 38,8 L38,60"
-      stroke="#C9A961" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
-    {/* Ring */}
-    <path d="M40,60 L40,16 C40,8 50,8 50,16 L50,60"
-      stroke="#C9A961" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
-    {/* Pinky */}
-    <path d="M52,60 L52,26 C52,18 62,18 62,26 L62,64"
-      stroke="#C9A961" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
-    {/* Palm base */}
-    <path d="M62,64 C64,74 60,84 50,87 C40,89 22,87 13,80 C6,75 2,68 2,58"
-      stroke="#C9A961" strokeWidth="1.4" strokeLinecap="round" fill="none"/>
-    {/* Heart line — horizontal across upper palm */}
-    <path d="M5,66 C22,63 50,63 64,66"
-      stroke="#C9A961" strokeWidth="1.1" strokeLinecap="round" fill="none" opacity="0.85"/>
-    {/* Head line — horizontal across mid palm */}
-    <path d="M5,75 C22,72 50,72 63,75"
-      stroke="#C9A961" strokeWidth="1" strokeLinecap="round" fill="none" opacity="0.7"/>
+  <svg width="90" height="130" viewBox="0 0 64 92" fill="none">
+    <path
+      d="
+        M 2,60
+        C 0,48 0,36 4,28
+        C 6,22 10,22 12,28
+        C 14,34 12,46 12,60
+        L 13,64 L 14,60
+        L 14,18
+        C 14,10 24,10 24,18
+        L 24,60
+        L 25,64 L 26,60
+        L 26,10
+        C 26,2 36,2 36,10
+        L 36,60
+        L 37,64 L 38,60
+        L 38,18
+        C 38,10 48,10 48,18
+        L 48,60
+        L 49,64 L 50,60
+        L 50,30
+        C 50,22 60,22 60,30
+        L 60,64
+        C 62,74 58,86 46,90
+        C 34,93 18,91 10,85
+        C 4,80 2,72 2,60
+        Z
+      "
+      stroke="#C9A961"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      fill="none"
+    />
+    {/* Heart line */}
+    <path d="M 6,68 C 22,64 44,64 60,68"
+      stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity="0.9"/>
+    {/* Head line */}
+    <path d="M 5,78 C 20,74 44,74 58,78"
+      stroke="#C9A961" strokeWidth="1.1" strokeLinecap="round" fill="none" opacity="0.75"/>
   </svg>
 )
 
 const ScanIcon = () => (
-  <svg width="100" height="100" viewBox="0 0 72 72" fill="none">
+  <svg width="90" height="90" viewBox="0 0 72 72" fill="none">
     <circle cx="36" cy="36" r="30" stroke="#C9A961" strokeWidth="0.8" opacity="0.2" strokeDasharray="4 4"/>
     <circle cx="36" cy="36" r="20" stroke="#C9A961" strokeWidth="0.9" opacity="0.4"/>
     <circle cx="36" cy="36" r="10" stroke="#C9A961" strokeWidth="1" opacity="0.65"/>
@@ -44,7 +60,7 @@ const ScanIcon = () => (
 )
 
 const ReadingIcon = () => (
-  <svg width="86" height="100" viewBox="0 0 60 72" fill="none">
+  <svg width="80" height="96" viewBox="0 0 60 72" fill="none">
     <rect x="8" y="4" width="44" height="64" rx="7"
       stroke="#C9A961" strokeWidth="1" opacity="0.3" fill="none"/>
     <path d="M18 26 h24M18 38 h16M18 50 h20"
@@ -85,52 +101,63 @@ export function Intro({ onContinue }: Props) {
   return (
     <div className="h-full flex flex-col pb-8">
 
-      {/* Progress bars — topo */}
-      <div className="flex gap-1.5 px-6 pt-6">
-        {SLIDES.map((_, i) => (
-          <div
-            key={i}
-            className="h-px flex-1 transition-all duration-500"
-            style={{ background: i <= slide ? 'var(--accent-gold)' : 'var(--border-subtle)' }}
-          />
-        ))}
+      {/* Topo: contador à esquerda, barras à direita */}
+      <div className="flex items-center justify-between px-6 pt-6">
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.06em' }}>
+          {slide + 1}/{SLIDES.length}
+        </p>
+        <div className="flex gap-1.5">
+          {SLIDES.map((_, i) => (
+            <div
+              key={i}
+              style={{
+                width: 28,
+                height: 1.5,
+                background: i <= slide ? 'var(--accent-gold)' : 'var(--border-subtle)',
+                transition: 'background 0.5s',
+              }}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* Conteúdo central */}
+      {/* Conteúdo centralizado */}
       <div
         key={slide}
-        className="flex-1 flex flex-col px-6"
+        className="flex-1 flex flex-col justify-center px-6"
         style={{ animation: 'fade-in 350ms ease forwards' }}
       >
-        {/* Glyph + chapter — upper half */}
-        <div className="flex flex-col items-center gap-5" style={{ paddingTop: '10%' }}>
+        {/* Ícone + capítulo — centralizados */}
+        <div className="flex flex-col items-center gap-5 mb-8">
           {s.glyph}
           <Eyebrow>{s.chapter}</Eyebrow>
         </div>
 
-        {/* Title + body — below glyph */}
-        <div className="flex flex-col gap-4 mt-8">
-          <h2 style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: 36,
-            fontWeight: 300,
-            lineHeight: 1.2,
-            letterSpacing: '-0.01em',
-            color: 'var(--text-primary)',
-            whiteSpace: 'pre-line',
-          }}>
-            {s.title[0]}<em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>{s.title[1]}</em>
-          </h2>
-          <p style={{
-            fontFamily: 'var(--font-sans)',
-            fontSize: 14,
-            color: 'var(--text-secondary)',
-            lineHeight: 1.65,
-            textAlign: 'center',
-          }}>
-            {s.body}
-          </p>
-        </div>
+        {/* Título */}
+        <h2 style={{
+          fontFamily: 'var(--font-serif)',
+          fontSize: 36,
+          fontWeight: 300,
+          lineHeight: 1.2,
+          letterSpacing: '-0.01em',
+          color: 'var(--text-primary)',
+          whiteSpace: 'pre-line',
+          marginBottom: 16,
+        }}>
+          {s.title[0]}
+          <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>{s.title[1]}</em>
+        </h2>
+
+        {/* Corpo */}
+        <p style={{
+          fontFamily: 'var(--font-sans)',
+          fontSize: 14,
+          color: 'var(--text-secondary)',
+          lineHeight: 1.65,
+          textAlign: 'center',
+        }}>
+          {s.body}
+        </p>
       </div>
 
       {/* Botão */}
