@@ -1,56 +1,72 @@
 import { useState } from 'react'
-import { Button } from '@/components/ui'
+import { Button, Eyebrow } from '@/components/ui'
 
 interface Props { onContinue: () => void }
+
+const PalmIcon = () => (
+  <svg width="68" height="90" viewBox="0 0 68 90" fill="none">
+    {/* Thumb */}
+    <path d="M10,68 C8,56 10,44 14,38 C17,32 22,33 24,40 L24,62"
+      stroke="#C9A961" strokeWidth="1.3" strokeLinecap="round"/>
+    {/* Index */}
+    <path d="M24,62 L24,18 C24,12 29,12 32,18 L32,60"
+      stroke="#C9A961" strokeWidth="1.3" strokeLinecap="round"/>
+    {/* Middle */}
+    <path d="M32,60 L32,10 C32,5 37,5 40,10 L40,60"
+      stroke="#C9A961" strokeWidth="1.3" strokeLinecap="round"/>
+    {/* Ring */}
+    <path d="M40,60 L40,16 C40,11 45,11 48,16 L48,62"
+      stroke="#C9A961" strokeWidth="1.3" strokeLinecap="round"/>
+    {/* Pinky */}
+    <path d="M48,62 L48,28 C48,23 53,23 56,28 L56,66"
+      stroke="#C9A961" strokeWidth="1.3" strokeLinecap="round"/>
+    {/* Palm base */}
+    <path d="M56,66 C58,76 54,86 46,88 C38,90 24,88 16,82 C10,78 10,72 10,68"
+      stroke="#C9A961" strokeWidth="1.3" strokeLinecap="round"/>
+    {/* Palm lines */}
+    <path d="M28,62 C28,72 27,80 27,86" stroke="#C9A961" strokeWidth="1" strokeLinecap="round" opacity="0.7"/>
+    <path d="M36,60 C36,70 36,78 35,84" stroke="#C9A961" strokeWidth="1" strokeLinecap="round" opacity="0.7"/>
+    <path d="M44,62 C44,72 44,80 44,86" stroke="#C9A961" strokeWidth="1" strokeLinecap="round" opacity="0.7"/>
+  </svg>
+)
+
+const ScanIcon = () => (
+  <svg width="68" height="68" viewBox="0 0 68 68" fill="none">
+    <circle cx="34" cy="34" r="28" stroke="#C9A961" strokeWidth="0.8" opacity="0.2" strokeDasharray="4 4"/>
+    <circle cx="34" cy="34" r="18" stroke="#C9A961" strokeWidth="0.8" opacity="0.4"/>
+    <circle cx="34" cy="34" r="9" stroke="#C9A961" strokeWidth="1" opacity="0.65"/>
+    <circle cx="34" cy="34" r="2.5" fill="#C9A961" opacity="0.9"/>
+    <path d="M34 6v5M34 57v5M6 34h5M57 34h5" stroke="#C9A961" strokeWidth="1" strokeLinecap="round" opacity="0.35"/>
+  </svg>
+)
+
+const ReadingIcon = () => (
+  <svg width="60" height="72" viewBox="0 0 60 72" fill="none">
+    <rect x="8" y="4" width="44" height="64" rx="7" stroke="#C9A961" strokeWidth="1" opacity="0.3"/>
+    <path d="M18 26 h24M18 38 h16M18 50 h20" stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" opacity="0.7"/>
+    <circle cx="46" cy="54" r="9" fill="var(--bg-primary)" stroke="#C9A961" strokeWidth="1" opacity="0.9"/>
+    <path d="M42 54 l3 3 5-6" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
 
 const SLIDES = [
   {
     chapter: 'Chapter one',
     title: 'Your hands tell\na unique story.',
     body: 'Every line, every mount — a map drawn before you were born. Most people never learn to read it.',
-    glyph: (
-      <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
-        {/* Palm outline */}
-        <path d="M35 85 C35 85 20 80 18 60 C16 45 20 30 24 20 C26 14 32 12 35 18 C35 18 35 35 35 40" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity="0.7"/>
-        <path d="M35 40 C35 30 36 14 40 10 C43 6 48 8 48 15 C48 15 48 38 48 42" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity="0.7"/>
-        <path d="M48 42 C48 30 50 12 54 9 C57 6 62 9 62 16 C62 16 62 38 62 43" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity="0.7"/>
-        <path d="M62 43 C62 33 63 18 67 16 C70 14 74 18 74 26 C74 40 72 55 70 65 C68 75 62 85 55 88 C48 91 40 89 35 85" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity="0.7"/>
-        {/* Life line */}
-        <path d="M35 40 C30 50 28 62 30 72 C32 80 35 85 35 85" stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" opacity="0.9"/>
-        {/* Heart line */}
-        <path d="M36 52 C44 48 54 48 64 52" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" opacity="0.6"/>
-        {/* Head line */}
-        <path d="M36 60 C44 58 54 59 63 62" stroke="#C9A961" strokeWidth="1" strokeLinecap="round" opacity="0.5"/>
-      </svg>
-    ),
+    glyph: <PalmIcon />,
   },
   {
     chapter: 'Chapter two',
     title: 'Our AI studied\n1 million palms.',
     body: 'Claude Vision analyzes your lines, mounts, and hand shape with clinical precision — not a quiz.',
-    glyph: (
-      <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
-        <circle cx="50" cy="50" r="36" stroke="#C9A961" strokeWidth="0.8" opacity="0.25" strokeDasharray="4 4"/>
-        <circle cx="50" cy="50" r="24" stroke="#C9A961" strokeWidth="0.8" opacity="0.4"/>
-        <circle cx="50" cy="50" r="12" stroke="#C9A961" strokeWidth="1" opacity="0.6"/>
-        <circle cx="50" cy="50" r="3" fill="#C9A961" opacity="0.9"/>
-        <path d="M50 14 L50 20M50 80 L50 86M14 50 L20 50M80 50 L86 50" stroke="#C9A961" strokeWidth="1" strokeLinecap="round" opacity="0.4"/>
-      </svg>
-    ),
+    glyph: <ScanIcon />,
   },
   {
     chapter: 'Chapter three',
-    title: 'In 30 seconds,\nyou\'ll know.',
+    title: "In 30 seconds,\nyou'll know.",
     body: 'Scan your dominant palm. Receive a personalized 1,000-word reading — identity, love, career, future.',
-    glyph: (
-      <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
-        <rect x="25" y="12" width="50" height="76" rx="8" stroke="#C9A961" strokeWidth="1" opacity="0.3"/>
-        <rect x="25" y="12" width="50" height="76" rx="8" stroke="#C9A961" strokeWidth="0.5" opacity="0.2"/>
-        <path d="M36 36 h28M36 48 h20M36 60 h24" stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" opacity="0.7"/>
-        <circle cx="68" cy="68" r="10" fill="var(--bg-primary)" stroke="#C9A961" strokeWidth="1" opacity="0.9"/>
-        <path d="M64 68 l3 3 5-6" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-      </svg>
-    ),
+    glyph: <ReadingIcon />,
   },
 ]
 
@@ -60,52 +76,43 @@ export function Intro({ onContinue }: Props) {
   const s = SLIDES[slide]
 
   return (
-    <div className="h-full flex flex-col px-6 pt-12 pb-8">
+    <div className="h-full flex flex-col px-6 pt-10 pb-8">
 
-      {/* Chapter label + counter */}
-      <div className="flex items-center justify-between mb-8">
-        <p style={{
-          fontFamily: 'var(--font-sans)',
-          fontSize: 11,
-          letterSpacing: '0.1em',
-          textTransform: 'uppercase',
-          color: 'var(--accent-gold)',
-        }}>
-          {s.chapter}
-        </p>
-        <p style={{
-          fontFamily: 'var(--font-sans)',
-          fontSize: 11,
-          color: 'var(--text-muted)',
-          letterSpacing: '0.05em',
-        }}>
+      {/* Progress bars + counter */}
+      <div className="flex items-center gap-3 mb-8">
+        <div className="flex gap-1.5 flex-1">
+          {SLIDES.map((_, i) => (
+            <div
+              key={i}
+              className="h-px flex-1 transition-all duration-500"
+              style={{ background: i <= slide ? 'var(--accent-gold)' : 'var(--border-subtle)' }}
+            />
+          ))}
+        </div>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.06em', flexShrink: 0 }}>
           {slide + 1}/{SLIDES.length}
         </p>
       </div>
 
-      {/* Progress bars */}
-      <div className="flex gap-1.5 mb-10">
-        {SLIDES.map((_, i) => (
-          <div
-            key={i}
-            className="h-px flex-1 transition-all duration-500"
-            style={{ background: i <= slide ? 'var(--accent-gold)' : 'var(--border-subtle)' }}
-          />
-        ))}
-      </div>
-
-      {/* Glyph */}
-      <div className="flex justify-center mb-10" key={`glyph-${slide}`}
-        style={{ animation: 'fade-in 400ms ease forwards' }}>
+      {/* Glyph + chapter label */}
+      <div
+        key={`glyph-${slide}`}
+        className="flex flex-col items-center gap-5 py-8"
+        style={{ animation: 'fade-in 400ms ease forwards' }}
+      >
         {s.glyph}
+        <Eyebrow>{s.chapter}</Eyebrow>
       </div>
 
       {/* Text */}
-      <div className="flex-1 flex flex-col justify-center gap-4" key={`text-${slide}`}
-        style={{ animation: 'fade-in 400ms ease forwards' }}>
+      <div
+        key={`text-${slide}`}
+        className="flex-1 flex flex-col justify-center gap-4"
+        style={{ animation: 'fade-in 400ms ease forwards' }}
+      >
         <h2 style={{
           fontFamily: 'var(--font-serif)',
-          fontSize: 32,
+          fontSize: 34,
           fontWeight: 300,
           lineHeight: 1.2,
           letterSpacing: '-0.01em',
@@ -116,7 +123,7 @@ export function Intro({ onContinue }: Props) {
         </h2>
         <p style={{
           fontFamily: 'var(--font-sans)',
-          fontSize: 15,
+          fontSize: 14,
           color: 'var(--text-secondary)',
           lineHeight: 1.65,
         }}>
@@ -126,7 +133,11 @@ export function Intro({ onContinue }: Props) {
 
       {/* CTA */}
       <div className="pt-6">
-        <Button variant="primary" fullWidth onClick={isLast ? onContinue : () => setSlide((p) => p + 1)}>
+        <Button
+          variant="primary"
+          fullWidth
+          onClick={isLast ? onContinue : () => setSlide((p) => p + 1)}
+        >
           {isLast ? 'Begin my reading' : 'Next'}
         </Button>
       </div>
