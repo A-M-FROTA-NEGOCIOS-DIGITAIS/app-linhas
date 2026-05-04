@@ -109,42 +109,42 @@ export function Intro({ onContinue }: Props) {
       {/* Conteúdo */}
       <div
         key={slide}
-        className="flex-1 flex flex-col justify-center px-6"
-        style={{
-          animation: 'fade-in 350ms ease forwards',
-        }}
+        className="flex-1 flex flex-col px-6"
+        style={{ animation: 'fade-in 350ms ease forwards' }}
       >
-        {/* Glyph + chapter — centralizados */}
-        <div className="flex flex-col items-center gap-5 mb-8">
-          {s.glyph}
-          <Eyebrow>{s.chapter}</Eyebrow>
+        <div className="my-auto flex flex-col items-center gap-6">
+          {/* Glyph + chapter */}
+          <div className="flex flex-col items-center gap-4">
+            {s.glyph}
+            <Eyebrow>{s.chapter}</Eyebrow>
+          </div>
+
+          {/* Título — centralizado */}
+          <h2 style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 36,
+            fontWeight: 300,
+            lineHeight: 1.2,
+            letterSpacing: '-0.01em',
+            color: 'var(--text-primary)',
+            whiteSpace: 'pre-line',
+            textAlign: 'center',
+          }}>
+            {s.title[0]}
+            <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>{s.title[1]}</em>
+          </h2>
+
+          {/* Corpo */}
+          <p style={{
+            fontFamily: 'var(--font-sans)',
+            fontSize: 14,
+            color: 'var(--text-secondary)',
+            lineHeight: 1.65,
+            textAlign: 'center',
+          }}>
+            {s.body}
+          </p>
         </div>
-
-        {/* Título — alinhado à esquerda */}
-        <h2 style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: 36,
-          fontWeight: 300,
-          lineHeight: 1.2,
-          letterSpacing: '-0.01em',
-          color: 'var(--text-primary)',
-          whiteSpace: 'pre-line',
-          marginBottom: 16,
-        }}>
-          {s.title[0]}
-          <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>{s.title[1]}</em>
-        </h2>
-
-        {/* Corpo — centralizado */}
-        <p style={{
-          fontFamily: 'var(--font-sans)',
-          fontSize: 14,
-          color: 'var(--text-secondary)',
-          lineHeight: 1.65,
-          textAlign: 'center',
-        }}>
-          {s.body}
-        </p>
       </div>
 
       {/* Botão */}
