@@ -13,49 +13,11 @@ export function Splash({ onContinue }: Props) {
 
       {/* Center content */}
       <div className="flex flex-col items-center gap-6">
-        {/* Wordmark — "li" + palm-line "n" + "has" */}
-        <div style={{ position: 'relative', display: 'inline-block' }}>
-          <span style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: 56,
-            fontWeight: 300,
-            letterSpacing: '-0.03em',
-            color: 'var(--text-primary)',
-            lineHeight: 1,
-          }}>
-            li
-          </span>
-          {/* The "n" with a palm line through it */}
-          <span style={{ position: 'relative', display: 'inline-block' }}>
-            <span style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 56,
-              fontWeight: 300,
-              letterSpacing: '-0.03em',
-              color: 'var(--text-primary)',
-              lineHeight: 1,
-            }}>n</span>
-            {/* Horizontal gold line through the letter */}
-            <span style={{
-              position: 'absolute',
-              left: '-2px',
-              right: '-2px',
-              top: '52%',
-              height: '1.5px',
-              background: 'var(--accent-gold)',
-              display: 'block',
-            }} />
-          </span>
-          <span style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: 56,
-            fontWeight: 300,
-            letterSpacing: '-0.03em',
-            color: 'var(--text-primary)',
-            lineHeight: 1,
-          }}>
-            has
-          </span>
+        {/* Wordmark — "l" + gold "i" + "nhas" */}
+        <div style={{ fontFamily: 'var(--font-serif)', fontSize: 56, fontWeight: 300, letterSpacing: '-0.03em', lineHeight: 1 }}>
+          <span style={{ color: 'var(--text-primary)' }}>l</span>
+          <span style={{ color: 'var(--accent-gold)' }}>i</span>
+          <span style={{ color: 'var(--text-primary)' }}>nhas</span>
         </div>
 
         {/* Tagline */}
