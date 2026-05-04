@@ -1,44 +1,89 @@
 import { useEffect } from 'react'
+import { Button } from '@/components/ui'
 
 interface Props { onContinue: () => void }
 
 export function Splash({ onContinue }: Props) {
-  useEffect(() => {
-    const t = setTimeout(onContinue, 2500)
-    return () => clearTimeout(t)
-  }, [onContinue])
-
   return (
     <div
-      className="h-full flex flex-col items-center justify-center gap-5 px-8 cursor-pointer"
-      style={{ background: 'radial-gradient(ellipse at 40% 30%, rgba(201,169,97,0.07), transparent 60%)' }}
-      onClick={onContinue}
+      className="h-full flex flex-col items-center justify-between px-8 pt-20 pb-10"
+      style={{ background: 'var(--bg-primary)' }}
     >
-      {/* Logo glyph */}
-      <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-        <path d="M12 48c10-20 30-20 40 0M16 48c8-16 24-16 32 0M22 48c5-10 15-10 20 0" stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round"/>
-        <circle cx="32" cy="36" r="3" fill="#C9A961" opacity="0.7"/>
-      </svg>
+      <div />
 
-      {/* Wordmark */}
-      <div style={{ fontFamily: 'var(--font-serif)', fontSize: 48, fontWeight: 300, letterSpacing: '-0.02em', color: '#C9A961', lineHeight: 1 }}>
-        Linhas
+      {/* Center content */}
+      <div className="flex flex-col items-center gap-6">
+        {/* Wordmark — "li" + palm-line "n" + "has" */}
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          <span style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 56,
+            fontWeight: 300,
+            letterSpacing: '-0.03em',
+            color: 'var(--text-primary)',
+            lineHeight: 1,
+          }}>
+            li
+          </span>
+          {/* The "n" with a palm line through it */}
+          <span style={{ position: 'relative', display: 'inline-block' }}>
+            <span style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 56,
+              fontWeight: 300,
+              letterSpacing: '-0.03em',
+              color: 'var(--text-primary)',
+              lineHeight: 1,
+            }}>n</span>
+            {/* Horizontal gold line through the letter */}
+            <span style={{
+              position: 'absolute',
+              left: '-2px',
+              right: '-2px',
+              top: '52%',
+              height: '1.5px',
+              background: 'var(--accent-gold)',
+              display: 'block',
+            }} />
+          </span>
+          <span style={{
+            fontFamily: 'var(--font-serif)',
+            fontSize: 56,
+            fontWeight: 300,
+            letterSpacing: '-0.03em',
+            color: 'var(--text-primary)',
+            lineHeight: 1,
+          }}>
+            has
+          </span>
+        </div>
+
+        {/* Tagline */}
+        <p style={{
+          fontFamily: 'var(--font-sans)',
+          fontSize: 13,
+          color: 'var(--text-secondary)',
+          letterSpacing: '0.04em',
+          textAlign: 'center',
+        }}>
+          Your hands know. <em style={{ fontFamily: 'var(--font-serif)', color: 'var(--accent-gold)', fontStyle: 'italic' }}>AI translates.</em>
+        </p>
       </div>
 
-      {/* Tagline */}
-      <p className="text-sm text-text-secondary tracking-wider text-center" style={{ fontFamily: 'var(--font-sans)' }}>
-        Your hands know. AI translates.
-      </p>
-
-      {/* Pulse indicator */}
-      <div className="mt-8 flex gap-1.5">
-        {[0, 1, 2].map((i) => (
-          <div
-            key={i}
-            className="w-1 h-1 rounded-full bg-accent-gold animate-pulse-gold"
-            style={{ animationDelay: `${i * 0.3}s` }}
-          />
-        ))}
+      {/* Bottom */}
+      <div className="w-full flex flex-col items-center gap-5">
+        <Button variant="primary" fullWidth onClick={onContinue}>
+          Continue
+        </Button>
+        <p style={{
+          fontFamily: 'var(--font-sans)',
+          fontSize: 10,
+          color: 'var(--text-muted)',
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+        }}>
+          Linhas · 2026
+        </p>
       </div>
     </div>
   )
