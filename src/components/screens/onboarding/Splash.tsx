@@ -14,7 +14,7 @@ export function Splash({ onContinue }: Props) {
       {/* Center content */}
       <div className="flex flex-col items-center gap-6">
         {/* Wordmark — "l" + gold "i" + "nhas" */}
-        <div style={{ fontFamily: 'var(--font-serif)', fontSize: 56, fontWeight: 300, letterSpacing: '-0.03em', lineHeight: 1 }}>
+        <div style={{ fontFamily: 'var(--font-serif)', fontSize: 76, fontWeight: 300, letterSpacing: '-0.03em', lineHeight: 1 }}>
           <span style={{ color: 'var(--text-primary)' }}>l</span>
           <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>i</em>
           <span style={{ color: 'var(--text-primary)' }}>nhas</span>
@@ -23,7 +23,7 @@ export function Splash({ onContinue }: Props) {
         {/* Tagline */}
         <p style={{
           fontFamily: 'var(--font-sans)',
-          fontSize: 13,
+          fontSize: 16,
           color: 'var(--text-secondary)',
           letterSpacing: '0.04em',
           textAlign: 'center',
