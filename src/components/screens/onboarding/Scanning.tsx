@@ -36,27 +36,14 @@ export function Scanning({ onComplete, imageDataUrl, userId }: Props) {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
         const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-        // Upload image first
-        const blob = await fetch(imageDataUrl).then((r) => r.blob())
-        const filename = `palm_scans/${userId}/${Date.now()}.jpg`
-
-        const { supabase } = await import('@/lib/supabase')
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('palms')
-          .upload(filename, blob, { contentType: 'image/jpeg' })
-
-        if (uploadError) throw uploadError
-
-        const { data: { publicUrl } } = supabase.storage.from('palms').getPublicUrl(filename)
-
-        // Call analyze-palm edge function
+        // Pass image as base64 directly — edge function handles storage upload with service role
         const res = await fetch(`${supabaseUrl}/functions/v1/analyze-palm`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${supabaseKey}`,
           },
-          body: JSON.stringify({ user_id: userId, image_url: publicUrl, hand_type: 'dominant' }),
+          body: JSON.stringify({ user_id: userId, image_data: imageDataUrl, hand_type: 'dominant' }),
         })
 
         const data = await res.json()

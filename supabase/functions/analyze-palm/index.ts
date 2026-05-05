@@ -11,14 +11,42 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const { user_id, image_url, hand_type = 'dominant' } = await req.json()
+    const { user_id, image_data, hand_type = 'dominant' } = await req.json()
 
-    if (!user_id || !image_url) {
-      return new Response(JSON.stringify({ error: 'Missing user_id or image_url' }), {
+    if (!user_id || !image_data) {
+      return new Response(JSON.stringify({ error: 'Missing user_id or image_data' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
+    // Parse base64 data URL: "data:image/jpeg;base64,/9j/..."
+    const matches = image_data.match(/^data:([^;]+);base64,(.+)$/)
+    if (!matches) {
+      return new Response(JSON.stringify({ error: 'Invalid image_data format' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const mediaType = matches[1] as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'
+    const base64Data = matches[2]
+
+    // Upload image to storage using service role (bypasses RLS)
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    )
+
+    const filename = `palm_scans/${user_id}/${Date.now()}.jpg`
+    const imageBytes = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0))
+
+    const { error: uploadError } = await supabase.storage
+      .from('palms')
+      .upload(filename, imageBytes, { contentType: mediaType })
+
+    if (uploadError) throw uploadError
+
+    const { data: { publicUrl } } = supabase.storage.from('palms').getPublicUrl(filename)
+
+    // Analyze with Anthropic using base64
     const anthropic = new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY')! })
 
     const message = await anthropic.messages.create({
@@ -29,7 +57,7 @@ serve(async (req) => {
         content: [
           {
             type: 'image',
-            source: { type: 'url', url: image_url },
+            source: { type: 'base64', media_type: mediaType, data: base64Data },
           },
           {
             type: 'text',
@@ -82,15 +110,10 @@ If the palm is not open/visible, return: {"error": "palm_not_visible"}`
       })
     }
 
-    // Store scan record
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-    )
-
+    // Store scan record with service role (bypasses RLS)
     const { data: scan, error: scanError } = await supabase
       .from('palm_scans')
-      .insert({ user_id, image_url, hand_type, analysis })
+      .insert({ user_id, image_url: publicUrl, hand_type, analysis })
       .select('id')
       .single()
 
