@@ -4,7 +4,7 @@ import { Button, Eyebrow } from '@/components/ui'
 interface Props { onContinue: () => void }
 
 const PalmIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="80" height="96" fill="none" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="110" height="132" fill="none" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M58 230 C 50 200 44 178 44 158 C 44 142 38 130 36 116 C 34 102 40 96 48 100 C 54 102 60 110 64 122 C 64 110 62 76 64 56 C 66 42 78 40 80 54 C 82 76 82 100 84 116 C 86 100 88 70 92 54 C 94 42 106 42 108 56 C 110 78 108 102 110 118 C 112 102 116 78 120 66 C 124 54 134 54 134 68 C 134 86 130 110 130 122 C 134 112 142 100 150 96 C 160 92 166 102 162 114 C 154 132 144 152 140 168 C 134 188 130 210 126 230"/>
     <path d="M52 138 C 78 126 110 124 142 132" opacity="0.85"/>
     <path d="M50 158 C 78 152 112 150 138 156" opacity="0.7"/>
