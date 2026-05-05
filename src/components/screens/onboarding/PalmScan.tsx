@@ -8,23 +8,12 @@ interface Props {
 }
 
 const PalmGuide = () => (
-  <svg width="130" height="170" viewBox="0 0 60 84" fill="none">
-    <path d="M4,52 C3,42 4,32 7,25 C9,19 15,19 15,25 L15,52"
-      stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-    <path d="M17,52 L17,15 C17,7 25,7 25,15 L25,52"
-      stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-    <path d="M27,52 L27,7 C27,1 35,1 35,7 L35,52"
-      stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-    <path d="M37,52 L37,15 C37,7 45,7 45,15 L45,52"
-      stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-    <path d="M47,52 L47,26 C47,18 55,18 55,26 L55,56"
-      stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-    <path d="M55,56 C57,66 53,76 44,79 C34,82 20,80 12,74 C5,68 3,60 4,52"
-      stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-    <path d="M8,61 C22,57 42,57 54,60"
-      stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" fill="none" opacity="0.85"/>
-    <path d="M7,71 C20,67 43,67 53,70"
-      stroke="#C9A961" strokeWidth="1.1" strokeLinecap="round" fill="none" opacity="0.7"/>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="120" height="144" fill="none" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M58 230 C 50 200 44 178 44 158 C 44 142 38 130 36 116 C 34 102 40 96 48 100 C 54 102 60 110 64 122 C 64 110 62 76 64 56 C 66 42 78 40 80 54 C 82 76 82 100 84 116 C 86 100 88 70 92 54 C 94 42 106 42 108 56 C 110 78 108 102 110 118 C 112 102 116 78 120 66 C 124 54 134 54 134 68 C 134 86 130 110 130 122 C 134 112 142 100 150 96 C 160 92 166 102 162 114 C 154 132 144 152 140 168 C 134 188 130 210 126 230"/>
+    <path d="M52 138 C 78 126 110 124 142 132" opacity="0.85"/>
+    <path d="M50 158 C 78 152 112 150 138 156" opacity="0.7"/>
+    <path d="M66 130 C 60 152 60 178 70 200" opacity="0.6"/>
+    <path d="M104 230 C 102 200 100 174 102 152" opacity="0.5"/>
   </svg>
 )
 
