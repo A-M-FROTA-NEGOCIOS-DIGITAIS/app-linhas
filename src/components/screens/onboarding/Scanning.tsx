@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface Props {
   onComplete: (analysis: unknown) => void
@@ -18,25 +18,27 @@ export function Scanning({ onComplete, imageDataUrl, userId }: Props) {
   const [msgIndex, setMsgIndex] = useState(0)
   const [progress, setProgress] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const calledRef = useRef(false)
+  const onCompleteRef = useRef(onComplete)
+  onCompleteRef.current = onComplete
 
   useEffect(() => {
-    // Rotate messages
+    if (calledRef.current) return
+    calledRef.current = true
+
     const msgInterval = setInterval(() => {
       setMsgIndex((p) => Math.min(p + 1, MESSAGES.length - 1))
     }, 3500)
 
-    // Progress bar
     const progInterval = setInterval(() => {
       setProgress((p) => Math.min(p + 2, 95))
     }, 300)
 
-    // Call edge function
     const analyze = async () => {
       try {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
         const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-        // Pass image as base64 directly — edge function handles storage upload with service role
         const res = await fetch(`${supabaseUrl}/functions/v1/analyze-palm`, {
           method: 'POST',
           headers: {
@@ -50,22 +52,21 @@ export function Scanning({ onComplete, imageDataUrl, userId }: Props) {
         if (!res.ok) throw new Error(data.error || 'Analysis failed')
 
         setProgress(100)
-        setTimeout(() => onComplete(data), 600)
+        setTimeout(() => onCompleteRef.current(data), 600)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+        const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.'
+        const isKnownCode = ['image_not_palm', 'image_quality_low', 'palm_not_visible'].includes(msg)
+        setError(isKnownCode ? msg : 'Something went wrong. Please try again.')
       }
     }
 
-    // Minimum 15s of animation even if API responds faster
-    const minTimer = setTimeout(() => {}, 15000)
     analyze()
 
     return () => {
       clearInterval(msgInterval)
       clearInterval(progInterval)
-      clearTimeout(minTimer)
     }
-  }, [imageDataUrl, userId, onComplete])
+  }, [])
 
   if (error) {
     return (
