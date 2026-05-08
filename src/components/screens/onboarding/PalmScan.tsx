@@ -27,7 +27,7 @@ export function PalmScan({ onCapture }: Props) {
     if (!file.type.startsWith('image/')) return
     setProcessing(true)
     try {
-      const compressed = await compressImage(file)
+      const compressed = await compressImage(file, 512, 0.80)
       setPreview(compressed)
     } finally {
       setProcessing(false)

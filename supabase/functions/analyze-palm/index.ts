@@ -1,67 +1,13 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import Anthropic from 'https://esm.sh/@anthropic-ai/sdk@0.24.0'
+import Anthropic from 'https://esm.sh/@anthropic-ai/sdk@0.32.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
-
-  try {
-    const { user_id, image_data, hand_type = 'dominant' } = await req.json()
-
-    if (!user_id || !image_data) {
-      return new Response(JSON.stringify({ error: 'Missing user_id or image_data' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    // Parse base64 data URL: "data:image/jpeg;base64,/9j/..."
-    const matches = image_data.match(/^data:([^;]+);base64,(.+)$/)
-    if (!matches) {
-      return new Response(JSON.stringify({ error: 'Invalid image_data format' }), {
-        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-    const mediaType = matches[1] as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'
-    const base64Data = matches[2]
-
-    // Upload image to storage using service role (bypasses RLS)
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-    )
-
-    const filename = `palm_scans/${user_id}/${Date.now()}.jpg`
-    const imageBytes = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0))
-
-    const { error: uploadError } = await supabase.storage
-      .from('palms')
-      .upload(filename, imageBytes, { contentType: mediaType })
-
-    if (uploadError) throw uploadError
-
-    const { data: { publicUrl } } = supabase.storage.from('palms').getPublicUrl(filename)
-
-    // Analyze with Anthropic using base64
-    const anthropic = new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY')! })
-
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-5-20250929',
-      max_tokens: 1024,
-      messages: [{
-        role: 'user',
-        content: [
-          {
-            type: 'image',
-            source: { type: 'base64', media_type: mediaType, data: base64Data },
-          },
-          {
-            type: 'text',
-            text: `You are an expert palmist. Analyze this palm image and return a JSON object (no markdown, just raw JSON) with this exact structure:
+const PALM_SYSTEM_PROMPT = `You are an expert palmist. Analyze palm images and return a JSON object (no markdown, just raw JSON) with this exact structure:
 {
   "hand_shape": "earth|air|fire|water",
   "dominant_hand": true,
@@ -88,9 +34,66 @@ serve(async (req) => {
 If the image is not a palm, return: {"error": "image_not_palm"}
 If image quality is too low to read, return: {"error": "image_quality_low"}
 If the palm is not open/visible, return: {"error": "palm_not_visible"}`
-          }
-        ]
-      }]
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+
+  try {
+    const { user_id, image_data, hand_type = 'dominant' } = await req.json()
+
+    if (!user_id || !image_data) {
+      return new Response(JSON.stringify({ error: 'Missing user_id or image_data' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const matches = image_data.match(/^data:([^;]+);base64,(.+)$/)
+    if (!matches) {
+      return new Response(JSON.stringify({ error: 'Invalid image_data format' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    const mediaType = matches[1] as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'
+    const base64Data = matches[2]
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    )
+
+    const filename = `palm_scans/${user_id}/${Date.now()}.jpg`
+    const imageBytes = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0))
+
+    const { error: uploadError } = await supabase.storage
+      .from('palms')
+      .upload(filename, imageBytes, { contentType: mediaType })
+
+    if (uploadError) throw uploadError
+
+    const { data: { publicUrl } } = supabase.storage.from('palms').getPublicUrl(filename)
+
+    const anthropic = new Anthropic({
+      apiKey: Deno.env.get('ANTHROPIC_API_KEY')!,
+      defaultHeaders: { 'anthropic-beta': 'prompt-caching-2024-07-31' },
+    })
+
+    const message = await anthropic.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 500,
+      system: [
+        {
+          type: 'text',
+          text: PALM_SYSTEM_PROMPT,
+          cache_control: { type: 'ephemeral' },
+        },
+      ] as Parameters<typeof anthropic.messages.create>[0]['system'],
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64Data } },
+          { type: 'text', text: 'Analyze this palm.' },
+        ],
+      }],
     })
 
     const rawText = message.content[0].type === 'text' ? message.content[0].text.trim() : ''
@@ -110,7 +113,6 @@ If the palm is not open/visible, return: {"error": "palm_not_visible"}`
       })
     }
 
-    // Store scan record with service role (bypasses RLS)
     const { data: scan, error: scanError } = await supabase
       .from('palm_scans')
       .insert({ user_id, image_url: publicUrl, hand_type, analysis })
