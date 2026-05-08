@@ -10,10 +10,19 @@ export function useAuth() {
   const { userId, setUserId, setProfile } = useAppStore()
 
   useEffect(() => {
+    const timeout = setTimeout(() => setAuthState('unauthenticated'), 8000)
+
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      clearTimeout(timeout)
       if (session?.user) {
         setUserId(session.user.id)
-        await loadProfile(session.user.id)
+        const profile = await loadProfile(session.user.id)
+        // Anonymous session with no profile = incomplete onboarding, restart
+        if (!profile && session.user.is_anonymous) {
+          await supabase.auth.signOut()
+          setAuthState('unauthenticated')
+          return
+        }
         setAuthState('authenticated')
       } else {
         setAuthState('unauthenticated')
@@ -42,6 +51,7 @@ export function useAuth() {
       .eq('id', uid)
       .maybeSingle()
     if (data) setProfile(data as Profile)
+    return data
   }
 
   return { authState, userId }
