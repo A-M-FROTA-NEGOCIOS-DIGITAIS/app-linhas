@@ -85,8 +85,16 @@ export function Onboarding({ onComplete }: Props) {
     setStep('palm-scan')
   }
 
-  const handleScanComplete = (imageUrl: string) => {
+  const handleScanComplete = async (imageUrl: string) => {
     setImageDataUrl(imageUrl)
+    if (!userId && basicData) {
+      try {
+        const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
+        await Promise.race([createAnonymousUser(basicData), timeout])
+      } catch (e) {
+        console.error('Retry user creation failed:', e)
+      }
+    }
     setStep('scanning')
     track(Events.PALM_SCAN_COMPLETED, {})
   }
