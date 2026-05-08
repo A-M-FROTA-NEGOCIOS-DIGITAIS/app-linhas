@@ -69,7 +69,8 @@ export function Onboarding({ onComplete }: Props) {
   const handleBasicDataNext = async (data: BasicDataValues) => {
     setBasicData(data)
     try {
-      await createAnonymousUser(data)
+      const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
+      await Promise.race([createAnonymousUser(data), timeout])
     } catch (e) {
       console.error('Failed to create user:', e)
     }
