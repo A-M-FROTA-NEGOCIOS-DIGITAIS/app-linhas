@@ -95,6 +95,12 @@ export function Onboarding({ onComplete }: Props) {
         console.error('Retry user creation failed:', e)
       }
     }
+    // Fallback: use a local UUID so the scan can still run even without auth
+    if (!userId) {
+      const fallbackId = crypto.randomUUID()
+      setUserId(fallbackId)
+      storeSetUserId(fallbackId)
+    }
     setStep('scanning')
     track(Events.PALM_SCAN_COMPLETED, {})
   }
