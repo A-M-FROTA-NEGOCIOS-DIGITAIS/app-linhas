@@ -88,9 +88,7 @@ export function AppShell({ onSignOut }: Props) {
         {activeTab === 'today' && (
           <Today
             profile={profile}
-            onOpenReading={() => {
-              // open most recent master reading
-            }}
+            onOpenReading={(reading) => setOverlay({ type: 'reading-detail', reading })}
             onOpenChat={() => setActiveTab('aurora')}
             onReScan={handleReScan}
           />

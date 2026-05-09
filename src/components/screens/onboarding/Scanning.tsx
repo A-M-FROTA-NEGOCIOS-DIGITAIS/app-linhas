@@ -56,7 +56,7 @@ export function Scanning({ onComplete, imageDataUrl, userId }: Props) {
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.'
         const isKnownCode = ['image_not_palm', 'image_quality_low', 'palm_not_visible'].includes(msg)
-        setError(isKnownCode ? msg : msg)
+        setError(isKnownCode ? msg : 'Something went wrong. Please try again.')
       }
     }
 

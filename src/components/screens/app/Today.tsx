@@ -7,7 +7,7 @@ import type { Profile, DailyInsight, Reading } from '@/types'
 
 interface Props {
   profile: Profile
-  onOpenReading: () => void
+  onOpenReading: (reading: Reading) => void
   onOpenChat: () => void
   onReScan: () => void
 }
@@ -87,7 +87,7 @@ export function Today({ profile, onOpenReading, onOpenChat, onReScan }: Props) {
 
         {/* Master reading quick access */}
         {masterReading && (
-          <Card onClick={onOpenReading} className="p-5">
+          <Card onClick={() => onOpenReading(masterReading)} className="p-5">
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1">
                 <Eyebrow className="mb-2">Master reading</Eyebrow>
