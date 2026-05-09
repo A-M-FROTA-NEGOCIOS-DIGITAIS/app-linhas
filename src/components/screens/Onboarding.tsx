@@ -68,19 +68,15 @@ export function Onboarding({ onComplete }: Props) {
 
   const handleBasicDataNext = async (data: BasicDataValues) => {
     setBasicData(data)
-    try {
-      const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
-      await Promise.race([createAnonymousUser(data), timeout])
-    } catch (e) {
-      console.error('Failed to create user:', e)
-    }
     setStep('intention')
+    // Run auth in background — don't block UI
+    createAnonymousUser(data).catch((e) => console.error('Failed to create user:', e))
   }
 
-  const handleIntentionNext = async (chosen: Intention) => {
+  const handleIntentionNext = (chosen: Intention) => {
     setIntention(chosen)
     if (userId) {
-      await supabase.from('profiles').update({ intention: chosen }).eq('id', userId)
+      supabase.from('profiles').update({ intention: chosen }).eq('id', userId).then(() => {})
     }
     setStep('palm-scan')
   }
