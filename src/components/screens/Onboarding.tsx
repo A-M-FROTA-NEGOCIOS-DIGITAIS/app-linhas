@@ -114,6 +114,17 @@ export function Onboarding({ onComplete }: Props) {
     setStep('paywall')
   }
 
+  const getFallbackProfile = (uid: string) => ({
+    id: uid,
+    name: basicData?.name ?? 'You',
+    date_of_birth: basicData?.birthDate ?? null,
+    time_of_birth: basicData?.birthTime ?? null,
+    city_of_birth: basicData?.birthCity ?? null,
+    intention: intention ?? 'everything',
+    subscription_status: 'trial',
+    trial_ends_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+  })
+
   const handleSubscribe = async (plan: 'monthly' | 'yearly') => {
     if (!userId) return
     await supabase.from('profiles').update({
@@ -122,7 +133,7 @@ export function Onboarding({ onComplete }: Props) {
     }).eq('id', userId)
 
     const { data: profileData } = await supabase.from('profiles').select('*').eq('id', userId).single()
-    if (profileData) setProfile(profileData)
+    setProfile(profileData ?? getFallbackProfile(userId))
 
     setStep('welcome')
   }
@@ -130,7 +141,7 @@ export function Onboarding({ onComplete }: Props) {
   const handleSkipPaywall = async () => {
     if (!userId) return
     const { data: profileData } = await supabase.from('profiles').select('*').eq('id', userId).single()
-    if (profileData) setProfile(profileData)
+    setProfile(profileData ?? getFallbackProfile(userId))
     setStep('welcome')
   }
 
