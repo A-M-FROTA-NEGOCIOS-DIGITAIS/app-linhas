@@ -73,16 +73,20 @@ const OPTIONS: {
   },
 ]
 
-interface Props { onContinue: (intention: Intention) => void }
+interface Props {
+  onContinue: (intention: Intention) => void
+  initialValue?: Intention
+  eyebrow?: string
+}
 
-export function IntentionScreen({ onContinue }: Props) {
-  const [selected, setSelected] = useState<Intention | null>(null)
+export function IntentionScreen({ onContinue, initialValue, eyebrow = 'Step 2 of 2' }: Props) {
+  const [selected, setSelected] = useState<Intention | null>(initialValue ?? null)
 
   return (
     <div className="h-full flex flex-col px-6 pt-14 pb-8">
       {/* Header */}
       <div className="flex flex-col gap-3 mb-8">
-        <Eyebrow>Step 2 of 2</Eyebrow>
+        <Eyebrow>{eyebrow}</Eyebrow>
         <h2 style={{
           fontFamily: 'var(--font-serif)',
           fontSize: 30,

@@ -11,6 +11,7 @@ interface Props {
   onReScan: () => void
   onSignOut: () => void
   onOpenPaywall: () => void
+  onChangeIntention: () => void
 }
 
 const INTENTION_LABELS: Record<string, string> = {
@@ -29,7 +30,7 @@ const SUBSCRIPTION_LABELS: Record<string, string> = {
   none: 'Free',
 }
 
-export function Profile({ profile, onReScan, onSignOut, onOpenPaywall }: Props) {
+export function Profile({ profile, onReScan, onSignOut, onOpenPaywall, onChangeIntention }: Props) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const reset = useAppStore((s) => s.reset)
@@ -138,7 +139,7 @@ export function Profile({ profile, onReScan, onSignOut, onOpenPaywall }: Props) 
             <button
               className="text-xs text-text-muted underline underline-offset-2"
               style={{ fontFamily: 'var(--font-sans)' }}
-              onClick={() => { /* navigate to intention selection */ }}
+              onClick={onChangeIntention}
             >
               Change
             </button>

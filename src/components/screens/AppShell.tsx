@@ -10,7 +10,8 @@ import { ReadingDetail } from './app/ReadingDetail'
 import { PalmScan } from './onboarding/PalmScan'
 import { Scanning } from './onboarding/Scanning'
 import { Paywall } from './onboarding/Paywall'
-import type { Reading, PalmAnalysis } from '@/types'
+import { IntentionScreen } from './onboarding/Intention'
+import type { Reading, PalmAnalysis, Intention } from '@/types'
 
 type Tab = 'today' | 'readings' | 'aurora' | 'you'
 type Overlay =
@@ -18,6 +19,7 @@ type Overlay =
   | { type: 'rescan' }
   | { type: 'scanning'; imageDataUrl: string }
   | { type: 'paywall' }
+  | { type: 'change-intention' }
   | null
 
 interface Props {
@@ -32,6 +34,12 @@ export function AppShell({ onSignOut }: Props) {
   const masterReading = useAppStore((s) => s.masterReading)
 
   if (!profile) return null
+
+  const handleChangeIntention = async (intention: Intention) => {
+    await supabase.from('profiles').update({ intention }).eq('id', profile.id)
+    setProfile({ ...profile, intention })
+    setOverlay(null)
+  }
 
   const handlePaywallSubscribe = async () => {
     const trialEndsAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString()
@@ -95,6 +103,26 @@ export function AppShell({ onSignOut }: Props) {
         />
       )
     }
+    if (overlay.type === 'change-intention') {
+      return (
+        <div className="h-full flex flex-col relative">
+          <button
+            onClick={() => setOverlay(null)}
+            className="absolute top-14 left-5 z-10 p-2"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <IntentionScreen
+            initialValue={profile.intention ?? undefined}
+            eyebrow="Your intention"
+            onContinue={handleChangeIntention}
+          />
+        </div>
+      )
+    }
     if (overlay.type === 'paywall') {
       return (
         <div className="h-full flex flex-col relative">
@@ -144,6 +172,7 @@ export function AppShell({ onSignOut }: Props) {
             onReScan={handleReScan}
             onSignOut={onSignOut}
             onOpenPaywall={() => setOverlay({ type: 'paywall' })}
+            onChangeIntention={() => setOverlay({ type: 'change-intention' })}
           />
         )}
       </div>
