@@ -10,6 +10,7 @@ interface Props {
   profile: ProfileType
   onReScan: () => void
   onSignOut: () => void
+  onOpenPaywall: () => void
 }
 
 const INTENTION_LABELS: Record<string, string> = {
@@ -28,7 +29,7 @@ const SUBSCRIPTION_LABELS: Record<string, string> = {
   none: 'Free',
 }
 
-export function Profile({ profile, onReScan, onSignOut }: Props) {
+export function Profile({ profile, onReScan, onSignOut, onOpenPaywall }: Props) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const reset = useAppStore((s) => s.reset)
@@ -164,7 +165,7 @@ export function Profile({ profile, onReScan, onSignOut }: Props) {
             )}
           </div>
           {!isActive && (
-            <Button variant="primary" fullWidth onClick={() => track(Events.PAYWALL_VIEWED, { source: 'profile' })}>
+            <Button variant="primary" fullWidth onClick={() => { track(Events.PAYWALL_VIEWED, { source: 'profile' }); onOpenPaywall() }}>
               Unlock full access
             </Button>
           )}

@@ -64,13 +64,16 @@ serve(async (req) => {
     const filename = `palm_scans/${user_id}/${Date.now()}.jpg`
     const imageBytes = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0))
 
-    const { error: uploadError } = await supabase.storage
-      .from('palms')
-      .upload(filename, imageBytes, { contentType: mediaType })
-
-    if (uploadError) throw uploadError
-
-    const { data: { publicUrl } } = supabase.storage.from('palms').getPublicUrl(filename)
+    let publicUrl = ''
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from('palms')
+        .upload(filename, imageBytes, { contentType: mediaType })
+      if (!uploadError) {
+        const { data } = supabase.storage.from('palms').getPublicUrl(filename)
+        publicUrl = data.publicUrl
+      }
+    } catch { /* storage failure is non-blocking */ }
 
     const anthropic = new Anthropic({
       apiKey: Deno.env.get('ANTHROPIC_API_KEY')!,
@@ -113,16 +116,18 @@ serve(async (req) => {
       })
     }
 
-    const { data: scan, error: scanError } = await supabase
-      .from('palm_scans')
-      .insert({ user_id, image_url: publicUrl, hand_type, analysis })
-      .select('id')
-      .single()
-
-    if (scanError) throw scanError
+    let scanId: string | null = null
+    try {
+      const { data: scan, error: scanError } = await supabase
+        .from('palm_scans')
+        .insert({ user_id, image_url: publicUrl, hand_type, analysis })
+        .select('id')
+        .single()
+      if (!scanError) scanId = scan.id
+    } catch { /* db failure is non-blocking */ }
 
     return new Response(
-      JSON.stringify({ analysis, scan_id: scan.id }),
+      JSON.stringify({ analysis, scan_id: scanId }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (err) {
