@@ -22,6 +22,7 @@ export function PalmScan({ onCapture }: Props) {
   const galleryRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [processing, setProcessing] = useState(false)
+  const [confirming, setConfirming] = useState(false)
 
   const handleFile = useCallback(async (file: File) => {
     if (!file.type.startsWith('image/')) return
@@ -35,7 +36,8 @@ export function PalmScan({ onCapture }: Props) {
   }, [])
 
   const handleConfirm = () => {
-    if (!preview) return
+    if (!preview || confirming) return
+    setConfirming(true)
     track(Events.PALM_SCAN_STARTED, { hand_type: 'dominant' })
     onCapture(preview)
   }
@@ -147,7 +149,7 @@ export function PalmScan({ onCapture }: Props) {
       <div className="flex justify-center pb-2">
         <button
           onClick={preview ? handleConfirm : openCamera}
-          disabled={processing}
+          disabled={processing || confirming}
           style={{
             width: 64,
             height: 64,
@@ -158,12 +160,14 @@ export function PalmScan({ onCapture }: Props) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            cursor: 'pointer',
+            cursor: processing || confirming ? 'default' : 'pointer',
             transition: 'opacity 0.2s',
-            opacity: processing ? 0.6 : 1,
+            opacity: processing || confirming ? 0.6 : 1,
           }}
         >
-          {preview ? (
+          {confirming ? (
+            <Spinner size={22} className="text-bg-primary" />
+          ) : preview ? (
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--bg-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
