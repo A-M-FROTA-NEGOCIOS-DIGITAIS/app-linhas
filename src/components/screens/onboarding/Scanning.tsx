@@ -6,6 +6,27 @@ interface Props {
   userId: string
 }
 
+const DEV_BYPASS = localStorage.getItem('dev_bypass') === 'true'
+
+const FAKE_SCAN_RESULT = {
+  analysis: {
+    hand_shape: 'fire',
+    dominant_hand: true,
+    image_quality: 'high',
+    is_palm: true,
+    main_lines: {
+      life_line: { length: 'long', depth: 'deep', characteristic: 'clear and unbroken', interpretation: 'strong vitality' },
+      heart_line: { length: 'long', depth: 'deep', characteristic: 'branches near Mercury', interpretation: 'idealistic in love' },
+      head_line: { length: 'long', depth: 'medium', characteristic: 'slopes toward Luna', interpretation: 'creative thinker' },
+      fate_line: { present: true, length: 'medium', characteristic: 'begins mid-palm', interpretation: 'self-made' },
+    },
+    mounts: { jupiter: 'prominent', saturn: 'average', apollo: 'prominent', mercury: 'average', venus: 'prominent', luna: 'average' },
+    special_marks: [],
+    overall_character: 'A person of deep feeling and creative fire.',
+  },
+  scan_id: 'dev-bypass-scan-id',
+}
+
 const MESSAGES = [
   'Madame Aurora is reading your lines…',
   'Tracing the life line…',
@@ -35,6 +56,10 @@ export function Scanning({ onComplete, imageDataUrl, userId }: Props) {
     }, 300)
 
     const analyze = async () => {
+      if (DEV_BYPASS) {
+        setTimeout(() => { setProgress(100); setTimeout(() => onCompleteRef.current(FAKE_SCAN_RESULT), 600) }, 3000)
+        return
+      }
       try {
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
         const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY

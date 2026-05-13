@@ -54,6 +54,9 @@ function TypewriterLine({ text, delay = 0, gold = false, onDone }: { text: strin
   )
 }
 
+const DEV_BYPASS = localStorage.getItem('dev_bypass') === 'true'
+const FAKE_PREVIEW = `${''}, your palm carries a rare mark — the double break in the heart line near the mount of Venus. I see this in one in fifty hands.\n\nIt is not damage. It is editing. You rewrite rather than discard — you love in chapters, not seasons. That story at 23 was not a mistake. It was vocabulary.\n\nYour head line slopes deeply toward Luna, which means your instincts arrive before your logic does. Trust that.`
+
 export function Revelation({ analysis, name, scanId, userId, onContinue }: Props) {
   const [phase, setPhase] = useState(0)
   const [readingPreview, setReadingPreview] = useState('')
@@ -73,6 +76,7 @@ export function Revelation({ analysis, name, scanId, userId, onContinue }: Props
   // Generate reading in background once phase 3 starts
   useEffect(() => {
     if (phase >= 3 && !generatingReading && !readingPreview) {
+      if (DEV_BYPASS) { setReadingPreview(FAKE_PREVIEW.replace('${\'\'}', name)); return }
       setGeneratingReading(true)
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
       const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
