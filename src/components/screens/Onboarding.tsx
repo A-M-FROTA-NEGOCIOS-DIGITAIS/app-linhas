@@ -11,7 +11,7 @@ import { Scanning } from './onboarding/Scanning'
 import { Revelation } from './onboarding/Revelation'
 import { Paywall } from './onboarding/Paywall'
 import { Welcome } from './onboarding/Welcome'
-import type { PalmAnalysis, Intention } from '@/types'
+import type { PalmAnalysis, Intention, SubscriptionStatus } from '@/types'
 
 type Step =
   | 'splash'
@@ -138,31 +138,39 @@ export function Onboarding({ onComplete }: Props) {
   const getFallbackProfile = (uid: string) => ({
     id: uid,
     name: basicData?.name ?? 'You',
-    date_of_birth: basicData?.birthDate ?? null,
-    time_of_birth: basicData?.birthTime ?? null,
-    city_of_birth: basicData?.birthCity ?? null,
+    date_of_birth: basicData?.birthDate ?? undefined,
+    time_of_birth: basicData?.birthTime ?? undefined,
+    city_of_birth: basicData?.birthCity ?? undefined,
     intention: intention ?? 'everything',
-    subscription_status: 'trial',
+    subscription_status: 'trial' as SubscriptionStatus,
     trial_ends_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   })
 
   const handleSubscribe = async (_plan: 'monthly' | 'yearly') => {
-    if (!userId) return
-    await supabase.from('profiles').update({
-      subscription_status: 'trial',
-      trial_ends_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-    }).eq('id', userId)
-
-    const { data: profileData } = await supabase.from('profiles').select('*').eq('id', userId).single()
-    setProfile(profileData ?? getFallbackProfile(userId))
-
+    const uid = userId ?? crypto.randomUUID()
+    try {
+      await supabase.from('profiles').update({
+        subscription_status: 'trial' as SubscriptionStatus,
+        trial_ends_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+      }).eq('id', uid)
+      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', uid).single()
+      setProfile(profileData ?? getFallbackProfile(uid))
+    } catch {
+      setProfile(getFallbackProfile(uid))
+    }
     setStep('welcome')
   }
 
   const handleSkipPaywall = async () => {
-    if (!userId) return
-    const { data: profileData } = await supabase.from('profiles').select('*').eq('id', userId).single()
-    setProfile(profileData ?? getFallbackProfile(userId))
+    const uid = userId ?? crypto.randomUUID()
+    try {
+      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', uid).single()
+      setProfile(profileData ?? getFallbackProfile(uid))
+    } catch {
+      setProfile(getFallbackProfile(uid))
+    }
     setStep('welcome')
   }
 
