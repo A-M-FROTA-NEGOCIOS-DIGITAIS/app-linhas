@@ -6,7 +6,7 @@ interface Props {
   userId: string
 }
 
-const DEV_BYPASS = localStorage.getItem('dev_bypass') === 'true'
+const isDevBypass = () => localStorage.getItem('dev_bypass') === 'true'
 
 const FAKE_SCAN_RESULT = {
   analysis: {
@@ -56,7 +56,7 @@ export function Scanning({ onComplete, imageDataUrl, userId }: Props) {
     }, 300)
 
     const analyze = async () => {
-      if (DEV_BYPASS) {
+      if (isDevBypass()) {
         setTimeout(() => { setProgress(100); setTimeout(() => onCompleteRef.current(FAKE_SCAN_RESULT), 600) }, 3000)
         return
       }

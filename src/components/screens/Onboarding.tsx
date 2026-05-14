@@ -83,6 +83,29 @@ export function Onboarding({ onComplete }: Props) {
 
   const handleScanComplete = async (imageUrl: string) => {
     setImageDataUrl(imageUrl)
+    track(Events.PALM_SCAN_COMPLETED, {})
+
+    // Dev bypass: pula auth e analise, vai direto para Revelation com dados falsos
+    if (localStorage.getItem('dev_bypass') === 'true') {
+      const fallbackId = userId ?? crypto.randomUUID()
+      if (!userId) { setUserId(fallbackId); storeSetUserId(fallbackId) }
+      setAnalysis({
+        hand_shape: 'fire', dominant_hand: true, image_quality: 'high', is_palm: true,
+        main_lines: {
+          life_line: { length: 'long', depth: 'deep', characteristic: 'clear and unbroken', interpretation: 'strong vitality' },
+          heart_line: { length: 'long', depth: 'deep', characteristic: 'branches near Mercury', interpretation: 'idealistic in love' },
+          head_line: { length: 'long', depth: 'medium', characteristic: 'slopes toward Luna', interpretation: 'creative thinker' },
+          fate_line: { present: true, length: 'medium', characteristic: 'begins mid-palm', interpretation: 'self-made' },
+        },
+        mounts: { jupiter: 'prominent', saturn: 'average', apollo: 'prominent', mercury: 'average', venus: 'prominent', luna: 'average' },
+        special_marks: [],
+        overall_character: 'A person of deep feeling and creative fire.',
+      } as PalmAnalysis)
+      setScanId('dev-bypass-scan-id')
+      setStep('revelation')
+      return
+    }
+
     if (!userId && basicData) {
       try {
         const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
@@ -91,14 +114,12 @@ export function Onboarding({ onComplete }: Props) {
         console.error('Retry user creation failed:', e)
       }
     }
-    // Fallback: use a local UUID so the scan can still run even without auth
     if (!userId) {
       const fallbackId = crypto.randomUUID()
       setUserId(fallbackId)
       storeSetUserId(fallbackId)
     }
     setStep('scanning')
-    track(Events.PALM_SCAN_COMPLETED, {})
   }
 
   const handleAnalysisComplete = (data: unknown) => {
@@ -125,7 +146,7 @@ export function Onboarding({ onComplete }: Props) {
     trial_ends_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
   })
 
-  const handleSubscribe = async (plan: 'monthly' | 'yearly') => {
+  const handleSubscribe = async (_plan: 'monthly' | 'yearly') => {
     if (!userId) return
     await supabase.from('profiles').update({
       subscription_status: 'trial',
