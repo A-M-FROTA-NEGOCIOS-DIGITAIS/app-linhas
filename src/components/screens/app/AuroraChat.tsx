@@ -83,17 +83,25 @@ export function AuroraChat({ profile }: Props) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
+    const safetyTimer = setTimeout(() => setLoading(false), 8000)
     const load = async () => {
-      const { data } = await supabase
-        .from('chat_messages')
-        .select('*')
-        .eq('user_id', profile.id)
-        .order('created_at', { ascending: true })
-        .limit(100)
-      if (data) setMessages(data)
-      setLoading(false)
+      try {
+        const { data } = await supabase
+          .from('chat_messages')
+          .select('*')
+          .eq('user_id', profile.id)
+          .order('created_at', { ascending: true })
+          .limit(100)
+        if (data) setMessages(data)
+      } catch {
+        // silent fail — show empty state
+      } finally {
+        clearTimeout(safetyTimer)
+        setLoading(false)
+      }
     }
     load()
+    return () => clearTimeout(safetyTimer)
   }, [profile.id])
 
   useEffect(() => {
