@@ -38,14 +38,14 @@ interface Props {
 export function Onboarding({ onComplete }: Props) {
   const [step, setStep] = useState<Step>('splash')
   const [basicData, setBasicData] = useState<BasicDataValues | null>(null)
-  const [intention, setIntention] = useState<Intention | null>(null)
+
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null)
   const [analysis, setAnalysis] = useState<PalmAnalysis | null>(null)
   const [readingPreview, setReadingPreview] = useState('')
   const [userId, setUserId] = useState<string | null>(null)
   const [scanId, setScanId] = useState<string | null>(null)
 
-  const { setProfile, setUserId: storeSetUserId } = useAppStore()
+  const { setUserId: storeSetUserId } = useAppStore()
 
   const createAnonymousUser = async (data: BasicDataValues) => {
     const { data: authData, error } = await supabase.auth.signInAnonymously()
@@ -74,7 +74,6 @@ export function Onboarding({ onComplete }: Props) {
   }
 
   const handleIntentionNext = (chosen: Intention) => {
-    setIntention(chosen)
     if (userId) {
       supabase.from('profiles').update({ intention: chosen }).eq('id', userId).then(() => {})
     }
@@ -135,33 +134,19 @@ export function Onboarding({ onComplete }: Props) {
     setStep('paywall')
   }
 
-  const getFallbackProfile = (uid: string) => ({
-    id: uid,
-    name: basicData?.name ?? 'You',
-    date_of_birth: basicData?.birthDate ?? undefined,
-    time_of_birth: basicData?.birthTime ?? undefined,
-    city_of_birth: basicData?.birthCity ?? undefined,
-    intention: intention ?? 'everything',
-    subscription_status: 'trial' as SubscriptionStatus,
-    trial_ends_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-  })
-
   const handleSubscribe = (_plan: 'monthly' | 'yearly') => {
-    const uid = userId ?? crypto.randomUUID()
-    // Update DB in background — don't block UI
-    void Promise.resolve(supabase.from('profiles').update({
-      subscription_status: 'trial' as SubscriptionStatus,
-      trial_ends_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-    }).eq('id', uid)).catch(() => {})
-    setProfile(getFallbackProfile(uid))
+    const uid = userId
+    if (uid) {
+      // Update DB in background — don't block UI
+      void Promise.resolve(supabase.from('profiles').update({
+        subscription_status: 'trial' as SubscriptionStatus,
+        trial_ends_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+      }).eq('id', uid)).catch(() => {})
+    }
     setStep('welcome')
   }
 
   const handleSkipPaywall = () => {
-    const uid = userId ?? crypto.randomUUID()
-    setProfile(getFallbackProfile(uid))
     setStep('welcome')
   }
 

@@ -64,19 +64,27 @@ export function Readings({ profile, onOpenReading }: Props) {
   const [generatingThemed, setGeneratingThemed] = useState<string | null>(null)
 
   useEffect(() => {
+    setLoading(true)
+    const safetyTimer = setTimeout(() => setLoading(false), 8000)
     const load = async () => {
-      setLoading(true)
-      let query = supabase
-        .from('readings')
-        .select('*')
-        .eq('user_id', profile.id)
-        .order('created_at', { ascending: false })
-      if (filter !== 'all') query = query.eq('reading_type', filter)
-      const { data } = await query
-      if (data) setReadings(data)
-      setLoading(false)
+      try {
+        let query = supabase
+          .from('readings')
+          .select('*')
+          .eq('user_id', profile.id)
+          .order('created_at', { ascending: false })
+        if (filter !== 'all') query = query.eq('reading_type', filter)
+        const { data } = await query
+        if (data) setReadings(data)
+      } catch {
+        // silent fail — show empty state
+      } finally {
+        clearTimeout(safetyTimer)
+        setLoading(false)
+      }
     }
     load()
+    return () => clearTimeout(safetyTimer)
   }, [profile.id, filter])
 
   const handleNewThemed = async (theme: string) => {

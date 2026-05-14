@@ -21,17 +21,25 @@ export function Today({ profile, onOpenReading, onOpenChat, onReScan }: Props) {
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
 
   useEffect(() => {
+    const safetyTimer = setTimeout(() => setLoading(false), 8000)
     const load = async () => {
-      const todayStr = new Date().toISOString().split('T')[0]
-      const [insightRes, readingRes] = await Promise.all([
-        supabase.from('daily_insights').select('*').eq('user_id', profile.id).eq('scheduled_for', todayStr).maybeSingle(),
-        supabase.from('readings').select('*').eq('user_id', profile.id).eq('reading_type', 'master').order('created_at', { ascending: false }).limit(1).maybeSingle(),
-      ])
-      if (insightRes.data) setInsight(insightRes.data)
-      if (readingRes.data) setMasterReading(readingRes.data)
-      setLoading(false)
+      try {
+        const todayStr = new Date().toISOString().split('T')[0]
+        const [insightRes, readingRes] = await Promise.all([
+          supabase.from('daily_insights').select('*').eq('user_id', profile.id).eq('scheduled_for', todayStr).maybeSingle(),
+          supabase.from('readings').select('*').eq('user_id', profile.id).eq('reading_type', 'master').order('created_at', { ascending: false }).limit(1).maybeSingle(),
+        ])
+        if (insightRes.data) setInsight(insightRes.data)
+        if (readingRes.data) setMasterReading(readingRes.data)
+      } catch {
+        // silent fail — show empty state
+      } finally {
+        clearTimeout(safetyTimer)
+        setLoading(false)
+      }
     }
     load()
+    return () => clearTimeout(safetyTimer)
   }, [profile.id])
 
   const handleOpenInsight = () => {
