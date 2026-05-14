@@ -148,29 +148,20 @@ export function Onboarding({ onComplete }: Props) {
     updated_at: new Date().toISOString(),
   })
 
-  const handleSubscribe = async (_plan: 'monthly' | 'yearly') => {
+  const handleSubscribe = (_plan: 'monthly' | 'yearly') => {
     const uid = userId ?? crypto.randomUUID()
-    try {
-      await supabase.from('profiles').update({
-        subscription_status: 'trial' as SubscriptionStatus,
-        trial_ends_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-      }).eq('id', uid)
-      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', uid).single()
-      setProfile(profileData ?? getFallbackProfile(uid))
-    } catch {
-      setProfile(getFallbackProfile(uid))
-    }
+    // Update DB in background — don't block UI
+    void Promise.resolve(supabase.from('profiles').update({
+      subscription_status: 'trial' as SubscriptionStatus,
+      trial_ends_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+    }).eq('id', uid)).catch(() => {})
+    setProfile(getFallbackProfile(uid))
     setStep('welcome')
   }
 
-  const handleSkipPaywall = async () => {
+  const handleSkipPaywall = () => {
     const uid = userId ?? crypto.randomUUID()
-    try {
-      const { data: profileData } = await supabase.from('profiles').select('*').eq('id', uid).single()
-      setProfile(profileData ?? getFallbackProfile(uid))
-    } catch {
-      setProfile(getFallbackProfile(uid))
-    }
+    setProfile(getFallbackProfile(uid))
     setStep('welcome')
   }
 
