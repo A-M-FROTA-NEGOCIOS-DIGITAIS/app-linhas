@@ -8,7 +8,7 @@ export function App() {
   const { authState } = useAuth()
   const profile = useAppStore((s) => s.profile)
 
-  if (authState === 'loading') {
+  if (authState === 'loading' && !profile) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -23,13 +23,11 @@ export function App() {
     )
   }
 
-  // Authenticated but no profile → just signed up anonymously, show onboarding
-  if (authState === 'unauthenticated' || !profile) {
+  if (!profile) {
     return (
       <Onboarding
         onComplete={() => {
-          // Auth state will update via Supabase listener
-          window.location.reload()
+          // Profile already set in store by Welcome — App re-renders automatically
         }}
       />
     )

@@ -11,7 +11,7 @@ import { Scanning } from './onboarding/Scanning'
 import { Revelation } from './onboarding/Revelation'
 import { Paywall } from './onboarding/Paywall'
 import { Welcome } from './onboarding/Welcome'
-import type { PalmAnalysis, Intention, SubscriptionStatus } from '@/types'
+import type { PalmAnalysis, Intention, SubscriptionStatus, Profile } from '@/types'
 
 type Step =
   | 'splash'
@@ -44,8 +44,22 @@ export function Onboarding({ onComplete }: Props) {
   const [readingPreview, setReadingPreview] = useState('')
   const [userId, setUserId] = useState<string | null>(null)
   const [scanId, setScanId] = useState<string | null>(null)
+  const [pendingProfile, setPendingProfile] = useState<Profile | null>(null)
 
-  const { setUserId: storeSetUserId } = useAppStore()
+  const { setUserId: storeSetUserId, setProfile } = useAppStore()
+
+  const buildFallbackProfile = (uid: string): Profile => ({
+    id: uid,
+    name: basicData?.name ?? 'You',
+    date_of_birth: basicData?.birthDate ?? undefined,
+    time_of_birth: basicData?.birthTime ?? undefined,
+    city_of_birth: basicData?.birthCity ?? undefined,
+    intention: 'everything' as Intention,
+    subscription_status: 'trial' as SubscriptionStatus,
+    trial_ends_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  })
 
   const createAnonymousUser = async (data: BasicDataValues) => {
     const { data: authData, error } = await supabase.auth.signInAnonymously()
@@ -135,18 +149,20 @@ export function Onboarding({ onComplete }: Props) {
   }
 
   const handleSubscribe = (_plan: 'monthly' | 'yearly') => {
-    const uid = userId
-    if (uid) {
-      // Update DB in background — don't block UI
+    const uid = userId ?? crypto.randomUUID()
+    if (userId) {
       void Promise.resolve(supabase.from('profiles').update({
         subscription_status: 'trial' as SubscriptionStatus,
         trial_ends_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
       }).eq('id', uid)).catch(() => {})
     }
+    setPendingProfile(buildFallbackProfile(uid))
     setStep('welcome')
   }
 
   const handleSkipPaywall = () => {
+    const uid = userId ?? crypto.randomUUID()
+    setPendingProfile(buildFallbackProfile(uid))
     setStep('welcome')
   }
 
@@ -198,17 +214,28 @@ export function Onboarding({ onComplete }: Props) {
         />
       )
 
-    case 'welcome':
+    case 'welcome': {
+      const finishOnboarding = () => {
+        if (pendingProfile) setProfile(pendingProfile)
+        // Try to fetch real profile from DB in background
+        if (userId) {
+          void Promise.resolve(
+            supabase.from('profiles').select('*').eq('id', userId).single()
+          ).then(({ data }) => { if (data) setProfile(data as Profile) }).catch(() => {})
+        }
+        onComplete()
+      }
       return (
         <Welcome
           name={name}
-          onReadNow={onComplete}
+          onReadNow={finishOnboarding}
           onSetupPush={() => {
             if ('Notification' in window) Notification.requestPermission()
-            onComplete()
+            finishOnboarding()
           }}
         />
       )
+    }
 
     default:
       return null
