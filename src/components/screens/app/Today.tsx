@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Card, Eyebrow, Hairline, Spinner } from '@/components/ui'
+import { Card, Chip, Eyebrow, Hairline, Spinner } from '@/components/ui'
 import { supabase } from '@/lib/supabase'
 import { getMoonPhase, formatDate } from '@/lib/utils'
 import { track, Events } from '@/lib/analytics'
@@ -16,6 +16,15 @@ export function Today({ profile, onOpenReading, onOpenChat, onReScan }: Props) {
   const [insight, setInsight] = useState<DailyInsight | null>(null)
   const [masterReading, setMasterReading] = useState<Reading | null>(null)
   const [loading, setLoading] = useState(true)
+  const [activeChip, setActiveChip] = useState('today')
+
+  const CHIPS = [
+    { key: 'today', label: 'Today' },
+    { key: 'love', label: 'Love' },
+    { key: 'career', label: 'Career' },
+    { key: 'family', label: 'Family' },
+    { key: 'decision', label: 'Decision' },
+  ]
 
   const moonPhase = getMoonPhase()
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
@@ -92,6 +101,15 @@ export function Today({ profile, onOpenReading, onOpenChat, onReScan }: Props) {
             <p className="text-sm text-text-secondary">Your daily reading arrives at 7 AM. Come back tomorrow.</p>
           </Card>
         )}
+
+        {/* Topic filter chips */}
+        <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-5 px-5">
+          {CHIPS.map(({ key, label }) => (
+            <Chip key={key} active={activeChip === key} onClick={() => setActiveChip(key)}>
+              {label}
+            </Chip>
+          ))}
+        </div>
 
         {/* Master reading quick access */}
         {masterReading && (
