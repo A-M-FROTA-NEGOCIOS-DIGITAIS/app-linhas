@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui'
 import type { PalmAnalysis } from '@/types'
 import { track, Events } from '@/lib/analytics'
@@ -21,6 +21,8 @@ const HAND_LABELS: Record<string, string> = {
 function TypewriterLine({ text, delay = 0, gold = false, onDone }: { text: string; delay?: number; gold?: boolean; onDone?: () => void }) {
   const [displayed, setDisplayed] = useState('')
   const [done, setDone] = useState(false)
+  const onDoneRef = useRef(onDone)
+  onDoneRef.current = onDone
 
   useEffect(() => {
     let i = 0
@@ -30,13 +32,13 @@ function TypewriterLine({ text, delay = 0, gold = false, onDone }: { text: strin
         if (i >= text.length) {
           clearInterval(interval)
           setDone(true)
-          onDone?.()
+          onDoneRef.current?.()
         }
       }, 28)
       return () => clearInterval(interval)
     }, delay)
     return () => clearTimeout(t)
-  }, [text, delay, onDone])
+  }, [text, delay])
 
   return (
     <p style={{
@@ -61,6 +63,7 @@ export function Revelation({ analysis, name, scanId, userId, onContinue }: Props
   const [phase, setPhase] = useState(0)
   const [readingPreview, setReadingPreview] = useState('')
   const [generatingReading, setGeneratingReading] = useState(false)
+  const [generatingTimedOut, setGeneratingTimedOut] = useState(false)
 
   const lifeLine = analysis.main_lines.life_line
   const heartLine = analysis.main_lines.heart_line
@@ -78,6 +81,7 @@ export function Revelation({ analysis, name, scanId, userId, onContinue }: Props
     if (phase >= 3 && !generatingReading && !readingPreview) {
       if (isDevBypass()) { setReadingPreview(FAKE_PREVIEW.replace('__NAME__', name)); return }
       setGeneratingReading(true)
+      const timeoutId = setTimeout(() => setGeneratingTimedOut(true), 40000)
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
       const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
       fetch(`${supabaseUrl}/functions/v1/generate-master-reading`, {
@@ -88,7 +92,7 @@ export function Revelation({ analysis, name, scanId, userId, onContinue }: Props
         .then((r) => r.json())
         .then((d) => { if (d.preview) setReadingPreview(d.preview); track(Events.READING_GENERATED, { reading_id: d.reading_id, word_count: d.word_count }) })
         .catch(console.error)
-        .finally(() => setGeneratingReading(false))
+        .finally(() => { clearTimeout(timeoutId); setGeneratingReading(false) })
     }
   }, [phase, generatingReading, readingPreview, userId, scanId])
 
@@ -116,7 +120,7 @@ export function Revelation({ analysis, name, scanId, userId, onContinue }: Props
           <Button
             variant="primary"
             fullWidth
-            loading={generatingReading && !readingPreview}
+            loading={generatingReading && !readingPreview && !generatingTimedOut}
             onClick={() => onContinue(readingPreview)}
           >
             See my full reading
