@@ -64,6 +64,7 @@ export function Revelation({ analysis, name, scanId, userId, onContinue }: Props
   const [readingPreview, setReadingPreview] = useState('')
   const [generatingReading, setGeneratingReading] = useState(false)
   const [generatingTimedOut, setGeneratingTimedOut] = useState(false)
+  const generationStartedRef = useRef(false)
 
   const lifeLine = analysis.main_lines.life_line
   const heartLine = analysis.main_lines.heart_line
@@ -78,7 +79,8 @@ export function Revelation({ analysis, name, scanId, userId, onContinue }: Props
 
   // Generate reading in background once phase 3 starts
   useEffect(() => {
-    if (phase >= 3 && !generatingReading && !readingPreview) {
+    if (phase >= 3 && !generationStartedRef.current) {
+      generationStartedRef.current = true
       if (isDevBypass()) { setReadingPreview(FAKE_PREVIEW.replace('__NAME__', name)); return }
       setGeneratingReading(true)
       const timeoutId = setTimeout(() => setGeneratingTimedOut(true), 40000)
@@ -94,7 +96,7 @@ export function Revelation({ analysis, name, scanId, userId, onContinue }: Props
         .catch(console.error)
         .finally(() => { clearTimeout(timeoutId); setGeneratingReading(false) })
     }
-  }, [phase, generatingReading, readingPreview, userId, scanId])
+  }, [phase, name, userId, scanId])
 
   return (
     <div className="h-full flex flex-col px-8 pt-16 pb-8"
