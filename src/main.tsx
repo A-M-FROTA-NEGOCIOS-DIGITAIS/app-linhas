@@ -6,6 +6,12 @@ import { initAnalytics } from '@/lib/analytics'
 
 initAnalytics()
 
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    window.location.reload()
+  })
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />
