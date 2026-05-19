@@ -6,12 +6,11 @@ export function Welcome({ name, onReadNow, onSetupPush }: Props) {
   return (
     <div className="h-full flex flex-col items-center justify-center px-8 gap-8"
       style={{ background: 'radial-gradient(ellipse at 50% 30%, rgba(201,169,97,0.06), transparent 55%)' }}>
-      {/* Glyph */}
-      <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
-        <circle cx="36" cy="36" r="30" stroke="#C9A961" strokeWidth="0.8" opacity="0.25"/>
-        <path d="M14 50c10-18 34-18 44 0M18 50c8-14 28-14 36 0M24 50c4-8 20-8 24 0" stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round"/>
-        <circle cx="36" cy="42" r="3" fill="#C9A961" opacity="0.7"/>
-      </svg>
+      {/* Chapter number */}
+      <div className="text-center">
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 96, fontWeight: 300, color: 'var(--accent-gold)', lineHeight: 1, opacity: 0.85, letterSpacing: '-0.02em' }}>09</p>
+        <p className="text-xs text-text-muted tracking-widest uppercase mt-2">Welcome</p>
+      </div>
 
       <div className="text-center flex flex-col gap-3">
         <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 32, fontWeight: 300, letterSpacing: '-0.01em', color: 'var(--text-primary)', lineHeight: 1.2 }}>

@@ -74,14 +74,16 @@ export function Scanning({ onComplete, imageDataUrl, userId }: Props) {
         })
 
         const data = await res.json()
-        if (!res.ok) throw new Error(data.error || 'Analysis failed')
+        console.error('[analyze-palm] status:', res.status, 'body:', data)
+        if (!res.ok) throw new Error(data.error || data.message || JSON.stringify(data))
 
         setProgress(100)
         setTimeout(() => onCompleteRef.current(data), 600)
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.'
+        const msg = err instanceof Error ? err.message : 'Unknown error'
+        console.error('[analyze-palm] caught:', msg)
         const isKnownCode = ['image_not_palm', 'image_quality_low', 'palm_not_visible'].includes(msg)
-        setError(isKnownCode ? msg : 'Something went wrong. Please try again.')
+        setError(isKnownCode ? msg : msg)
       }
     }
 

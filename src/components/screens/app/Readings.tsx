@@ -118,9 +118,19 @@ export function Readings({ profile, onOpenReading }: Props) {
     <div className="flex-1 flex flex-col scroll-area pb-24">
       {/* Header */}
       <div className="px-5 pt-12 pb-4">
+        {!loading && readings.length > 0 && (
+          <p className="text-xs text-text-muted tracking-widest uppercase mb-2">
+            Readings · {readings.length}
+          </p>
+        )}
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 300, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
-          Your readings
+          Your <em style={{ fontStyle: 'italic', color: 'var(--accent-gold)' }}>readings.</em>
         </h1>
+        {!loading && readings.length > 0 && (
+          <p className="text-xs text-text-muted mt-1">
+            {readings.length} chapters · {Math.max(1, Math.floor((Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24)))} days active
+          </p>
+        )}
       </div>
 
       {/* Filter chips */}
@@ -147,34 +157,40 @@ export function Readings({ profile, onOpenReading }: Props) {
         </div>
       ) : (
         <div className="px-5 flex flex-col gap-3">
-          {readings.map((reading) => (
-            <Card
-              key={reading.id}
-              onClick={() => {
-                track(Events.DAILY_INSIGHT_OPENED, { reading_id: reading.id, type: reading.reading_type })
-                onOpenReading(reading)
-              }}
-              className="p-5"
-              goldBorder={reading.reading_type === 'master'}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2">
-                    {TYPE_ICONS[reading.reading_type] ?? TYPE_ICONS.daily}
-                    <Eyebrow>{TYPE_LABELS[reading.reading_type] ?? reading.reading_type}</Eyebrow>
-                  </div>
-                  <p className="text-sm text-text-secondary line-clamp-2 leading-relaxed">
-                    {reading.preview_content}
-                  </p>
-                  <p className="text-[11px] text-text-muted mt-2 uppercase tracking-wider">
-                    {formatDate(reading.created_at)}
-                  </p>
-                </div>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-1">
-                  <path d="M5 12h14M13 5l7 7-7 7" />
-                </svg>
+          {readings.map((reading, index) => (
+            <div key={reading.id} className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-8 pt-5 text-right">
+                <span style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 300, color: 'var(--text-muted)', lineHeight: 1 }}>
+                  {String(index + 1).padStart(2, '0')}
+                </span>
               </div>
-            </Card>
+              <Card
+                onClick={() => {
+                  track(Events.DAILY_INSIGHT_OPENED, { reading_id: reading.id, type: reading.reading_type })
+                  onOpenReading(reading)
+                }}
+                className="flex-1 p-5"
+                goldBorder={reading.reading_type === 'master'}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      {TYPE_ICONS[reading.reading_type] ?? TYPE_ICONS.daily}
+                      <Eyebrow>{TYPE_LABELS[reading.reading_type] ?? reading.reading_type}</Eyebrow>
+                    </div>
+                    <p className="text-sm text-text-secondary line-clamp-2 leading-relaxed">
+                      {reading.preview_content}
+                    </p>
+                    <p className="text-[11px] text-text-muted mt-2 uppercase tracking-wider">
+                      {formatDate(reading.created_at)}
+                    </p>
+                  </div>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-1">
+                    <path d="M5 12h14M13 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </Card>
+            </div>
           ))}
         </div>
       )}
@@ -182,13 +198,12 @@ export function Readings({ profile, onOpenReading }: Props) {
       {/* FAB — New themed reading */}
       <button
         onClick={() => setShowThemedSheet(true)}
-        className="fixed bottom-24 right-5 flex items-center gap-2 px-4 py-3 rounded-full text-sm font-medium"
-        style={{ background: 'var(--accent-gold)', color: 'var(--bg-primary)', fontFamily: 'var(--font-sans)', letterSpacing: '0.02em', boxShadow: '0 4px 24px rgba(201,169,97,0.35)' }}
+        className="fixed bottom-24 right-5 w-14 h-14 rounded-full flex items-center justify-center"
+        style={{ background: 'var(--accent-gold)', boxShadow: '0 4px 24px rgba(201,169,97,0.35)' }}
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--bg-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
         </svg>
-        New reading
       </button>
 
       {/* Themed reading bottom sheet */}

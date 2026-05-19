@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button, Card, Eyebrow, Hairline, TopBar } from '@/components/ui'
 import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/store/app'
@@ -33,9 +33,19 @@ const SUBSCRIPTION_LABELS: Record<string, string> = {
 export function Profile({ profile, onReScan, onSignOut, onOpenPaywall, onChangeIntention }: Props) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [readingCount, setReadingCount] = useState(0)
   const reset = useAppStore((s) => s.reset)
 
   const zodiac = profile.date_of_birth ? getZodiacSign(profile.date_of_birth) : null
+  const daysActive = Math.max(1, Math.floor((Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24)))
+
+  useEffect(() => {
+    supabase
+      .from('readings')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', profile.id)
+      .then(({ count }) => { if (count) setReadingCount(count) })
+  }, [profile.id])
 
   const subLabel = SUBSCRIPTION_LABELS[profile.subscription_status] ?? 'Free'
   const isActive = profile.subscription_status === 'active' || profile.subscription_status === 'trial'
@@ -88,13 +98,37 @@ export function Profile({ profile, onReScan, onSignOut, onOpenPaywall, onChangeI
   return (
     <div className="flex-1 flex flex-col scroll-area pb-24">
       {/* Header */}
-      <div className="px-5 pt-12 pb-6">
+      <div className="px-5 pt-12 pb-4">
+        <div className="w-20 h-20 rounded-full flex items-center justify-center mb-4"
+          style={{ background: 'rgba(201,169,97,0.08)', border: '1px solid rgba(201,169,97,0.3)' }}>
+          <span style={{ fontFamily: 'var(--font-serif)', fontSize: 36, color: 'var(--accent-gold)', fontWeight: 300, lineHeight: 1 }}>
+            {profile.name.charAt(0).toUpperCase()}
+          </span>
+        </div>
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 300, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
           {profile.name}
         </h1>
         {zodiac && (
           <p className="text-xs text-text-muted tracking-wider uppercase mt-1">{zodiac}</p>
         )}
+      </div>
+
+      {/* Stats row */}
+      <div className="flex mx-5 mb-4 py-4" style={{ borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)' }}>
+        <div className="flex-1 text-center">
+          <p style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 300, color: 'var(--text-primary)', lineHeight: 1 }}>{readingCount}</p>
+          <p className="text-[10px] text-text-muted uppercase tracking-widest mt-1.5">Readings</p>
+        </div>
+        <div style={{ width: 1, background: 'var(--border-subtle)' }} />
+        <div className="flex-1 text-center">
+          <p style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 300, color: 'var(--text-primary)', lineHeight: 1 }}>{readingCount}</p>
+          <p className="text-[10px] text-text-muted uppercase tracking-widest mt-1.5">Chapters</p>
+        </div>
+        <div style={{ width: 1, background: 'var(--border-subtle)' }} />
+        <div className="flex-1 text-center">
+          <p style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 300, color: 'var(--text-primary)', lineHeight: 1 }}>{daysActive}</p>
+          <p className="text-[10px] text-text-muted uppercase tracking-widest mt-1.5">Days</p>
+        </div>
       </div>
 
       <div className="px-5 flex flex-col gap-5">

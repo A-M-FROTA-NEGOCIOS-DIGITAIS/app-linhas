@@ -55,6 +55,10 @@ export function Paywall({ preview, name, onSubscribe, onSkip }: Props) {
           <LockIcon />
           <span>Your full reading has 1,000+ words — unlock it below.</span>
         </div>
+        {/* Reading stats */}
+        <p className="text-xs mt-3" style={{ color: 'var(--accent-gold)', letterSpacing: '0.01em' }}>
+          1,000 words · 4 lines · 8 mounts · personalized reading
+        </p>
       </div>
 
       <Hairline className="mx-6 mt-2" />

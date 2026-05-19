@@ -16,6 +16,8 @@ const SUGGESTIONS = [
   'What should I focus on right now?',
 ]
 
+const QUICK_REPLIES = ['Read my palm', 'Why do I repeat this?', 'Hard decision']
+
 function MessageBubble({ msg }: { msg: ChatMessage }) {
   const isUser = msg.role === 'user'
   return (
@@ -23,9 +25,7 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
       {!isUser && (
         <div className="flex-shrink-0 w-7 h-7 rounded-full mr-3 mt-0.5 flex items-center justify-center"
           style={{ background: 'rgba(201,169,97,0.12)', border: '1px solid rgba(201,169,97,0.25)' }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2L9.09 8.26 2 9.27l5 4.87-1.18 6.88L12 17.77l6.18 3.25L17 14.14l5-4.87-7.09-1.01z" />
-          </svg>
+          <span style={{ fontFamily: 'var(--font-serif)', fontSize: 13, color: 'var(--accent-gold)', fontWeight: 300, lineHeight: 1 }}>A</span>
         </div>
       )}
       <div
@@ -163,15 +163,13 @@ export function AuroraChat({ profile }: Props) {
       <div className="px-5 pt-12 pb-4 flex items-center gap-3">
         <div className="w-8 h-8 rounded-full flex items-center justify-center"
           style={{ background: 'rgba(201,169,97,0.12)', border: '1px solid rgba(201,169,97,0.3)' }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2L9.09 8.26 2 9.27l5 4.87-1.18 6.88L12 17.77l6.18 3.25L17 14.14l5-4.87-7.09-1.01z" />
-          </svg>
+          <span style={{ fontFamily: 'var(--font-serif)', fontSize: 16, color: 'var(--accent-gold)', fontWeight: 300, lineHeight: 1 }}>A</span>
         </div>
         <div>
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 20, fontWeight: 300, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
             Aurora
           </h1>
-          <p className="text-[11px] text-text-muted tracking-wider uppercase">She knows your palm</p>
+          <p className="text-[11px] text-text-muted tracking-wider">● Online · She knows your palm</p>
         </div>
       </div>
 
@@ -224,6 +222,23 @@ export function AuroraChat({ profile }: Props) {
           </div>
         )}
       </div>
+
+      {/* Quick replies */}
+      {messages.length > 0 && (
+        <div className="flex gap-2 overflow-x-auto no-scrollbar px-4 py-2" style={{ background: 'var(--bg-primary)' }}>
+          {QUICK_REPLIES.map((reply) => (
+            <button
+              key={reply}
+              onClick={() => send(reply)}
+              disabled={sending}
+              className="flex-shrink-0 px-4 py-2 rounded-full text-xs text-text-secondary whitespace-nowrap"
+              style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+            >
+              {reply}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Input bar */}
       <div className="px-4 pb-28 pt-3" style={{ borderTop: '1px solid var(--border-subtle)', background: 'var(--bg-primary)' }}>
