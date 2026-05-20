@@ -183,23 +183,23 @@ export function AuroraChat({ profile }: Props) {
           </div>
         ) : isEmpty ? (
           /* Empty state */
-          <div className="flex flex-col justify-end h-full pb-4 gap-6">
-            <div className="text-center">
-              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" style={{ margin: '0 auto 12px' }}>
+          <div className="flex flex-col h-full">
+            <div className="flex-1 flex flex-col items-center justify-center gap-4">
+              <svg width="56" height="56" viewBox="0 0 48 48" fill="none">
                 <circle cx="24" cy="24" r="20" stroke="#C9A961" strokeWidth="0.6" opacity="0.2"/>
                 <path d="M10 34c8-14 20-14 28 0" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round"/>
                 <path d="M13 34c6-10 16-10 22 0" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round"/>
                 <path d="M17 34c3-6 11-6 14 0" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round"/>
                 <circle cx="24" cy="28" r="2.5" fill="#C9A961" opacity="0.6"/>
               </svg>
-              <p style={{ fontFamily: 'var(--font-serif)', fontSize: 18, fontWeight: 300, color: 'var(--text-primary)', lineHeight: 1.4 }}>
+              <p style={{ fontFamily: 'var(--font-serif)', fontSize: 18, fontWeight: 300, color: 'var(--text-primary)', lineHeight: 1.4, textAlign: 'center' }}>
                 Ask Aurora anything.<br/>
                 <em style={{ color: 'var(--text-secondary)', fontSize: 15 }}>She's read your palm.</em>
               </p>
             </div>
 
             {/* Suggestion chips */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 pb-4">
               {SUGGESTIONS.map((s) => (
                 <button
                   key={s}

@@ -96,7 +96,7 @@ export function Profile({ profile, onReScan, onSignOut, onOpenPaywall, onChangeI
   }
 
   return (
-    <div className="flex-1 flex flex-col scroll-area pb-24">
+    <div className="h-full flex flex-col scroll-area pb-24">
       {/* Header */}
       <div className="px-5 pt-12 pb-4">
         <div className="w-20 h-20 rounded-full flex items-center justify-center mb-4"
