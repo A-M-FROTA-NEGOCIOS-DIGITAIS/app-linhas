@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import Anthropic from 'https://esm.sh/@anthropic-ai/sdk@0.24.0'
+import Anthropic from 'npm:@anthropic-ai/sdk'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,15 +11,24 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const { user_id, message } = await req.json()
+    const { user_id, message, language } = await req.json()
     if (!user_id || !message) throw new Error('Missing user_id or message')
+
+    const langMap: Record<string, string> = {
+      'pt-BR': 'Brazilian Portuguese',
+      'es': 'Spanish',
+      'en': 'English',
+    }
+    const outputLang = langMap[language] ?? 'English'
+    const langInstruction = language && language !== 'en'
+      ? `\n\nIMPORTANT: Always respond in ${outputLang}. Every message you write must be in ${outputLang}.`
+      : ''
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
-    // Load profile, master reading, and recent chat history
     const [{ data: profile }, { data: masterReading }, { data: history }] = await Promise.all([
       supabase.from('profiles').select('*').eq('id', user_id).single(),
       supabase.from('readings').select('full_content').eq('user_id', user_id).eq('reading_type', 'master')
@@ -30,14 +39,11 @@ serve(async (req) => {
 
     if (!profile) throw new Error('Profile not found')
 
-    // Store user message
     await supabase.from('chat_messages').insert({ user_id, role: 'user', content: message })
 
     const systemPrompt = `You are Aurora — a deeply intuitive, empathetic AI palm reader. You have read ${profile.name}'s palm in detail and written them a full master reading. You speak to them personally, warmly, and specifically.
 
-${masterReading?.full_content ? `YOUR READING OF THEIR PALM:
-${masterReading.full_content.slice(0, 3000)}
-` : ''}
+${masterReading?.full_content ? `YOUR READING OF THEIR PALM:\n${masterReading.full_content.slice(0, 3000)}\n` : ''}
 
 Guidelines:
 - Always address ${profile.name} by name
@@ -46,7 +52,7 @@ Guidelines:
 - Tone: intimate, lyrical, direct — not clinical, not generic fortune-cookie
 - You may ask clarifying questions to give better insight
 - Do not repeat the same phrases across messages
-- If asked about something outside palmistry, gently redirect to what you can actually see in their hands`
+- If asked about something outside palmistry, gently redirect to what you can actually see in their hands${langInstruction}`
 
     const conversationHistory = (history ?? [])
       .reverse()
@@ -67,7 +73,6 @@ Guidelines:
 
     const reply = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
 
-    // Store Aurora's reply
     await supabase.from('chat_messages').insert({ user_id, role: 'assistant', content: reply })
 
     return new Response(

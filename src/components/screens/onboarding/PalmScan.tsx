@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Spinner } from '@/components/ui'
 import { compressImage } from '@/lib/utils'
 import { track, Events } from '@/lib/analytics'
@@ -18,6 +19,7 @@ const PalmGuide = () => (
 )
 
 export function PalmScan({ onCapture }: Props) {
+  const { t } = useTranslation()
   const cameraRef = useRef<HTMLInputElement>(null)
   const galleryRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
@@ -47,52 +49,39 @@ export function PalmScan({ onCapture }: Props) {
 
   return (
     <div className="h-full flex flex-col pb-4">
-
-      {/* Top bar */}
       <div className="flex items-center justify-between px-6 pt-6 pb-2">
         <p style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-sans)' }}>
-          Chapter 05
+          {t('palmScan.chapter')}
         </p>
         <p style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.06em', fontFamily: 'var(--font-sans)' }}>
-          5 of 9
+          {t('palmScan.counter')}
         </p>
       </div>
 
-      {/* Header */}
       <div className="flex flex-col gap-2 px-6 mt-3 mb-4">
         <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 30, fontWeight: 300, lineHeight: 1.2, letterSpacing: '-0.01em', color: 'var(--text-primary)' }}>
-          Start with the hand<br />you use to{' '}
-          <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>write.</em>
+          {t('palmScan.title')}{' '}
+          <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>{t('palmScan.titleItalic')}</em>
         </h2>
         <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)', lineHeight: 1.55 }}>
-          It shows your <strong style={{ color: 'var(--text-primary)', fontWeight: 500 }}>present</strong>. Then we scan the other (potential).
+          {t('palmScan.subtitle')} <strong style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{t('palmScan.subtitleBold')}</strong>{t('palmScan.subtitleSuffix')}
         </p>
       </div>
 
-      {/* Viewfinder */}
       <div className="flex-1 px-6 flex flex-col min-h-0">
-        <div
-          className="relative flex-1 rounded-2xl flex flex-col overflow-hidden"
-          style={{ background: 'rgba(201,169,97,0.04)', border: '1px solid var(--border-subtle)' }}
-        >
-          {/* Corner brackets */}
+        <div className="relative flex-1 rounded-2xl flex flex-col overflow-hidden" style={{ background: 'rgba(201,169,97,0.04)', border: '1px solid var(--border-subtle)' }}>
           <div className="absolute top-3 left-3 w-6 h-6" style={{ borderTop: '1.5px solid var(--accent-gold)', borderLeft: '1.5px solid var(--accent-gold)', opacity: 0.7 }} />
           <div className="absolute top-3 right-3 w-6 h-6" style={{ borderTop: '1.5px solid var(--accent-gold)', borderRight: '1.5px solid var(--accent-gold)', opacity: 0.7 }} />
           <div className="absolute bottom-14 left-3 w-6 h-6" style={{ borderBottom: '1.5px solid var(--accent-gold)', borderLeft: '1.5px solid var(--accent-gold)', opacity: 0.7 }} />
           <div className="absolute bottom-14 right-3 w-6 h-6" style={{ borderBottom: '1.5px solid var(--accent-gold)', borderRight: '1.5px solid var(--accent-gold)', opacity: 0.7 }} />
 
-          {/* Center label */}
           <div className="pt-5 flex justify-center">
             <p style={{ fontFamily: 'var(--font-sans)', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-              Center your palm
+              {t('palmScan.centerPalm')}
             </p>
           </div>
 
-          {/* Palm area */}
-          <div
-            className="flex-1 flex items-center justify-center cursor-pointer"
-            onClick={!preview ? openCamera : undefined}
-          >
+          <div className="flex-1 flex items-center justify-center cursor-pointer" onClick={!preview ? openCamera : undefined}>
             {preview ? (
               <img src={preview} alt="palm preview" className="absolute inset-0 w-full h-full object-cover" style={{ borderRadius: 16 }} />
             ) : (
@@ -105,65 +94,32 @@ export function PalmScan({ onCapture }: Props) {
             )}
           </div>
 
-          {/* Bottom row inside frame: GALLERY | AUTO */}
           <div className="flex items-center justify-between px-5 pb-4 pt-2">
-            <button
-              onClick={openGallery}
-              className="flex items-center gap-2"
-              style={{ fontFamily: 'var(--font-sans)', fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)' }}
-            >
+            <button onClick={openGallery} className="flex items-center gap-2" style={{ fontFamily: 'var(--font-sans)', fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
               </svg>
-              Gallery
+              {t('palmScan.gallery')}
             </button>
-            <button
-              onClick={openCamera}
-              className="flex items-center gap-2"
-              style={{ fontFamily: 'var(--font-sans)', fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)' }}
-            >
+            <button onClick={openCamera} className="flex items-center gap-2" style={{ fontFamily: 'var(--font-sans)', fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
               </svg>
-              Auto
+              {t('palmScan.auto')}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Italic instruction */}
-      <p style={{
-        fontFamily: 'var(--font-serif)',
-        fontSize: 13,
-        fontStyle: 'italic',
-        color: 'var(--accent-gold)',
-        textAlign: 'center',
-        opacity: 0.75,
-        marginTop: 14,
-        marginBottom: 10,
-      }}>
-        No makeup. Natural light. Hold steady.
+      <p style={{ fontFamily: 'var(--font-serif)', fontSize: 13, fontStyle: 'italic', color: 'var(--accent-gold)', textAlign: 'center', opacity: 0.75, marginTop: 14, marginBottom: 10 }}>
+        {t('palmScan.tip')}
       </p>
 
-      {/* Circular capture / confirm button */}
       <div className="flex justify-center pb-2">
         <button
           onClick={preview ? handleConfirm : openCamera}
           disabled={processing || confirming}
-          style={{
-            width: 64,
-            height: 64,
-            borderRadius: '50%',
-            background: 'var(--accent-gold)',
-            border: '4px solid rgba(201,169,97,0.25)',
-            outline: '1px solid rgba(201,169,97,0.15)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: processing || confirming ? 'default' : 'pointer',
-            transition: 'opacity 0.2s',
-            opacity: processing || confirming ? 0.6 : 1,
-          }}
+          style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--accent-gold)', border: '4px solid rgba(201,169,97,0.25)', outline: '1px solid rgba(201,169,97,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: processing || confirming ? 'default' : 'pointer', transition: 'opacity 0.2s', opacity: processing || confirming ? 0.6 : 1 }}
         >
           {confirming ? (
             <Spinner size={22} className="text-bg-primary" />
@@ -180,11 +136,8 @@ export function PalmScan({ onCapture }: Props) {
         </button>
       </div>
 
-      {/* Hidden inputs */}
-      <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden"
-        onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
-      <input ref={galleryRef} type="file" accept="image/*" className="hidden"
-        onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
+      <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
+      <input ref={galleryRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
     </div>
   )
 }

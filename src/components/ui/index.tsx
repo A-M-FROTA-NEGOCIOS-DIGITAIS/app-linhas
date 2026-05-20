@@ -1,4 +1,5 @@
 import React, { useState, forwardRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 
 // ── Button ────────────────────────────────────────────────────────────────────
@@ -224,9 +225,16 @@ interface TabBarProps {
 }
 
 export function TabBar({ active, onChange }: TabBarProps) {
+  const { t } = useTranslation()
+  const TAB_LABELS: Record<TabId, string> = {
+    today: t('tabBar.today'),
+    readings: t('tabBar.readings'),
+    aurora: t('tabBar.aurora'),
+    you: t('tabBar.you'),
+  }
   return (
     <div className="absolute left-3 right-3 bottom-3 bg-bg-primary/80 backdrop-blur-xl border border-border-subtle rounded-[28px] px-2 py-3 flex justify-around z-10">
-      {TABS.map(({ id, label, icon: Icon }) => {
+      {TABS.map(({ id, icon: Icon }) => {
         const isActive = active === id
         return (
           <button
@@ -238,7 +246,7 @@ export function TabBar({ active, onChange }: TabBarProps) {
             )}
           >
             <Icon size={22} />
-            <span className="text-[9px] font-sans tracking-[0.16em] uppercase">{label}</span>
+            <span className="text-[9px] font-sans tracking-[0.16em] uppercase">{TAB_LABELS[id]}</span>
           </button>
         )
       })}

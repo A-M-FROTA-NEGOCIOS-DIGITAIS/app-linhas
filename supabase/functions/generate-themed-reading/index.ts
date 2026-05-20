@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import Anthropic from 'https://esm.sh/@anthropic-ai/sdk@0.24.0'
+import Anthropic from 'npm:@anthropic-ai/sdk'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,8 +17,18 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const { user_id, theme } = await req.json()
+    const { user_id, theme, language } = await req.json()
     if (!user_id || !theme) throw new Error('Missing user_id or theme')
+
+    const langMap: Record<string, string> = {
+      'pt-BR': 'Brazilian Portuguese',
+      'es': 'Spanish',
+      'en': 'English',
+    }
+    const outputLang = langMap[language] ?? 'English'
+    const langInstruction = language && language !== 'en'
+      ? `\n\nIMPORTANT: Write the entire reading in ${outputLang}. All text must be in ${outputLang}.`
+      : ''
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
@@ -45,7 +55,7 @@ serve(async (req) => {
 
 Their palm analysis: ${JSON.stringify(scan?.analysis ?? {}, null, 2)}
 
-Write 500–700 words. Be specific to their actual palm data, not generic. Intimate and literary tone. Address ${profile.name} directly throughout. No disclaimers.`
+Write 500–700 words. Be specific to their actual palm data, not generic. Intimate and literary tone. Address ${profile.name} directly throughout. No disclaimers.${langInstruction}`
       }]
     })
 

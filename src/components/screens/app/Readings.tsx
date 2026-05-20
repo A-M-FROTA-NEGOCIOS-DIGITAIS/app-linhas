@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, Eyebrow, Chip, Spinner, Hairline } from '@/components/ui'
 import { supabase } from '@/lib/supabase'
 import { formatDate } from '@/lib/utils'
 import { track, Events } from '@/lib/analytics'
+import i18n from '@/lib/i18n'
 import type { Profile, Reading } from '@/types'
 
 interface Props {
@@ -11,21 +13,6 @@ interface Props {
 }
 
 type Filter = 'all' | 'master' | 'daily' | 'themed' | 'compatibility'
-
-const FILTERS: { key: Filter; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'master', label: 'Master' },
-  { key: 'daily', label: 'Daily' },
-  { key: 'themed', label: 'Themed' },
-  { key: 'compatibility', label: 'Compat.' },
-]
-
-const TYPE_LABELS: Record<string, string> = {
-  master: 'Master reading',
-  daily: 'Daily insight',
-  themed: 'Themed reading',
-  compatibility: 'Compatibility',
-}
 
 const TYPE_ICONS: Record<string, JSX.Element> = {
   master: (
@@ -50,34 +37,46 @@ const TYPE_ICONS: Record<string, JSX.Element> = {
   ),
 }
 
-const THEMED_OPTIONS = [
-  { key: 'love', label: 'Love & relationships', icon: '♡' },
-  { key: 'career', label: 'Career & money', icon: '◈' },
-  { key: 'decision', label: 'A decision I\'m facing', icon: '◎' },
-]
-
 export function Readings({ profile, onOpenReading }: Props) {
+  const { t } = useTranslation()
   const [readings, setReadings] = useState<Reading[]>([])
   const [filter, setFilter] = useState<Filter>('all')
   const [loading, setLoading] = useState(true)
   const [showThemedSheet, setShowThemedSheet] = useState(false)
   const [generatingThemed, setGeneratingThemed] = useState<string | null>(null)
 
+  const FILTERS: { key: Filter; label: string }[] = [
+    { key: 'all', label: t('readings.filterAll') },
+    { key: 'master', label: t('readings.filterMaster') },
+    { key: 'daily', label: t('readings.filterDaily') },
+    { key: 'themed', label: t('readings.filterThemed') },
+    { key: 'compatibility', label: t('readings.filterCompat') },
+  ]
+
+  const TYPE_LABELS: Record<string, string> = {
+    master: t('readings.typeMaster'),
+    daily: t('readings.typeDaily'),
+    themed: t('readings.typeThemed'),
+    compatibility: t('readings.typeCompat'),
+  }
+
+  const THEMED_OPTIONS = [
+    { key: 'love', label: t('readings.themeLove'), icon: '♡' },
+    { key: 'career', label: t('readings.themeCareer'), icon: '◈' },
+    { key: 'decision', label: t('readings.themeDecision'), icon: '◎' },
+  ]
+
   useEffect(() => {
     setLoading(true)
     const safetyTimer = setTimeout(() => setLoading(false), 8000)
     const load = async () => {
       try {
-        let query = supabase
-          .from('readings')
-          .select('*')
-          .eq('user_id', profile.id)
-          .order('created_at', { ascending: false })
+        let query = supabase.from('readings').select('*').eq('user_id', profile.id).order('created_at', { ascending: false })
         if (filter !== 'all') query = query.eq('reading_type', filter)
         const { data } = await query
         if (data) setReadings(data)
       } catch {
-        // silent fail — show empty state
+        // silent fail
       } finally {
         clearTimeout(safetyTimer)
         setLoading(false)
@@ -95,7 +94,7 @@ export function Readings({ profile, onOpenReading }: Props) {
       const res = await fetch(`${supabaseUrl}/functions/v1/generate-themed-reading`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${supabaseKey}` },
-        body: JSON.stringify({ user_id: profile.id, theme }),
+        body: JSON.stringify({ user_id: profile.id, theme, language: i18n.language }),
       })
       const data = await res.json()
       if (data.reading_id) {
@@ -114,31 +113,29 @@ export function Readings({ profile, onOpenReading }: Props) {
     }
   }
 
+  const daysActive = Math.max(1, Math.floor((Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24)))
+
   return (
     <div className="flex-1 flex flex-col scroll-area pb-24">
-      {/* Header */}
       <div className="px-5 pt-12 pb-4">
         {!loading && readings.length > 0 && (
           <p className="text-xs text-text-muted tracking-widest uppercase mb-2">
-            Readings · {readings.length}
+            {t('readings.count', { count: readings.length })}
           </p>
         )}
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 300, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
-          Your <em style={{ fontStyle: 'italic', color: 'var(--accent-gold)' }}>readings.</em>
+          {t('readings.title')} <em style={{ fontStyle: 'italic', color: 'var(--accent-gold)' }}>{t('readings.titleItalic')}</em>
         </h1>
         {!loading && readings.length > 0 && (
           <p className="text-xs text-text-muted mt-1">
-            {readings.length} chapters · {Math.max(1, Math.floor((Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24)))} days active
+            {t('readings.daysActive', { count: readings.length, days: daysActive })}
           </p>
         )}
       </div>
 
-      {/* Filter chips */}
       <div className="flex gap-2 px-5 pb-4 overflow-x-auto no-scrollbar">
         {FILTERS.map(({ key, label }) => (
-          <Chip key={key} active={filter === key} onClick={() => setFilter(key)}>
-            {label}
-          </Chip>
+          <Chip key={key} active={filter === key} onClick={() => setFilter(key)}>{label}</Chip>
         ))}
       </div>
 
@@ -153,7 +150,7 @@ export function Readings({ profile, onOpenReading }: Props) {
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
           </svg>
-          <p className="text-sm text-text-muted">No readings yet</p>
+          <p className="text-sm text-text-muted">{t('readings.noReadings')}</p>
         </div>
       ) : (
         <div className="px-5 flex flex-col gap-3">
@@ -165,10 +162,7 @@ export function Readings({ profile, onOpenReading }: Props) {
                 </span>
               </div>
               <Card
-                onClick={() => {
-                  track(Events.DAILY_INSIGHT_OPENED, { reading_id: reading.id, type: reading.reading_type })
-                  onOpenReading(reading)
-                }}
+                onClick={() => { track(Events.DAILY_INSIGHT_OPENED, { reading_id: reading.id, type: reading.reading_type }); onOpenReading(reading) }}
                 className="flex-1 p-5"
                 goldBorder={reading.reading_type === 'master'}
               >
@@ -178,12 +172,8 @@ export function Readings({ profile, onOpenReading }: Props) {
                       {TYPE_ICONS[reading.reading_type] ?? TYPE_ICONS.daily}
                       <Eyebrow>{TYPE_LABELS[reading.reading_type] ?? reading.reading_type}</Eyebrow>
                     </div>
-                    <p className="text-sm text-text-secondary line-clamp-2 leading-relaxed">
-                      {reading.preview_content}
-                    </p>
-                    <p className="text-[11px] text-text-muted mt-2 uppercase tracking-wider">
-                      {formatDate(reading.created_at)}
-                    </p>
+                    <p className="text-sm text-text-secondary line-clamp-2 leading-relaxed">{reading.preview_content}</p>
+                    <p className="text-[11px] text-text-muted mt-2 uppercase tracking-wider">{formatDate(reading.created_at)}</p>
                   </div>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-1">
                     <path d="M5 12h14M13 5l7 7-7 7" />
@@ -195,39 +185,24 @@ export function Readings({ profile, onOpenReading }: Props) {
         </div>
       )}
 
-      {/* FAB — New themed reading */}
-      <button
-        onClick={() => setShowThemedSheet(true)}
-        className="fixed bottom-24 right-5 w-14 h-14 rounded-full flex items-center justify-center"
-        style={{ background: 'var(--accent-gold)', boxShadow: '0 4px 24px rgba(201,169,97,0.35)' }}
-      >
+      <button onClick={() => setShowThemedSheet(true)} className="fixed bottom-24 right-5 w-14 h-14 rounded-full flex items-center justify-center" style={{ background: 'var(--accent-gold)', boxShadow: '0 4px 24px rgba(201,169,97,0.35)' }}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--bg-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
         </svg>
       </button>
 
-      {/* Themed reading bottom sheet */}
       {showThemedSheet && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowThemedSheet(false)} />
-          <div className="relative bg-bg-surface rounded-t-2xl px-6 pt-5 pb-10"
-            style={{ border: '1px solid var(--border-subtle)', borderBottom: 'none' }}>
+          <div className="relative bg-bg-surface rounded-t-2xl px-6 pt-5 pb-10" style={{ border: '1px solid var(--border-subtle)', borderBottom: 'none' }}>
             <div className="w-10 h-0.5 bg-border-subtle rounded-full mx-auto mb-5" />
-            <Eyebrow className="mb-4">Choose a theme</Eyebrow>
+            <Eyebrow className="mb-4">{t('readings.chooseTheme')}</Eyebrow>
             <div className="flex flex-col gap-3">
               {THEMED_OPTIONS.map(({ key, label, icon }) => (
-                <button
-                  key={key}
-                  onClick={() => handleNewThemed(key)}
-                  disabled={generatingThemed !== null}
-                  className="flex items-center gap-4 px-5 py-4 rounded-md text-left transition-colors"
-                  style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-subtle)' }}
-                >
+                <button key={key} onClick={() => handleNewThemed(key)} disabled={generatingThemed !== null} className="flex items-center gap-4 px-5 py-4 rounded-md text-left transition-colors" style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-subtle)' }}>
                   <span style={{ fontSize: 20, color: 'var(--accent-gold)' }}>{icon}</span>
                   <span className="text-sm text-text-primary">{label}</span>
-                  {generatingThemed === key && (
-                    <Spinner size={16} className="ml-auto text-accent-gold" />
-                  )}
+                  {generatingThemed === key && <Spinner size={16} className="ml-auto text-accent-gold" />}
                 </button>
               ))}
             </div>

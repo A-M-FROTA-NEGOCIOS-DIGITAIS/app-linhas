@@ -1,6 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import Anthropic from 'https://esm.sh/@anthropic-ai/sdk@0.24.0'
+import Anthropic from 'npm:@anthropic-ai/sdk'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,8 +11,18 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const { user_id, scan_id } = await req.json()
+    const { user_id, scan_id, language } = await req.json()
     if (!user_id) throw new Error('Missing user_id')
+
+    const langMap: Record<string, string> = {
+      'pt-BR': 'Brazilian Portuguese',
+      'es': 'Spanish',
+      'en': 'English',
+    }
+    const outputLang = langMap[language] ?? 'English'
+    const langInstruction = language && language !== 'en'
+      ? `\n\nIMPORTANT: Write the entire reading in ${outputLang}. All section headers and text must be in ${outputLang}.`
+      : ''
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
@@ -68,7 +78,7 @@ Guidelines:
 - Tone: intimate, literary, slightly mystical — not clinical, not carnival
 - No disclaimers, no "palmistry believes", no hedging
 - Each section 2–4 paragraphs
-- The final section should feel like a personal letter written specifically for them`
+- The final section should feel like a personal letter written specifically for them${langInstruction}`
 
     const message = await anthropic.messages.create({
       model: 'claude-3-5-sonnet-20241022',
