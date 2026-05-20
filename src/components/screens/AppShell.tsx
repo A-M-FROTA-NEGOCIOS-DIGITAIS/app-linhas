@@ -90,7 +90,7 @@ export function AppShell({ onSignOut }: Props) {
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
           </button>
-          <PalmScan onCapture={handleScanCapture} />
+          <PalmScan onCapture={handleScanCapture} onBack={() => setOverlay(null)} />
         </div>
       )
     }
