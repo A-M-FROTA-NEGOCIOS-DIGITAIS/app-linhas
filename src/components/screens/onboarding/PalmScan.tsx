@@ -6,6 +6,7 @@ import { track, Events } from '@/lib/analytics'
 
 interface Props {
   onCapture: (dataUrl: string) => void
+  onBack: () => void
 }
 
 const PalmGuide = () => (
@@ -18,7 +19,7 @@ const PalmGuide = () => (
   </svg>
 )
 
-export function PalmScan({ onCapture }: Props) {
+export function PalmScan({ onCapture, onBack }: Props) {
   const { t } = useTranslation()
   const cameraRef = useRef<HTMLInputElement>(null)
   const galleryRef = useRef<HTMLInputElement>(null)
@@ -50,9 +51,11 @@ export function PalmScan({ onCapture }: Props) {
   return (
     <div className="h-full flex flex-col pb-4">
       <div className="flex items-center justify-between px-6 pt-6 pb-2">
-        <p style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-sans)' }}>
-          {t('palmScan.chapter')}
-        </p>
+        <button onClick={onBack} className="text-text-secondary active:text-text-primary transition-colors">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M11 5l-7 7 7 7" />
+          </svg>
+        </button>
         <p style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.06em', fontFamily: 'var(--font-sans)' }}>
           {t('palmScan.counter')}
         </p>

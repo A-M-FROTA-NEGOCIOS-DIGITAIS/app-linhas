@@ -173,16 +173,16 @@ export function Onboarding({ onComplete }: Props) {
       return <Splash onContinue={() => { track(Events.ONBOARDING_STARTED, {}); setStep('intro') }} />
 
     case 'intro':
-      return <Intro onContinue={() => setStep('basic-data')} />
+      return <Intro onContinue={() => setStep('basic-data')} onBack={() => setStep('splash')} />
 
     case 'basic-data':
-      return <BasicData onContinue={handleBasicDataNext} />
+      return <BasicData onContinue={handleBasicDataNext} onBack={() => setStep('intro')} />
 
     case 'intention':
-      return <IntentionScreen onContinue={handleIntentionNext} />
+      return <IntentionScreen onContinue={handleIntentionNext} onBack={() => setStep('basic-data')} />
 
     case 'palm-scan':
-      return <PalmScan onCapture={handleScanComplete} />
+      return <PalmScan onCapture={handleScanComplete} onBack={() => setStep('intention')} />
 
     case 'scanning':
       return (

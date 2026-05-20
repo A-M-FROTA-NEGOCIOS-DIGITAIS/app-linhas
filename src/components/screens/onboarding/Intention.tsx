@@ -5,11 +5,12 @@ import type { Intention } from '@/types'
 
 interface Props {
   onContinue: (intention: Intention) => void
+  onBack?: () => void
   initialValue?: Intention
   eyebrow?: string
 }
 
-export function IntentionScreen({ onContinue, initialValue, eyebrow }: Props) {
+export function IntentionScreen({ onContinue, onBack, initialValue, eyebrow }: Props) {
   const { t } = useTranslation()
   const [selected, setSelected] = useState<Intention | null>(initialValue ?? null)
 
@@ -80,7 +81,14 @@ export function IntentionScreen({ onContinue, initialValue, eyebrow }: Props) {
   ]
 
   return (
-    <div className="h-full flex flex-col px-6 pt-14 pb-8">
+    <div className="h-full flex flex-col px-6 pt-6 pb-8">
+      {onBack && (
+        <button onClick={onBack} className="text-text-secondary active:text-text-primary transition-colors self-start mb-4">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M11 5l-7 7 7 7" />
+          </svg>
+        </button>
+      )}
       <div className="flex flex-col gap-3 mb-8">
         <Eyebrow>{eyebrow ?? t('intention.eyebrow')}</Eyebrow>
         <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 30, fontWeight: 300, lineHeight: 1.2, letterSpacing: '-0.01em', color: 'var(--text-primary)' }}>

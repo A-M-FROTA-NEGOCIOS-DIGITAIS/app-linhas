@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Eyebrow } from '@/components/ui'
 
-interface Props { onContinue: () => void }
+interface Props { onContinue: () => void; onBack: () => void }
 
 const PalmIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="130" height="156" fill="none" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
@@ -35,7 +35,7 @@ const ReadingIcon = () => (
 
 const GLYPHS = [<PalmIcon />, <ScanIcon />, <ReadingIcon />]
 
-export function Intro({ onContinue }: Props) {
+export function Intro({ onContinue, onBack }: Props) {
   const { t } = useTranslation()
   const [slide, setSlide] = useState(0)
 
@@ -51,9 +51,14 @@ export function Intro({ onContinue }: Props) {
   return (
     <div className="h-full flex flex-col pb-8">
       <div className="grid grid-cols-3 items-center px-6 pt-6">
-        <p style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.06em' }}>
-          {slide + 1}/{SLIDES.length}
-        </p>
+        <button
+          onClick={slide === 0 ? onBack : () => setSlide((p) => p - 1)}
+          className="text-text-secondary active:text-text-primary transition-colors justify-self-start"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M11 5l-7 7 7 7" />
+          </svg>
+        </button>
         <div className="flex gap-1.5 justify-center">
           {SLIDES.map((_, i) => (
             <div key={i} style={{ width: 28, height: 1.5, background: i <= slide ? 'var(--accent-gold)' : 'var(--border-subtle)', borderRadius: 1, transition: 'background 0.5s' }} />

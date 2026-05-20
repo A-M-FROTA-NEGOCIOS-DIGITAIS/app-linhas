@@ -4,9 +4,10 @@ import { Button, Eyebrow } from '@/components/ui'
 
 interface Props {
   onContinue: (data: { name: string; birthDate: string; birthTime?: string; birthCity?: string }) => void
+  onBack: () => void
 }
 
-export function BasicData({ onContinue }: Props) {
+export function BasicData({ onContinue, onBack }: Props) {
   const { t } = useTranslation()
   const [name, setName] = useState('')
   const [birthDate, setBirthDate] = useState('')
@@ -33,9 +34,11 @@ export function BasicData({ onContinue }: Props) {
   return (
     <div className="h-full flex flex-col pb-8">
       <div className="flex items-center justify-between px-6 pt-6 pb-2">
-        <p style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-sans)' }}>
-          {t('basicData.chapter')}
-        </p>
+        <button onClick={onBack} className="text-text-secondary active:text-text-primary transition-colors">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M11 5l-7 7 7 7" />
+          </svg>
+        </button>
         <p style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.06em', fontFamily: 'var(--font-sans)' }}>
           {t('basicData.counter')}
         </p>
