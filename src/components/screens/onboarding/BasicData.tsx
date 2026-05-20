@@ -84,14 +84,21 @@ export function BasicData({ onContinue }: Props) {
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-2">
               <Eyebrow>Date of birth</Eyebrow>
-              <input
-                type="date"
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
-                onFocus={() => setFocusedField('date')}
-                onBlur={() => setFocusedField(null)}
-                style={{ ...fieldStyle('date'), colorScheme: 'dark' }}
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="date"
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  onFocus={() => setFocusedField('date')}
+                  onBlur={() => setFocusedField(null)}
+                  style={{ ...fieldStyle('date'), colorScheme: 'dark', position: 'absolute', inset: 0, opacity: 0, zIndex: 1, cursor: 'pointer', width: '100%', height: '100%' }}
+                />
+                <div style={{ ...fieldStyle('date'), color: birthDate ? 'var(--text-primary)' : 'rgba(255,255,255,0.25)', pointerEvents: 'none', userSelect: 'none' }}>
+                  {birthDate
+                    ? new Date(birthDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                    : 'MM/DD/YYYY'}
+                </div>
+              </div>
             </div>
             <div className="flex flex-col gap-2">
               <Eyebrow>Time</Eyebrow>
