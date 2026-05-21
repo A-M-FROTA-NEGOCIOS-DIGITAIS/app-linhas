@@ -1,6 +1,6 @@
 const en = {
   common: {
-    continue: 'Continue',
+    continue: 'Next',
     next: 'Next',
     cancel: 'Cancel',
     back: 'Back',
@@ -17,6 +17,7 @@ const en = {
     taglineItalic: 'AI translates.',
     footer: 'Linhas · 2026',
     language: 'Language',
+    start: 'Start',
   },
   intro: {
     ch1: 'Chapter one',

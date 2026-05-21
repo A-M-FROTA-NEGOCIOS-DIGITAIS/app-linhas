@@ -17,6 +17,7 @@ const ptBR = {
     taglineItalic: 'A IA traduz.',
     footer: 'Linhas · 2026',
     language: 'Idioma',
+    start: 'Começar',
   },
   intro: {
     ch1: 'Capítulo um',

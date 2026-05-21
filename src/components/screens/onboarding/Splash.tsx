@@ -45,7 +45,7 @@ export function Splash({ onContinue }: Props) {
       <div className="w-full flex flex-col items-center gap-4">
         <LanguagePicker />
         <Button variant="primary" fullWidth onClick={onContinue}>
-          {t('common.continue')}
+          {t('splash.start')}
         </Button>
         <p style={{ fontFamily: 'var(--font-sans)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
           {t('splash.footer')}

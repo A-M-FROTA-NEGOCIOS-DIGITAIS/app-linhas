@@ -17,6 +17,7 @@ const es = {
     taglineItalic: 'La IA traduce.',
     footer: 'Linhas · 2026',
     language: 'Idioma',
+    start: 'Comenzar',
   },
   intro: {
     ch1: 'Capítulo uno',
