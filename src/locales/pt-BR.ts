@@ -100,7 +100,7 @@ const ptBR = {
     line1: '{{name}}, sua mão é interessante.',
     line2: 'Você tem uma {{handType}}.',
     line3: 'Sua linha da vida é {{length}} e {{depth}}.',
-    line4: 'Sua linha do coração {{characteristic}}.',
+    line4: 'Sua linha do coração revela padrões emocionais marcantes.',
     line5: 'Preciso te contar mais.',
     seeReading: 'Ver minha leitura completa',
   },

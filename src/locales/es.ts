@@ -100,7 +100,7 @@ const es = {
     line1: '{{name}}, tu mano es interesante.',
     line2: 'Tienes una {{handType}}.',
     line3: 'Tu línea de vida es {{length}} y {{depth}}.',
-    line4: 'Tu línea del corazón {{characteristic}}.',
+    line4: 'Tu línea del corazón revela patrones emocionales únicos.',
     line5: 'Necesito contarte más.',
     seeReading: 'Ver mi lectura completa',
   },

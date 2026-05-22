@@ -64,10 +64,23 @@ export function Revelation({ analysis, name, scanId, userId, onContinue }: Props
     water: t('revelation.water'),
   }
 
+  const PALM_VALUE_MAP: Record<string, Record<string, string>> = {
+    'pt-BR': {
+      long: 'longa', short: 'curta', medium: 'média', strong: 'forte',
+      deep: 'profunda', faint: 'suave', light: 'suave', distinct: 'distinta', defined: 'definida',
+    },
+    es: {
+      long: 'larga', short: 'corta', medium: 'media', strong: 'fuerte',
+      deep: 'profunda', faint: 'suave', light: 'suave', distinct: 'distinta', defined: 'definida',
+    },
+  }
+
+  const tv = (value: string) => PALM_VALUE_MAP[i18n.language]?.[value.toLowerCase()] ?? value
+
   const lines = [
     { text: t('revelation.line1', { name }), delay: 300 },
     { text: t('revelation.line2', { handType: HAND_LABELS[analysis.hand_shape] ?? analysis.hand_shape }), delay: 0 },
-    { text: t('revelation.line3', { length: lifeLine?.length ?? 'distinct', depth: lifeLine?.depth ?? 'defined' }), delay: 0 },
+    { text: t('revelation.line3', { length: tv(lifeLine?.length ?? 'distinct'), depth: tv(lifeLine?.depth ?? 'defined') }), delay: 0 },
     { text: t('revelation.line4', { characteristic: heartLine?.characteristic ?? 'tells a story' }), delay: 0 },
     { text: t('revelation.line5'), delay: 0, gold: true },
   ]
