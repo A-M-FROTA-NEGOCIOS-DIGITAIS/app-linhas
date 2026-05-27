@@ -49,6 +49,10 @@ const en = {
     cityPlaceholder: 'City, state',
     exactTime: 'Exact time',
     timeTip: 'is optional, but sharpens the reading. Ask your mom.',
+    gender: 'How do you identify?',
+    genderMale: 'Male',
+    genderFemale: 'Female',
+    genderNeutral: 'Prefer not to say',
   },
   intention: {
     eyebrow: 'Step 2 of 2',

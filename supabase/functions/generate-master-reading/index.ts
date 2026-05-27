@@ -53,13 +53,17 @@ serve(async (req) => {
 
     const anthropic = new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY')! })
 
+    const genderHint = profile.gender && profile.gender !== 'neutral'
+      ? `\nUser's gender: ${profile.gender}. Use correct gendered pronouns throughout.`
+      : ''
+
     const prompt = `You are Madame Aurora, a brilliant and empathetic AI palm reader with a Vogue editorial voice — lyrical, specific, never generic. You are writing a personalized master reading for ${profile.name}.
 
 Their palm analysis:
 ${JSON.stringify(analysis, null, 2)}
 
 Their main intention: they came here seeking insight into ${intentionMap[intention] ?? 'all aspects of their life'}.
-Date of birth: ${profile.date_of_birth ?? 'unknown'}.
+Date of birth: ${profile.date_of_birth ?? 'unknown'}.${genderHint}
 
 Write a master palm reading of 900–1200 words. Structure it with these sections (use the section name as a header on its own line, followed by paragraphs):
 

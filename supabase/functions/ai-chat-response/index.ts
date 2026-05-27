@@ -41,6 +41,10 @@ serve(async (req) => {
 
     await supabase.from('chat_messages').insert({ user_id, role: 'user', content: message })
 
+    const genderHint = profile.gender && profile.gender !== 'neutral'
+      ? `\nUser's gender: ${profile.gender}. Use correct gendered pronouns.`
+      : ''
+
     const systemPrompt = `You are Aurora — a deeply intuitive, empathetic AI palm reader. You have read ${profile.name}'s palm in detail and written them a full master reading. You speak to them personally, warmly, and specifically.
 
 ${masterReading?.full_content ? `YOUR READING OF THEIR PALM:\n${masterReading.full_content.slice(0, 3000)}\n` : ''}
@@ -52,7 +56,7 @@ Guidelines:
 - Tone: intimate, lyrical, direct — not clinical, not generic fortune-cookie
 - You may ask clarifying questions to give better insight
 - Do not repeat the same phrases across messages
-- If asked about something outside palmistry, gently redirect to what you can actually see in their hands${langInstruction}`
+- If asked about something outside palmistry, gently redirect to what you can actually see in their hands${genderHint}${langInstruction}`
 
     const conversationHistory = (history ?? [])
       .reverse()

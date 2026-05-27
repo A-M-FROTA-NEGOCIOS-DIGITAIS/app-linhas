@@ -11,7 +11,7 @@ import { Scanning } from './onboarding/Scanning'
 import { Revelation } from './onboarding/Revelation'
 import { Paywall } from './onboarding/Paywall'
 import { Welcome } from './onboarding/Welcome'
-import type { PalmAnalysis, Intention, SubscriptionStatus, Profile } from '@/types'
+import type { PalmAnalysis, Intention, SubscriptionStatus, Profile, Gender } from '@/types'
 
 type Step =
   | 'splash'
@@ -29,6 +29,7 @@ interface BasicDataValues {
   birthDate: string
   birthTime?: string
   birthCity?: string
+  gender?: Gender
 }
 
 interface Props {
@@ -54,6 +55,7 @@ export function Onboarding({ onComplete }: Props) {
     date_of_birth: basicData?.birthDate ?? undefined,
     time_of_birth: basicData?.birthTime ?? undefined,
     city_of_birth: basicData?.birthCity ?? undefined,
+    gender: basicData?.gender ?? undefined,
     intention: 'everything' as Intention,
     subscription_status: 'trial' as SubscriptionStatus,
     trial_ends_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
@@ -75,6 +77,7 @@ export function Onboarding({ onComplete }: Props) {
       date_of_birth: data.birthDate,
       time_of_birth: data.birthTime ?? null,
       city_of_birth: data.birthCity ?? null,
+      gender: data.gender ?? null,
     })
 
     return uid
@@ -228,6 +231,7 @@ export function Onboarding({ onComplete }: Props) {
       return (
         <Welcome
           name={name}
+          gender={basicData?.gender}
           onReadNow={finishOnboarding}
           onSetupPush={() => {
             if ('Notification' in window) Notification.requestPermission()

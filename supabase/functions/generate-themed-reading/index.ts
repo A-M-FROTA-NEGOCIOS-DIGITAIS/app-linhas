@@ -46,6 +46,10 @@ serve(async (req) => {
     const themeDesc = THEME_PROMPTS[theme] ?? THEME_PROMPTS.decision
     const anthropic = new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY')! })
 
+    const genderHint = profile.gender && profile.gender !== 'neutral'
+      ? `\nUser's gender: ${profile.gender}. Use correct gendered pronouns.`
+      : ''
+
     const message = await anthropic.messages.create({
       model: 'claude-3-5-sonnet-20241022',
       max_tokens: 1200,
@@ -55,7 +59,7 @@ serve(async (req) => {
 
 Their palm analysis: ${JSON.stringify(scan?.analysis ?? {}, null, 2)}
 
-Write 500–700 words. Be specific to their actual palm data, not generic. Intimate and literary tone. Address ${profile.name} directly throughout. No disclaimers.${langInstruction}`
+Write 500–700 words. Be specific to their actual palm data, not generic. Intimate and literary tone. Address ${profile.name} directly throughout. No disclaimers.${genderHint}${langInstruction}`
       }]
     })
 

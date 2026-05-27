@@ -10,6 +10,7 @@ export type Intention =
   | 'everything'
 
 export type ReadingType = 'master' | 'daily' | 'themed' | 'compatibility'
+export type Gender = 'male' | 'female' | 'neutral'
 
 export interface Profile {
   id: string
@@ -17,6 +18,7 @@ export interface Profile {
   date_of_birth?: string
   time_of_birth?: string
   city_of_birth?: string
+  gender?: Gender
   intention?: Intention
   subscription_status: SubscriptionStatus
   trial_ends_at?: string

@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Eyebrow } from '@/components/ui'
 
+import type { Gender } from '@/types'
+
 interface Props {
-  onContinue: (data: { name: string; birthDate: string; birthTime?: string; birthCity?: string }) => void
+  onContinue: (data: { name: string; birthDate: string; birthTime?: string; birthCity?: string; gender?: Gender }) => void
   onBack: () => void
 }
 
@@ -13,6 +15,7 @@ export function BasicData({ onContinue, onBack }: Props) {
   const [birthDate, setBirthDate] = useState('')
   const [birthTime, setBirthTime] = useState('')
   const [birthCity, setBirthCity] = useState('')
+  const [gender, setGender] = useState<Gender | undefined>(undefined)
   const [focusedField, setFocusedField] = useState<string | null>(null)
 
   const valid = name.trim().length > 0 && birthDate.length > 0
@@ -59,6 +62,30 @@ export function BasicData({ onContinue, onBack }: Props) {
 
           <div className="flex flex-col gap-5">
             {/* Name */}
+            {/* Gender */}
+            <div className="flex flex-col gap-2">
+              <Eyebrow>{t('basicData.gender')}</Eyebrow>
+              <div className="flex gap-2">
+                {(['male', 'female', 'neutral'] as const).map((g) => (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => setGender(gender === g ? undefined : g)}
+                    style={{
+                      flex: 1, padding: '12px 8px', borderRadius: 8, fontSize: 13,
+                      fontFamily: 'var(--font-sans)',
+                      border: `1px solid ${gender === g ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
+                      background: gender === g ? 'rgba(201,169,97,0.07)' : 'var(--bg-surface)',
+                      color: gender === g ? 'var(--accent-gold)' : 'var(--text-secondary)',
+                      cursor: 'pointer', transition: 'all 0.2s',
+                    }}
+                  >
+                    {t(`basicData.gender${g.charAt(0).toUpperCase()}${g.slice(1)}` as any)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="flex flex-col gap-2">
               <Eyebrow>{t('basicData.name')}</Eyebrow>
               <input
@@ -138,7 +165,7 @@ export function BasicData({ onContinue, onBack }: Props) {
           variant="primary"
           fullWidth
           disabled={!valid}
-          onClick={() => onContinue({ name, birthDate, birthTime: birthTime || undefined, birthCity: birthCity || undefined })}
+          onClick={() => onContinue({ name, birthDate, birthTime: birthTime || undefined, birthCity: birthCity || undefined, gender })}
         >
           {t('common.continue')} →
         </Button>
