@@ -41,7 +41,7 @@ export function Paywall({ preview, name, onSubscribe, onSkip }: Props) {
         <Eyebrow className="mb-4">{t('paywall.yourReading')}</Eyebrow>
         <div className="relative overflow-hidden" style={{ maxHeight: 180 }}>
           <p className="reading-text text-sm leading-relaxed line-clamp-6">
-            {preview || `${name}, your hands reveal a pattern most people never see…`}
+            {preview || t('paywall.previewFallback', { name })}
           </p>
           <div className="absolute bottom-0 left-0 right-0 h-24" style={{ background: 'linear-gradient(transparent, var(--bg-primary))' }} />
         </div>

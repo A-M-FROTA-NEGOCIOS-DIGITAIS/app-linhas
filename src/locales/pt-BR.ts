@@ -110,6 +110,7 @@ const ptBR = {
   },
   paywall: {
     yourReading: 'Sua leitura',
+    previewFallback: '{{name}}, suas mãos revelam um padrão que poucas pessoas conseguem ver…',
     lockBadge: 'Sua leitura completa tem mais de 1.000 palavras — desbloqueie abaixo.',
     stats: '1.000 palavras · 4 linhas · 8 montes · leitura personalizada',
     f1: 'Leitura mestra completa (1.000+ palavras)',
@@ -147,6 +148,14 @@ const ptBR = {
   },
   today: {
     moon: 'Lua',
+    moon_newMoon: 'Lua Nova',
+    moon_waxingCrescent: 'Lua Crescente',
+    moon_firstQuarter: 'Quarto Crescente',
+    moon_waxingGibbous: 'Lua Crescente Gibosa',
+    moon_fullMoon: 'Lua Cheia',
+    moon_waningGibbous: 'Lua Minguante Gibosa',
+    moon_lastQuarter: 'Quarto Minguante',
+    moon_waningCrescent: 'Lua Minguante',
     greeting: 'Bom dia,',
     todayInsight: 'Insight de hoje',
     noInsight: 'Sua leitura diária chega às 7h. Volte amanhã.',

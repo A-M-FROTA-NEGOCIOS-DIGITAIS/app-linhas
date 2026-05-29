@@ -31,14 +31,14 @@ export function getMoonPhase(): string {
   const newMoon = new Date(1970, 0, 7, 20, 35, 0)
   const phase = ((now.getTime() - newMoon.getTime()) / 1000) % lp
   const age = Math.floor(phase / (24 * 3600))
-  if (age < 2) return 'New Moon'
-  if (age < 7) return 'Waxing Crescent'
-  if (age < 10) return 'First Quarter'
-  if (age < 15) return 'Waxing Gibbous'
-  if (age < 17) return 'Full Moon'
-  if (age < 22) return 'Waning Gibbous'
-  if (age < 26) return 'Last Quarter'
-  return 'Waning Crescent'
+  if (age < 2) return 'newMoon'
+  if (age < 7) return 'waxingCrescent'
+  if (age < 10) return 'firstQuarter'
+  if (age < 15) return 'waxingGibbous'
+  if (age < 17) return 'fullMoon'
+  if (age < 22) return 'waningGibbous'
+  if (age < 26) return 'lastQuarter'
+  return 'waningCrescent'
 }
 
 export function getZodiacSign(date: string): string {

@@ -110,6 +110,7 @@ const en = {
   },
   paywall: {
     yourReading: 'Your reading',
+    previewFallback: '{{name}}, your hands reveal a pattern most people never see…',
     lockBadge: 'Your full reading has 1,000+ words — unlock it below.',
     stats: '1,000 words · 4 lines · 8 mounts · personalized reading',
     f1: 'Full master reading (1,000+ words)',
@@ -141,6 +142,14 @@ const en = {
   },
   today: {
     moon: 'Moon',
+    moon_newMoon: 'New Moon',
+    moon_waxingCrescent: 'Waxing Crescent',
+    moon_firstQuarter: 'First Quarter',
+    moon_waxingGibbous: 'Waxing Gibbous',
+    moon_fullMoon: 'Full Moon',
+    moon_waningGibbous: 'Waning Gibbous',
+    moon_lastQuarter: 'Last Quarter',
+    moon_waningCrescent: 'Waning Crescent',
     greeting: 'Good morning,',
     todayInsight: "Today's insight",
     noInsight: 'Your daily reading arrives at 7 AM. Come back tomorrow.',

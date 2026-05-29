@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { TopBar, Spinner, Hairline } from '@/components/ui'
+import { Spinner, Hairline } from '@/components/ui'
 import { supabase } from '@/lib/supabase'
 import { track, Events } from '@/lib/analytics'
 import i18n from '@/lib/i18n'
@@ -126,9 +126,26 @@ export function AuroraChat({ profile }: Props) {
           created_at: new Date().toISOString(),
         }
         setMessages((prev) => [...prev, auroraMsg])
+      } else if (data.error) {
+        const errMsg: ChatMessage = {
+          id: crypto.randomUUID(),
+          user_id: profile.id,
+          role: 'assistant',
+          content: `⚠ ${data.error}`,
+          created_at: new Date().toISOString(),
+        }
+        setMessages((prev) => [...prev, errMsg])
       }
     } catch (e) {
       console.error(e)
+      const errMsg: ChatMessage = {
+        id: crypto.randomUUID(),
+        user_id: profile.id,
+        role: 'assistant',
+        content: `⚠ Erro de conexão. Tente novamente.`,
+        created_at: new Date().toISOString(),
+      }
+      setMessages((prev) => [...prev, errMsg])
     } finally {
       setSending(false)
     }

@@ -110,6 +110,7 @@ const es = {
   },
   paywall: {
     yourReading: 'Tu lectura',
+    previewFallback: '{{name}}, tus manos revelan un patrón que pocas personas logran ver…',
     lockBadge: 'Tu lectura completa tiene más de 1.000 palabras — desbloquéala abajo.',
     stats: '1.000 palabras · 4 líneas · 8 montes · lectura personalizada',
     f1: 'Lectura maestra completa (1.000+ palabras)',
@@ -147,6 +148,14 @@ const es = {
   },
   today: {
     moon: 'Luna',
+    moon_newMoon: 'Luna Nueva',
+    moon_waxingCrescent: 'Luna Creciente',
+    moon_firstQuarter: 'Cuarto Creciente',
+    moon_waxingGibbous: 'Luna Gibosa Creciente',
+    moon_fullMoon: 'Luna Llena',
+    moon_waningGibbous: 'Luna Gibosa Menguante',
+    moon_lastQuarter: 'Cuarto Menguante',
+    moon_waningCrescent: 'Luna Menguante',
     greeting: 'Buenos días,',
     todayInsight: 'Perspectiva de hoy',
     noInsight: 'Tu lectura diaria llega a las 7 AM. Vuelve mañana.',

@@ -4,7 +4,24 @@ import en from '@/locales/en'
 import es from '@/locales/es'
 import ptBR from '@/locales/pt-BR'
 
-const savedLang = localStorage.getItem('linhas_language') || 'en'
+const SUPPORTED = ['en', 'es', 'pt-BR'] as const
+type SupportedLang = typeof SUPPORTED[number]
+
+function detectLanguage(): SupportedLang {
+  const saved = localStorage.getItem('linhas_language')
+  if (saved && SUPPORTED.includes(saved as SupportedLang)) return saved as SupportedLang
+
+  // Auto-detect from browser/device
+  const browserLangs = navigator.languages?.length ? navigator.languages : [navigator.language]
+  for (const lang of browserLangs) {
+    if (lang === 'pt-BR' || lang.startsWith('pt')) return 'pt-BR'
+    if (lang.startsWith('es')) return 'es'
+    if (lang.startsWith('en')) return 'en'
+  }
+  return 'en'
+}
+
+const savedLang = detectLanguage()
 
 i18n.use(initReactI18next).init({
   resources: {

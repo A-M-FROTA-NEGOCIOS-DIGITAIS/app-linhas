@@ -4,6 +4,7 @@ import { Card, Chip, Eyebrow, Hairline, Spinner } from '@/components/ui'
 import { supabase } from '@/lib/supabase'
 import { getMoonPhase, formatDate } from '@/lib/utils'
 import { track, Events } from '@/lib/analytics'
+import i18n from '@/lib/i18n'
 import type { Profile, DailyInsight, Reading } from '@/types'
 
 interface Props {
@@ -28,8 +29,10 @@ export function Today({ profile, onOpenReading, onOpenChat, onReScan }: Props) {
     { key: 'decision', label: t('today.chipDecision') },
   ]
 
-  const moonPhase = getMoonPhase()
-  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+  const moonPhaseKey = getMoonPhase()
+  const localeMap: Record<string, string> = { 'pt-BR': 'pt-BR', 'es': 'es', 'en': 'en-US' }
+  const dateLocale = localeMap[i18n.language] ?? 'en-US'
+  const today = new Date().toLocaleDateString(dateLocale, { weekday: 'long', month: 'long', day: 'numeric' })
 
   useEffect(() => {
     const safetyTimer = setTimeout(() => setLoading(false), 8000)
@@ -77,7 +80,7 @@ export function Today({ profile, onOpenReading, onOpenChat, onReScan }: Props) {
           </div>
           <div className="text-right">
             <p className="text-xs text-text-muted">{t('today.moon')}</p>
-            <p className="text-xs text-accent-gold tracking-wide">{moonPhase}</p>
+            <p className="text-xs text-accent-gold tracking-wide">{t(`today.moon_${moonPhaseKey}`)}</p>
           </div>
         </div>
       </div>
