@@ -171,7 +171,6 @@ export function AppShell({ onSignOut }: Props) {
             profile={profile}
             onReScan={handleReScan}
             onSignOut={onSignOut}
-            onOpenPaywall={() => setOverlay({ type: 'paywall' })}
             onChangeIntention={() => setOverlay({ type: 'change-intention' })}
           />
         )}

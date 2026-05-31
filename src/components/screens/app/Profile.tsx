@@ -12,7 +12,6 @@ interface Props {
   profile: ProfileType
   onReScan: () => void
   onSignOut: () => void
-  onOpenPaywall: () => void
   onChangeIntention: () => void
 }
 
@@ -25,7 +24,7 @@ const INTENTION_LABELS_KEY: Record<string, string> = {
   everything: 'intention.everythingLabel',
 }
 
-export function Profile({ profile, onReScan, onSignOut, onOpenPaywall, onChangeIntention }: Props) {
+export function Profile({ profile, onReScan, onSignOut, onChangeIntention }: Props) {
   const { t } = useTranslation()
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -42,16 +41,6 @@ export function Profile({ profile, onReScan, onSignOut, onOpenPaywall, onChangeI
       .eq('user_id', profile.id)
       .then(({ count }) => { if (count) setReadingCount(count) })
   }, [profile.id])
-
-  const SUBSCRIPTION_LABELS: Record<string, string> = {
-    trial: t('profile.subTrial'),
-    active: t('profile.subActive'),
-    expired: t('profile.subExpired'),
-    none: t('profile.subFree'),
-  }
-
-  const subLabel = SUBSCRIPTION_LABELS[profile.subscription_status] ?? t('profile.subFree')
-  const isActive = profile.subscription_status === 'active' || profile.subscription_status === 'trial'
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -160,33 +149,6 @@ export function Profile({ profile, onReScan, onSignOut, onOpenPaywall, onChangeI
               {t('profile.change')}
             </button>
           </div>
-        </Card>
-
-        <Card className="p-5" goldBorder={isActive}>
-          <Eyebrow className="mb-3">{t('profile.subscription')}</Eyebrow>
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-sm text-text-primary font-medium">{subLabel}</p>
-              {profile.trial_ends_at && profile.subscription_status === 'trial' && (
-                <p className="text-xs text-text-muted mt-0.5">
-                  {t('profile.trialEnds', { date: new Date(profile.trial_ends_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) })}
-                </p>
-              )}
-            </div>
-            {isActive && (
-              <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full" style={{ background: 'rgba(201,169,97,0.12)', color: 'var(--accent-gold)', border: '1px solid rgba(201,169,97,0.25)' }}>
-                {t('profile.activeLabel')}
-              </span>
-            )}
-          </div>
-          {!isActive && (
-            <Button variant="primary" fullWidth onClick={() => { track(Events.PAYWALL_VIEWED, { source: 'profile' }); onOpenPaywall() }}>
-              {t('profile.unlockAccess')}
-            </Button>
-          )}
-          {isActive && (
-            <p className="text-xs text-text-muted">{t('profile.manageSubscription')}</p>
-          )}
         </Card>
 
         {/* Language */}
