@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/store/app'
 import { track, Events } from '@/lib/analytics'
@@ -48,6 +48,7 @@ export function Onboarding({ onComplete }: Props) {
   const [pendingProfile, setPendingProfile] = useState<Profile | null>(null)
 
   const { setUserId: storeSetUserId, setProfile } = useAppStore()
+  const userCreationPromise = useRef<Promise<string> | null>(null)
 
   const buildFallbackProfile = (uid: string): Profile => ({
     id: uid,
@@ -86,8 +87,9 @@ export function Onboarding({ onComplete }: Props) {
   const handleBasicDataNext = async (data: BasicDataValues) => {
     setBasicData(data)
     setStep('intention')
-    // Run auth in background — don't block UI
-    createAnonymousUser(data).catch((e) => console.error('Failed to create user:', e))
+    // Save promise so handleScanComplete can await it instead of creating a second user
+    userCreationPromise.current = createAnonymousUser(data)
+    userCreationPromise.current.catch((e) => console.error('Failed to create user:', e))
   }
 
   const handleIntentionNext = (chosen: Intention) => {
@@ -122,12 +124,14 @@ export function Onboarding({ onComplete }: Props) {
       return
     }
 
-    if (!userId && basicData) {
+    if (!userId) {
       try {
         const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
-        await Promise.race([createAnonymousUser(basicData), timeout])
+        // Await the existing promise — never call signInAnonymously() a second time
+        const promise = userCreationPromise.current ?? Promise.reject(new Error('No creation in progress'))
+        await Promise.race([promise, timeout])
       } catch (e) {
-        console.error('Retry user creation failed:', e)
+        console.error('User creation failed:', e)
       }
     }
     if (!userId) {
