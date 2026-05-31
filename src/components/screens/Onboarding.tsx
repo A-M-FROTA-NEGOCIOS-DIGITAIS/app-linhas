@@ -9,9 +9,8 @@ import { IntentionScreen } from './onboarding/Intention'
 import { PalmScan } from './onboarding/PalmScan'
 import { Scanning } from './onboarding/Scanning'
 import { Revelation } from './onboarding/Revelation'
-import { Paywall } from './onboarding/Paywall'
 import { Welcome } from './onboarding/Welcome'
-import type { PalmAnalysis, Intention, SubscriptionStatus, Profile, Gender } from '@/types'
+import type { PalmAnalysis, Intention, Profile, Gender } from '@/types'
 
 type Step =
   | 'splash'
@@ -21,7 +20,6 @@ type Step =
   | 'palm-scan'
   | 'scanning'
   | 'revelation'
-  | 'paywall'
   | 'welcome'
 
 interface BasicDataValues {
@@ -42,7 +40,6 @@ export function Onboarding({ onComplete }: Props) {
 
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null)
   const [analysis, setAnalysis] = useState<PalmAnalysis | null>(null)
-  const [readingPreview, setReadingPreview] = useState('')
   const [userId, setUserId] = useState<string | null>(null)
   const [scanId, setScanId] = useState<string | null>(null)
   const [pendingProfile, setPendingProfile] = useState<Profile | null>(null)
@@ -58,7 +55,7 @@ export function Onboarding({ onComplete }: Props) {
     city_of_birth: basicData?.birthCity ?? undefined,
     gender: basicData?.gender ?? undefined,
     intention: 'everything' as Intention,
-    subscription_status: 'trial' as SubscriptionStatus,
+    subscription_status: 'none',
     trial_ends_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -149,25 +146,7 @@ export function Onboarding({ onComplete }: Props) {
     setStep('revelation')
   }
 
-  const handleRevelationContinue = (preview: string) => {
-    setReadingPreview(preview)
-    track(Events.PAYWALL_VIEWED, { source: 'revelation' })
-    setStep('paywall')
-  }
-
-  const handleSubscribe = (_plan: 'monthly' | 'yearly') => {
-    const uid = userId ?? crypto.randomUUID()
-    if (userId) {
-      void Promise.resolve(supabase.from('profiles').update({
-        subscription_status: 'trial' as SubscriptionStatus,
-        trial_ends_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-      }).eq('id', uid)).catch(() => {})
-    }
-    setPendingProfile(buildFallbackProfile(uid))
-    setStep('welcome')
-  }
-
-  const handleSkipPaywall = () => {
+  const handleRevelationContinue = (_preview: string) => {
     const uid = userId ?? crypto.randomUUID()
     setPendingProfile(buildFallbackProfile(uid))
     setStep('welcome')
@@ -208,16 +187,6 @@ export function Onboarding({ onComplete }: Props) {
           scanId={scanId!}
           userId={userId!}
           onContinue={handleRevelationContinue}
-        />
-      )
-
-    case 'paywall':
-      return (
-        <Paywall
-          preview={readingPreview}
-          name={name}
-          onSubscribe={handleSubscribe}
-          onSkip={handleSkipPaywall}
         />
       )
 
