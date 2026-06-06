@@ -121,20 +121,21 @@ export function Onboarding({ onComplete }: Props) {
       return
     }
 
-    if (!userId) {
+    // Use resolvedUserId to avoid stale closure on `userId` state
+    let resolvedUserId = userId
+    if (!resolvedUserId) {
       try {
-        const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
-        // Await the existing promise — never call signInAnonymously() a second time
-        const promise = userCreationPromise.current ?? Promise.reject(new Error('No creation in progress'))
-        await Promise.race([promise, timeout])
+        const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
+        const promise = userCreationPromise.current ?? Promise.reject<string>(new Error('No creation in progress'))
+        resolvedUserId = await Promise.race([promise, timeout])
       } catch (e) {
         console.error('User creation failed:', e)
       }
     }
-    if (!userId) {
-      const fallbackId = crypto.randomUUID()
-      setUserId(fallbackId)
-      storeSetUserId(fallbackId)
+    if (!resolvedUserId) {
+      resolvedUserId = crypto.randomUUID()
+      setUserId(resolvedUserId)
+      storeSetUserId(resolvedUserId)
     }
     setStep('scanning')
   }
