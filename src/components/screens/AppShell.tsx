@@ -9,16 +9,14 @@ import { Profile } from './app/Profile'
 import { ReadingDetail } from './app/ReadingDetail'
 import { PalmScan } from './onboarding/PalmScan'
 import { Scanning } from './onboarding/Scanning'
-import { Paywall } from './onboarding/Paywall'
 import { IntentionScreen } from './onboarding/Intention'
-import type { Reading, PalmAnalysis, Intention } from '@/types'
+import type { Reading, Intention } from '@/types'
 
 type Tab = 'today' | 'readings' | 'aurora' | 'you'
 type Overlay =
   | { type: 'reading-detail'; reading: Reading }
   | { type: 'rescan' }
   | { type: 'scanning'; imageDataUrl: string }
-  | { type: 'paywall' }
   | { type: 'change-intention' }
   | null
 
@@ -31,23 +29,11 @@ export function AppShell({ onSignOut }: Props) {
   const [overlay, setOverlay] = useState<Overlay>(null)
   const profile = useAppStore((s) => s.profile)
   const setProfile = useAppStore((s) => s.setProfile)
-  const masterReading = useAppStore((s) => s.masterReading)
-
   if (!profile) return null
 
   const handleChangeIntention = async (intention: Intention) => {
     await supabase.from('profiles').update({ intention }).eq('id', profile.id)
     setProfile({ ...profile, intention })
-    setOverlay(null)
-  }
-
-  const handlePaywallSubscribe = async () => {
-    const trialEndsAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString()
-    await supabase.from('profiles').update({
-      subscription_status: 'trial',
-      trial_ends_at: trialEndsAt,
-    }).eq('id', profile.id)
-    setProfile({ ...profile, subscription_status: 'trial', trial_ends_at: trialEndsAt })
     setOverlay(null)
   }
 
@@ -119,27 +105,6 @@ export function AppShell({ onSignOut }: Props) {
             initialValue={profile.intention ?? undefined}
             eyebrow="Your intention"
             onContinue={handleChangeIntention}
-          />
-        </div>
-      )
-    }
-    if (overlay.type === 'paywall') {
-      return (
-        <div className="h-full flex flex-col relative">
-          <button
-            onClick={() => setOverlay(null)}
-            className="absolute top-14 left-5 z-10 p-2"
-            style={{ color: 'var(--text-muted)' }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <Paywall
-            preview={masterReading?.preview_content ?? ''}
-            name={profile.name}
-            onSubscribe={handlePaywallSubscribe}
-            onSkip={() => setOverlay(null)}
           />
         </div>
       )

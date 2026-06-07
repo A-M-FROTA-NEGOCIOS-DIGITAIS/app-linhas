@@ -121,14 +121,19 @@ export function BasicData({ onContinue, onBack }: Props) {
               </div>
               <div className="flex flex-col gap-2">
                 <Eyebrow>{t('basicData.time')}</Eyebrow>
-                <input
-                  type="time"
-                  value={birthTime}
-                  onChange={(e) => setBirthTime(e.target.value)}
-                  onFocus={() => setFocusedField('time')}
-                  onBlur={() => setFocusedField(null)}
-                  style={{ ...fieldStyle('time'), colorScheme: 'dark' }}
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="time"
+                    value={birthTime}
+                    onChange={(e) => setBirthTime(e.target.value)}
+                    onFocus={() => setFocusedField('time')}
+                    onBlur={() => setFocusedField(null)}
+                    style={{ ...fieldStyle('time'), colorScheme: 'dark', position: 'absolute', inset: 0, opacity: 0, zIndex: 1, cursor: 'pointer', width: '100%', height: '100%' }}
+                  />
+                  <div style={{ ...fieldStyle('time'), color: birthTime ? 'var(--text-primary)' : 'rgba(255,255,255,0.25)', pointerEvents: 'none', userSelect: 'none' }}>
+                    {birthTime || '--:--'}
+                  </div>
+                </div>
               </div>
             </div>
 

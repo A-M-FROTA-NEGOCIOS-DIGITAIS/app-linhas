@@ -36,7 +36,8 @@ export function App() {
   return (
     <AppShell
       onSignOut={() => {
-        window.location.reload()
+        // reset() in Profile.tsx already clears the store (profile → null),
+        // which triggers App to re-render and show Onboarding — no reload needed
       }}
     />
   )

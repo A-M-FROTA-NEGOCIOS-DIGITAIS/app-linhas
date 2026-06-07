@@ -32,7 +32,11 @@ export function useAuth() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         setUserId(session.user.id)
-        await loadProfile(session.user.id)
+        // SIGNED_IN fires during onboarding's signInAnonymously — skip setProfile here
+        // to avoid interrupting the onboarding flow. finishOnboarding sets it explicitly.
+        if (event !== 'SIGNED_IN') {
+          await loadProfile(session.user.id)
+        }
         setAuthState('authenticated')
       } else {
         setUserId(null)

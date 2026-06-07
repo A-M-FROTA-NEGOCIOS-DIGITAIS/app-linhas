@@ -46,6 +46,8 @@ export function Onboarding({ onComplete }: Props) {
 
   const { setUserId: storeSetUserId, setProfile } = useAppStore()
   const userCreationPromise = useRef<Promise<string> | null>(null)
+  // Stores the definitively resolved auth user ID to avoid stale closure issues
+  const resolvedUserIdRef = useRef<string | null>(null)
 
   const buildFallbackProfile = (uid: string): Profile => ({
     id: uid,
@@ -124,7 +126,7 @@ export function Onboarding({ onComplete }: Props) {
       return
     }
 
-    // Use resolvedUserId to avoid stale closure on `userId` state
+    // Resolve the auth user ID — always prefer the real auth session over stale closure
     let resolvedUserId = userId
     if (!resolvedUserId) {
       try {
@@ -136,10 +138,17 @@ export function Onboarding({ onComplete }: Props) {
       }
     }
     if (!resolvedUserId) {
-      resolvedUserId = crypto.randomUUID()
-      setUserId(resolvedUserId)
-      storeSetUserId(resolvedUserId)
+      // Last resort: check auth session directly before using random UUID
+      const { data: { session } } = await supabase.auth.getSession()
+      resolvedUserId = session?.user?.id ?? null
     }
+    if (!resolvedUserId) {
+      resolvedUserId = crypto.randomUUID()
+    }
+    // Always explicitly sync component state and ref with the resolved ID
+    setUserId(resolvedUserId)
+    storeSetUserId(resolvedUserId)
+    resolvedUserIdRef.current = resolvedUserId
     setStep('scanning')
   }
 
@@ -151,7 +160,7 @@ export function Onboarding({ onComplete }: Props) {
   }
 
   const handleRevelationContinue = (_preview: string) => {
-    const uid = userId ?? crypto.randomUUID()
+    const uid = resolvedUserIdRef.current ?? userId ?? crypto.randomUUID()
     setPendingProfile(buildFallbackProfile(uid))
     setStep('welcome')
   }
@@ -178,7 +187,7 @@ export function Onboarding({ onComplete }: Props) {
       return (
         <Scanning
           imageDataUrl={imageDataUrl!}
-          userId={userId!}
+          userId={resolvedUserIdRef.current ?? userId ?? ''}
           onComplete={handleAnalysisComplete}
         />
       )
@@ -196,13 +205,27 @@ export function Onboarding({ onComplete }: Props) {
 
     case 'welcome': {
       const finishOnboarding = () => {
-        if (pendingProfile) setProfile(pendingProfile)
-        // Try to fetch real profile from DB in background
-        if (userId) {
-          void Promise.resolve(
-            supabase.from('profiles').select('*').eq('id', userId).single()
-          ).then(({ data }) => { if (data) setProfile(data as Profile) }).catch(() => {})
-        }
+        // Use real auth session user ID — bypasses any stale component state
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          const realUid = session?.user?.id ?? resolvedUserIdRef.current ?? userId
+          if (realUid) {
+            storeSetUserId(realUid)
+            void (async () => {
+              try {
+                const { data } = await supabase
+                  .from('profiles')
+                  .select('*')
+                  .eq('id', realUid)
+                  .single()
+                setProfile(data ? (data as Profile) : pendingProfile)
+              } catch {
+                if (pendingProfile) setProfile(pendingProfile)
+              }
+            })()
+          } else if (pendingProfile) {
+            setProfile(pendingProfile)
+          }
+        })
         onComplete()
       }
       return (
