@@ -62,21 +62,24 @@ export function Onboarding({ onComplete }: Props) {
   })
 
   const createAnonymousUser = async (data: BasicDataValues) => {
-    const { data: authData, error } = await supabase.auth.signInAnonymously()
-    if (error || !authData.user) throw error
+    // Pass form data as metadata so the DB trigger creates the profile atomically
+    const { data: authData, error } = await supabase.auth.signInAnonymously({
+      options: {
+        data: {
+          name: data.name,
+          date_of_birth: data.birthDate || null,
+          time_of_birth: data.birthTime || null,
+          city_of_birth: data.birthCity || null,
+          gender: data.gender || null,
+        },
+      },
+    })
+    if (error) throw new Error(error.message)
+    if (!authData.user) throw new Error('Auth returned no user')
 
     const uid = authData.user.id
     setUserId(uid)
     storeSetUserId(uid)
-
-    await supabase.from('profiles').insert({
-      id: uid,
-      name: data.name,
-      date_of_birth: data.birthDate,
-      time_of_birth: data.birthTime ?? null,
-      city_of_birth: data.birthCity ?? null,
-      gender: data.gender ?? null,
-    })
 
     return uid
   }
