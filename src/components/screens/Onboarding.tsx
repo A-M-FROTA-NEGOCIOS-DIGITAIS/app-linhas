@@ -4,6 +4,8 @@ import { useAppStore } from '@/store/app'
 import { track, Events } from '@/lib/analytics'
 import { Splash } from './onboarding/Splash'
 import { Intro } from './onboarding/Intro'
+import { EmailEntry } from './onboarding/EmailEntry'
+import { VerifyEmail } from './onboarding/VerifyEmail'
 import { BasicData } from './onboarding/BasicData'
 import { IntentionScreen } from './onboarding/Intention'
 import { PalmScan } from './onboarding/PalmScan'
@@ -15,6 +17,8 @@ import type { PalmAnalysis, Intention, Profile, Gender } from '@/types'
 type Step =
   | 'splash'
   | 'intro'
+  | 'email-entry'
+  | 'verify-email'
   | 'basic-data'
   | 'intention'
   | 'palm-scan'
@@ -35,9 +39,10 @@ interface Props {
 }
 
 export function Onboarding({ onComplete }: Props) {
-  const [step, setStep] = useState<Step>('splash')
+  const hasAccount = localStorage.getItem('linhas-has-account') === '1'
+  const [step, setStep] = useState<Step>(hasAccount ? 'email-entry' : 'splash')
+  const [email, setEmail] = useState('')
   const [basicData, setBasicData] = useState<BasicDataValues | null>(null)
-
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null)
   const [analysis, setAnalysis] = useState<PalmAnalysis | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
@@ -45,8 +50,6 @@ export function Onboarding({ onComplete }: Props) {
   const [pendingProfile, setPendingProfile] = useState<Profile | null>(null)
 
   const { setUserId: storeSetUserId, setProfile } = useAppStore()
-  const userCreationPromise = useRef<Promise<string> | null>(null)
-  // Stores the definitively resolved auth user ID to avoid stale closure issues
   const resolvedUserIdRef = useRef<string | null>(null)
 
   const buildFallbackProfile = (uid: string): Profile => ({
@@ -63,40 +66,45 @@ export function Onboarding({ onComplete }: Props) {
     updated_at: new Date().toISOString(),
   })
 
-  const createAnonymousUser = async (data: BasicDataValues) => {
-    // Pass form data as metadata so the DB trigger creates the profile atomically
-    const { data: authData, error } = await supabase.auth.signInAnonymously({
-      options: {
-        data: {
-          name: data.name,
-          date_of_birth: data.birthDate || null,
-          time_of_birth: data.birthTime || null,
-          city_of_birth: data.birthCity || null,
-          gender: data.gender || null,
-        },
-      },
-    })
-    if (error) throw new Error(error.message)
-    if (!authData.user) throw new Error('Auth returned no user')
-
-    const uid = authData.user.id
+  // Called after OTP verified — handles both new and returning users
+  const handleVerified = async (uid: string) => {
     setUserId(uid)
     storeSetUserId(uid)
-
-    return uid
+    resolvedUserIdRef.current = uid
+    try {
+      const { data } = await supabase.from('profiles').select('*').eq('id', uid).single()
+      if (data) {
+        // Returning user — profile exists, go straight to app
+        localStorage.setItem('linhas-has-account', '1')
+        setProfile(data as Profile)
+        onComplete()
+        return
+      }
+    } catch {
+      // No profile yet — new user, continue onboarding
+    }
+    setStep('basic-data')
   }
 
-  const handleBasicDataNext = async (data: BasicDataValues) => {
+  const handleBasicDataNext = (data: BasicDataValues) => {
     setBasicData(data)
+    const uid = resolvedUserIdRef.current
+    if (uid) {
+      supabase.from('profiles').update({
+        name: data.name,
+        date_of_birth: data.birthDate || null,
+        time_of_birth: data.birthTime || null,
+        city_of_birth: data.birthCity || null,
+        gender: data.gender || null,
+      }).eq('id', uid).then(() => {})
+    }
     setStep('intention')
-    // Save promise so handleScanComplete can await it instead of creating a second user
-    userCreationPromise.current = createAnonymousUser(data)
-    userCreationPromise.current.catch((e) => console.error('Failed to create user:', e))
   }
 
   const handleIntentionNext = (chosen: Intention) => {
-    if (userId) {
-      supabase.from('profiles').update({ intention: chosen }).eq('id', userId).then(() => {})
+    const uid = resolvedUserIdRef.current ?? userId
+    if (uid) {
+      supabase.from('profiles').update({ intention: chosen }).eq('id', uid).then(() => {})
     }
     setStep('palm-scan')
   }
@@ -105,47 +113,14 @@ export function Onboarding({ onComplete }: Props) {
     setImageDataUrl(imageUrl)
     track(Events.PALM_SCAN_COMPLETED, {})
 
-    // Dev bypass: pula auth e analise, vai direto para Revelation com dados falsos
-    if (localStorage.getItem('dev_bypass') === 'true') {
-      const fallbackId = userId ?? crypto.randomUUID()
-      if (!userId) { setUserId(fallbackId); storeSetUserId(fallbackId) }
-      setAnalysis({
-        hand_shape: 'fire', dominant_hand: true, image_quality: 'high', is_palm: true,
-        main_lines: {
-          life_line: { length: 'long', depth: 'deep', characteristic: 'clear and unbroken', interpretation: 'strong vitality' },
-          heart_line: { length: 'long', depth: 'deep', characteristic: 'branches near Mercury', interpretation: 'idealistic in love' },
-          head_line: { length: 'long', depth: 'medium', characteristic: 'slopes toward Luna', interpretation: 'creative thinker' },
-          fate_line: { present: true, length: 'medium', characteristic: 'begins mid-palm', interpretation: 'self-made' },
-        },
-        mounts: { jupiter: 'prominent', saturn: 'average', apollo: 'prominent', mercury: 'average', venus: 'prominent', luna: 'average' },
-        special_marks: [],
-        overall_character: 'A person of deep feeling and creative fire.',
-      } as PalmAnalysis)
-      setScanId('dev-bypass-scan-id')
-      setStep('revelation')
-      return
-    }
-
-    // Resolve the auth user ID — always prefer the real auth session over stale closure
-    let resolvedUserId = userId
+    let resolvedUserId = resolvedUserIdRef.current ?? userId
     if (!resolvedUserId) {
-      try {
-        const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
-        const promise = userCreationPromise.current ?? Promise.reject<string>(new Error('No creation in progress'))
-        resolvedUserId = await Promise.race([promise, timeout])
-      } catch (e) {
-        console.error('User creation failed:', e)
-      }
-    }
-    if (!resolvedUserId) {
-      // Last resort: check auth session directly before using random UUID
       const { data: { session } } = await supabase.auth.getSession()
       resolvedUserId = session?.user?.id ?? null
     }
     if (!resolvedUserId) {
       resolvedUserId = crypto.randomUUID()
     }
-    // Always explicitly sync component state and ref with the resolved ID
     setUserId(resolvedUserId)
     storeSetUserId(resolvedUserId)
     resolvedUserIdRef.current = resolvedUserId
@@ -169,13 +144,35 @@ export function Onboarding({ onComplete }: Props) {
 
   switch (step) {
     case 'splash':
-      return <Splash onContinue={() => { track(Events.ONBOARDING_STARTED, {}); setStep('intro') }} />
+      return (
+        <Splash
+          onContinue={() => { track(Events.ONBOARDING_STARTED, {}); setStep('intro') }}
+        />
+      )
 
     case 'intro':
-      return <Intro onContinue={() => setStep('basic-data')} onBack={() => setStep('splash')} />
+      return <Intro onContinue={() => setStep('email-entry')} onBack={() => setStep('splash')} />
+
+    case 'email-entry':
+      return (
+        <EmailEntry
+          onSuccess={(e) => { setEmail(e); setStep('verify-email') }}
+          onBack={() => setStep(hasAccount ? 'splash' : 'intro')}
+          isLogin={hasAccount}
+        />
+      )
+
+    case 'verify-email':
+      return (
+        <VerifyEmail
+          email={email}
+          onSuccess={handleVerified}
+          onBack={() => setStep('email-entry')}
+        />
+      )
 
     case 'basic-data':
-      return <BasicData onContinue={handleBasicDataNext} onBack={() => setStep('intro')} />
+      return <BasicData onContinue={handleBasicDataNext} onBack={() => setStep('email-entry')} />
 
     case 'intention':
       return <IntentionScreen onContinue={handleIntentionNext} onBack={() => setStep('basic-data')} />
@@ -205,7 +202,7 @@ export function Onboarding({ onComplete }: Props) {
 
     case 'welcome': {
       const finishOnboarding = () => {
-        // Use real auth session user ID — bypasses any stale component state
+        localStorage.setItem('linhas-has-account', '1')
         supabase.auth.getSession().then(({ data: { session } }) => {
           const realUid = session?.user?.id ?? resolvedUserIdRef.current ?? userId
           if (realUid) {

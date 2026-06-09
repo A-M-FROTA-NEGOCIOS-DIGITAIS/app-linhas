@@ -100,7 +100,7 @@ export function BasicData({ onContinue, onBack }: Props) {
             </div>
 
             {/* Date + Time */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 items-end">
               <div className="flex flex-col gap-2">
                 <Eyebrow>{t('basicData.dateOfBirth')}</Eyebrow>
                 <div style={{ position: 'relative' }}>

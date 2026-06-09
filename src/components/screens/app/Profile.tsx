@@ -27,6 +27,7 @@ const INTENTION_LABELS_KEY: Record<string, string> = {
 export function Profile({ profile, onReScan, onSignOut, onChangeIntention }: Props) {
   const { t } = useTranslation()
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [readingCount, setReadingCount] = useState(0)
   const reset = useAppStore((s) => s.reset)
@@ -43,9 +44,10 @@ export function Profile({ profile, onReScan, onSignOut, onChangeIntention }: Pro
   }, [profile.id])
 
   const handleSignOut = async () => {
+    setSigningOut(true)
     await supabase.auth.signOut()
     reset()
-    onSignOut()
+    window.location.href = '/'
   }
 
   const handleDeleteAccount = async () => {
@@ -54,10 +56,9 @@ export function Profile({ profile, onReScan, onSignOut, onChangeIntention }: Pro
       await supabase.from('profiles').update({ deleted_at: new Date().toISOString() }).eq('id', profile.id)
       await supabase.auth.signOut()
       reset()
-      onSignOut()
+      window.location.href = '/'
     } catch (e) {
       console.error(e)
-    } finally {
       setDeleting(false)
     }
   }
@@ -169,8 +170,13 @@ export function Profile({ profile, onReScan, onSignOut, onChangeIntention }: Pro
             </svg>
           </button>
 
-          <button onClick={handleSignOut} className="flex items-center justify-between px-4 py-3.5 rounded-md text-sm text-text-secondary text-left mt-1" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
-            {t('profile.signOut')}
+          <button
+            onClick={handleSignOut}
+            disabled={signingOut}
+            className="flex items-center justify-between px-4 py-3.5 rounded-md text-sm text-text-secondary text-left mt-1"
+            style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', opacity: signingOut ? 0.6 : 1 }}
+          >
+            {signingOut ? 'Saindo...' : t('profile.signOut')}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
             </svg>
