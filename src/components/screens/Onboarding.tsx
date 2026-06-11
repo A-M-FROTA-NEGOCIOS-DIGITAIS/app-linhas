@@ -73,8 +73,8 @@ export function Onboarding({ onComplete }: Props) {
     resolvedUserIdRef.current = uid
     try {
       const { data } = await supabase.from('profiles').select('*').eq('id', uid).single()
-      if (data) {
-        // Returning user — profile exists, go straight to app
+      if (data?.name) {
+        // Returning user — profile complete, go straight to app
         localStorage.setItem('linhas-has-account', '1')
         setProfile(data as Profile)
         onComplete()
