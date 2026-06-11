@@ -144,7 +144,7 @@ export function Profile({ profile, onReScan, onSignOut, onChangeIntention }: Pro
           <Eyebrow className="mb-3">{t('profile.yourIntention')}</Eyebrow>
           <div className="flex items-center justify-between">
             <p className="text-sm text-text-primary">
-              {profile.intention ? t(INTENTION_LABELS_KEY[profile.intention] ?? 'intention.everythingLabel') : 'Not set'}
+              {profile.intention ? t(INTENTION_LABELS_KEY[profile.intention] ?? 'intention.everythingLabel') : t('profile.intentionNotSet')}
             </p>
             <button className="text-xs text-text-muted underline underline-offset-2" style={{ fontFamily: 'var(--font-sans)' }} onClick={onChangeIntention}>
               {t('profile.change')}
@@ -176,7 +176,7 @@ export function Profile({ profile, onReScan, onSignOut, onChangeIntention }: Pro
             className="flex items-center justify-between px-4 py-3.5 rounded-md text-sm text-text-secondary text-left mt-1"
             style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', opacity: signingOut ? 0.6 : 1 }}
           >
-            {signingOut ? 'Saindo...' : t('profile.signOut')}
+            {signingOut ? t('profile.signingOut') : t('profile.signOut')}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
             </svg>

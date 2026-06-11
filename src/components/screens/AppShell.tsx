@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { TabBar } from '@/components/ui'
 import { useAppStore } from '@/store/app'
 import { supabase } from '@/lib/supabase'
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export function AppShell({ onSignOut }: Props) {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<Tab>('today')
   const [overlay, setOverlay] = useState<Overlay>(null)
   const profile = useAppStore((s) => s.profile)
@@ -103,7 +105,7 @@ export function AppShell({ onSignOut }: Props) {
           </button>
           <IntentionScreen
             initialValue={profile.intention ?? undefined}
-            eyebrow="Your intention"
+            eyebrow={t('profile.yourIntention')}
             onContinue={handleChangeIntention}
           />
         </div>

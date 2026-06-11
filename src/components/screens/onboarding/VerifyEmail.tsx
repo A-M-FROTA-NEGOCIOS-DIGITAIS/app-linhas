@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui'
 import { supabase } from '@/lib/supabase'
 
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export function VerifyEmail({ email, onSuccess, onBack }: Props) {
+  const { t } = useTranslation()
   const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -26,10 +28,10 @@ export function VerifyEmail({ email, onSuccess, onBack }: Props) {
         type: 'email',
       })
       if (verifyError) throw verifyError
-      if (!data.user) throw new Error('Usuário não encontrado')
+      if (!data.user) throw new Error(t('verifyEmail.userNotFound'))
       onSuccess(data.user.id)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Código inválido ou expirado')
+      setError(err instanceof Error ? err.message : t('verifyEmail.errorInvalid'))
     } finally {
       setLoading(false)
     }
@@ -54,11 +56,11 @@ export function VerifyEmail({ email, onSuccess, onBack }: Props) {
       <div className="flex-1 flex flex-col justify-center gap-8">
         <div className="flex flex-col gap-3">
           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 32, fontWeight: 300, lineHeight: 1.2, color: 'var(--text-primary)' }}>
-            Verifique<br />
-            <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>seu email</em>
+            {t('verifyEmail.title')}<br />
+            <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>{t('verifyEmail.titleItalic')}</em>
           </h2>
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)', lineHeight: 1.6 }}>
-            Enviamos um código de 6 dígitos para{' '}
+            {t('verifyEmail.codeSent')}{' '}
             <span style={{ color: 'var(--text-primary)' }}>{email}</span>
           </p>
         </div>
@@ -105,7 +107,7 @@ export function VerifyEmail({ email, onSuccess, onBack }: Props) {
             textAlign: 'left',
           }}
         >
-          {resent ? '✓ Código reenviado' : resending ? 'Enviando...' : 'Não recebeu? Reenviar código'}
+          {resent ? t('verifyEmail.resent') : resending ? t('verifyEmail.resending') : t('verifyEmail.resend')}
         </button>
       </div>
 
@@ -116,7 +118,7 @@ export function VerifyEmail({ email, onSuccess, onBack }: Props) {
         loading={loading}
         onClick={handleVerify}
       >
-        Confirmar →
+        {t('verifyEmail.confirm')}
       </Button>
     </div>
   )

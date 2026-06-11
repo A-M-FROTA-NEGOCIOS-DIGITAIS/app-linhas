@@ -142,7 +142,7 @@ export function AuroraChat({ profile }: Props) {
         id: crypto.randomUUID(),
         user_id: profile.id,
         role: 'assistant',
-        content: `⚠ Erro de conexão. Tente novamente.`,
+        content: t('aurora.connectionError'),
         created_at: new Date().toISOString(),
       }
       setMessages((prev) => [...prev, errMsg])

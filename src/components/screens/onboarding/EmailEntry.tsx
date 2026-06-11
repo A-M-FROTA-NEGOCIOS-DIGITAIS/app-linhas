@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui'
 import { supabase } from '@/lib/supabase'
 
@@ -9,13 +10,14 @@ interface Props {
 }
 
 export function EmailEntry({ onSuccess, onBack, isLogin }: Props) {
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const handleSend = async () => {
     const trimmed = email.trim().toLowerCase()
-    if (!trimmed.includes('@')) { setError('Email inválido'); return }
+    if (!trimmed.includes('@')) { setError(t('emailEntry.emailInvalid')); return }
     setLoading(true)
     setError(null)
     try {
@@ -26,7 +28,7 @@ export function EmailEntry({ onSuccess, onBack, isLogin }: Props) {
       if (otpError) throw otpError
       onSuccess(trimmed)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao enviar código')
+      setError(err instanceof Error ? err.message : t('emailEntry.errorSending'))
     } finally {
       setLoading(false)
     }
@@ -43,10 +45,12 @@ export function EmailEntry({ onSuccess, onBack, isLogin }: Props) {
       <div className="flex-1 flex flex-col justify-center gap-8">
         <div className="flex flex-col gap-3">
           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 34, fontWeight: 300, lineHeight: 1.2, color: 'var(--text-primary)' }}>
-            {isLogin ? <>Bem-vindo<br /><em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>de volta</em></> : <>Crie ou acesse<br /><em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>sua conta</em></>}
+            {isLogin
+              ? <>{t('emailEntry.titleReturning')}<br /><em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>{t('emailEntry.titleReturningItalic')}</em></>
+              : <>{t('emailEntry.titleNew')}<br /><em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>{t('emailEntry.titleNewItalic')}</em></>}
           </h2>
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)', lineHeight: 1.6 }}>
-            {isLogin ? 'Informe seu email para receber o código de acesso.' : 'Informe seu email. Enviaremos um código para confirmar — sem senha necessária.'}
+            {isLogin ? t('emailEntry.subtitleReturning') : t('emailEntry.subtitleNew')}
           </p>
         </div>
 
@@ -57,7 +61,7 @@ export function EmailEntry({ onSuccess, onBack, isLogin }: Props) {
             autoFocus
             value={email}
             onChange={(e) => { setEmail(e.target.value); setError(null) }}
-            placeholder="seu@email.com"
+            placeholder={t('emailEntry.placeholder')}
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             style={{
               background: 'var(--bg-surface)',
@@ -78,7 +82,7 @@ export function EmailEntry({ onSuccess, onBack, isLogin }: Props) {
       </div>
 
       <Button variant="primary" fullWidth loading={loading} disabled={!email.trim()} onClick={handleSend}>
-        Enviar código →
+        {t('emailEntry.sendCode')}
       </Button>
     </div>
   )
