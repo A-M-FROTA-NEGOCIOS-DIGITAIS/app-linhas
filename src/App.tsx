@@ -23,12 +23,13 @@ export function App() {
     )
   }
 
-  if (!profile) {
+  if (!profile || !profile.name) {
     return (
       <Onboarding
         onComplete={() => {
           // Profile already set in store by Welcome — App re-renders automatically
         }}
+        preAuthenticated={authState === 'authenticated' && !!profile && !profile.name}
       />
     )
   }

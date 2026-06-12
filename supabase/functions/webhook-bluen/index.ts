@@ -6,7 +6,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-bluen-signature',
 }
 
-// Verify HMAC-SHA256 signature from Bluen
 async function verifySignature(body: string, signature: string, secret: string): Promise<boolean> {
   const encoder = new TextEncoder()
   const key = await crypto.subtle.importKey(
@@ -29,7 +28,6 @@ serve(async (req) => {
     const signature = req.headers.get('x-bluen-signature') ?? ''
     const secret = Deno.env.get('BLUEN_WEBHOOK_SECRET') ?? ''
 
-    // Validate signature if secret is configured
     if (secret) {
       const valid = await verifySignature(body, signature, secret)
       if (!valid) {
@@ -49,8 +47,6 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
-    // Extract status and customer email from Bluen payload
-    // Bluen may nest data under event.data or send flat
     const status: string = event.status ?? event.data?.status ?? event.event ?? ''
     const email: string = (
       event.customer?.email ??
@@ -68,47 +64,45 @@ serve(async (req) => {
     }
 
     const isApproved =
-      status === 'approved' ||
-      status === 'paid' ||
-      status === 'complete' ||
-      status === 'completed' ||
-      status === 'APPROVED' ||
-      status === 'PAID' ||
-      status === 'purchase.approved'
+      status === 'approved' || status === 'paid' || status === 'complete' ||
+      status === 'completed' || status === 'APPROVED' || status === 'PAID' ||
+      status === 'purchase.approved' || status === 'Pago' || status === 'Assinatura paga'
 
     const isCancelled =
-      status === 'cancelled' ||
-      status === 'canceled' ||
-      status === 'refunded' ||
-      status === 'chargeback' ||
-      status === 'CANCELLED' ||
-      status === 'REFUNDED'
+      status === 'cancelled' || status === 'canceled' || status === 'refunded' ||
+      status === 'chargeback' || status === 'CANCELLED' || status === 'REFUNDED' ||
+      status === 'Reembolsado' || status === 'Chargeback'
 
     if (isApproved) {
-      // Find profile by email via auth.users
-      const { data: authUser } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', email)
-        .maybeSingle()
+      // Try to find existing user
+      const { data: usersData } = await supabase.auth.admin.listUsers()
+      const existingUser = usersData?.users?.find((u) => u.email === email)
 
-      let profileId = authUser?.id ?? null
-
-      // Fallback: look up via auth admin API
-      if (!profileId) {
-        const { data: usersData } = await supabase.auth.admin.listUsers()
-        const match = usersData?.users?.find((u) => u.email === email)
-        if (match) profileId = match.id
-      }
-
-      if (profileId) {
+      if (existingUser) {
+        // User already has an account — just activate subscription
         await supabase.from('profiles').update({
           subscription_status: 'active',
           trial_ends_at: null,
-        }).eq('id', profileId)
-        console.log(`Activated subscription for profile ${profileId} (${email})`)
+        }).eq('id', existingUser.id)
+        console.log(`Reactivated subscription for existing user ${existingUser.id} (${email})`)
       } else {
-        console.warn(`Purchase approved but no profile found for email: ${email}`)
+        // New user — create account and send welcome email via invite
+        const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email)
+
+        if (inviteError) {
+          console.error(`Failed to invite user ${email}:`, inviteError.message)
+        } else {
+          const userId = inviteData?.user?.id
+          if (userId) {
+            // Give trigger time to create the profile row, then activate subscription
+            await new Promise((resolve) => setTimeout(resolve, 500))
+            await supabase.from('profiles').update({
+              subscription_status: 'active',
+              trial_ends_at: null,
+            }).eq('id', userId)
+            console.log(`Created account and activated subscription for ${email} (${userId})`)
+          }
+        }
       }
     }
 

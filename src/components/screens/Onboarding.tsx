@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/store/app'
 import { track, Events } from '@/lib/analytics'
@@ -36,11 +36,14 @@ interface BasicDataValues {
 
 interface Props {
   onComplete: () => void
+  preAuthenticated?: boolean
 }
 
-export function Onboarding({ onComplete }: Props) {
+export function Onboarding({ onComplete, preAuthenticated }: Props) {
   const hasAccount = localStorage.getItem('linhas-has-account') === '1'
-  const [step, setStep] = useState<Step>(hasAccount ? 'email-entry' : 'splash')
+  const [step, setStep] = useState<Step>(
+    preAuthenticated ? 'basic-data' : hasAccount ? 'email-entry' : 'splash'
+  )
   const [email, setEmail] = useState('')
   const [basicData, setBasicData] = useState<BasicDataValues | null>(null)
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null)
@@ -51,6 +54,19 @@ export function Onboarding({ onComplete }: Props) {
 
   const { setUserId: storeSetUserId, setProfile } = useAppStore()
   const resolvedUserIdRef = useRef<string | null>(null)
+
+  // When user arrives via invite link (already authenticated), load their userId
+  useEffect(() => {
+    if (preAuthenticated) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session?.user?.id) {
+          setUserId(session.user.id)
+          storeSetUserId(session.user.id)
+          resolvedUserIdRef.current = session.user.id
+        }
+      })
+    }
+  }, [preAuthenticated])
 
   const buildFallbackProfile = (uid: string): Profile => ({
     id: uid,
