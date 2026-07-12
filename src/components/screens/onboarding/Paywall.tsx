@@ -1,12 +1,9 @@
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
 import { Button, Eyebrow, Hairline } from '@/components/ui'
 import { track, Events } from '@/lib/analytics'
 
 interface Props {
   preview: string
   name: string
-  onSubscribe: (plan: 'monthly' | 'yearly') => void
   onSkip?: () => void
 }
 
@@ -22,41 +19,54 @@ const LockIcon = () => (
   </svg>
 )
 
-export function Paywall({ preview, name, onSubscribe, onSkip }: Props) {
-  const { t } = useTranslation()
-  const [plan, setPlan] = useState<'monthly' | 'yearly'>('yearly')
+const FEATURES = [
+  'Leitura completa com 6 capítulos personalizados',
+  'Identificação da sua Marca Adormecida no amor',
+  'Análise das 3 marcas: Coração, Mente e Vida',
+  'O padrão que você repete — e como reconhecê-lo',
+  'Acesso vitalício à sua leitura no app',
+]
 
-  const FEATURES = [
-    t('paywall.f1'), t('paywall.f2'), t('paywall.f3'), t('paywall.f4'), t('paywall.f5'),
-  ]
+const CHECKOUT_URL = import.meta.env.VITE_BLUEN_CHECKOUT_URL ?? '#'
 
-  const handleSubscribe = () => {
-    track(Events.TRIAL_STARTED, { plan, amount_cents: plan === 'monthly' ? 1990 : 14900 })
-    onSubscribe(plan)
+export function Paywall({ preview, name, onSkip }: Props) {
+  const handleComprar = () => {
+    track(Events.TRIAL_STARTED, { product: 'leitura_core', amount_cents: 4700 })
+    window.location.href = CHECKOUT_URL
   }
 
   return (
     <div className="h-full flex flex-col">
+      {/* Preview da leitura */}
       <div className="relative px-6 pt-10 pb-2" style={{ maxHeight: '34%' }}>
-        <Eyebrow className="mb-4">{t('paywall.yourReading')}</Eyebrow>
+        <Eyebrow className="mb-4">Sua leitura foi gerada</Eyebrow>
         <div className="relative overflow-hidden" style={{ maxHeight: 180 }}>
           <p className="reading-text text-sm leading-relaxed line-clamp-6">
-            {preview || t('paywall.previewFallback', { name })}
+            {preview || `${name}, sua palma revela um padrão que você provavelmente já sentiu, mas nunca soube nomear...`}
           </p>
-          <div className="absolute bottom-0 left-0 right-0 h-24" style={{ background: 'linear-gradient(transparent, var(--bg-primary))' }} />
+          <div
+            className="absolute bottom-0 left-0 right-0 h-24"
+            style={{ background: 'linear-gradient(transparent, var(--bg-primary))' }}
+          />
         </div>
         <div className="flex items-center gap-2 mt-2 text-text-secondary text-xs">
           <LockIcon />
-          <span>{t('paywall.lockBadge')}</span>
+          <span>Leitura completa bloqueada</span>
         </div>
-        <p className="text-xs mt-3" style={{ color: 'var(--accent-gold)', letterSpacing: '0.01em' }}>
-          {t('paywall.stats')}
-        </p>
       </div>
 
       <Hairline className="mx-6 mt-2" />
 
       <div className="flex-1 flex flex-col px-6 pt-4 pb-6 scroll-area gap-4">
+        {/* Título da oferta */}
+        <div>
+          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 300, color: 'var(--text-primary)', lineHeight: 1.3 }}>
+            Leitura Completa<br />
+            <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>por Madame Aurora</em>
+          </h2>
+        </div>
+
+        {/* Features */}
         <div className="flex flex-col gap-2">
           {FEATURES.map((f) => (
             <div key={f} className="flex items-start gap-3 text-sm text-text-primary">
@@ -68,54 +78,45 @@ export function Paywall({ preview, name, onSubscribe, onSkip }: Props) {
 
         <Hairline />
 
-        <div className="flex flex-col gap-3">
-          <button
-            onClick={() => setPlan('yearly')}
-            className={`relative w-full text-left px-5 py-4 rounded-md border transition-all duration-300 ${plan === 'yearly' ? 'border-accent-gold bg-accent-gold/5' : 'border-border-subtle bg-bg-surface'}`}
-          >
-            {plan === 'yearly' && (
-              <div className="absolute -top-2.5 right-4 bg-accent-gold text-bg-primary text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 rounded-full">
-                {t('paywall.bestValue')}
-              </div>
-            )}
-            <div className="flex justify-between items-center">
-              <div>
-                <div className="text-sm font-medium text-text-primary">{t('paywall.annualPlan')}</div>
-                <div className="text-xs text-text-secondary mt-0.5">{t('paywall.annualDiscount')}</div>
-              </div>
-              <div className="text-right">
-                <div className="text-base font-semibold text-text-primary" style={{ fontFamily: 'var(--font-display)' }}>{t('paywall.annualPrice')}</div>
-                <div className="text-[10px] text-text-muted">{t('paywall.annualPer')}</div>
-              </div>
+        {/* Preço */}
+        <div
+          style={{
+            padding: '16px', borderRadius: 8,
+            border: '1px solid var(--accent-gold)',
+            background: 'rgba(201,169,97,0.06)',
+          }}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}>
+                Pagamento único
+              </p>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                Acesso vitalício, sem assinatura
+              </p>
             </div>
-          </button>
-
-          <button
-            onClick={() => setPlan('monthly')}
-            className={`w-full text-left px-5 py-4 rounded-md border transition-all duration-300 ${plan === 'monthly' ? 'border-accent-gold bg-accent-gold/5' : 'border-border-subtle bg-bg-surface'}`}
-          >
-            <div className="flex justify-between items-center">
-              <div>
-                <div className="text-sm font-medium text-text-primary">{t('paywall.monthlyPlan')}</div>
-                <div className="text-xs text-text-secondary mt-0.5">{t('paywall.monthlyTrial')}</div>
-              </div>
-              <div className="text-right">
-                <div className="text-base font-semibold text-text-primary" style={{ fontFamily: 'var(--font-display)' }}>{t('paywall.monthlyPrice')}</div>
-                <div className="text-[10px] text-text-muted">{t('paywall.monthlyPer')}</div>
-              </div>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 600, color: 'var(--accent-gold)', lineHeight: 1 }}>
+                R$47
+              </p>
             </div>
-          </button>
+          </div>
         </div>
 
-        <Button variant="primary" fullWidth onClick={handleSubscribe}>
-          {t('paywall.startTrial')}
+        <Button variant="primary" fullWidth onClick={handleComprar}>
+          Revelar minha leitura completa
         </Button>
 
-        <p className="text-xs text-text-muted text-center">{t('paywall.cancelNote')}</p>
+        <p className="text-xs text-text-muted text-center">
+          Pagamento seguro • Acesso imediato após confirmação
+        </p>
 
         {onSkip && (
-          <button className="text-xs text-text-muted underline underline-offset-2 text-center" onClick={onSkip}>
-            {t('paywall.maybeLater')}
+          <button
+            className="text-xs text-text-muted underline underline-offset-2 text-center"
+            onClick={onSkip}
+          >
+            Talvez depois
           </button>
         )}
       </div>

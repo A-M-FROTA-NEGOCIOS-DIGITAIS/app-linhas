@@ -7,12 +7,13 @@ import { Intro } from './onboarding/Intro'
 import { EmailEntry } from './onboarding/EmailEntry'
 import { VerifyEmail } from './onboarding/VerifyEmail'
 import { BasicData } from './onboarding/BasicData'
-import { IntentionScreen } from './onboarding/Intention'
+import { QuizScreen, type QuizRespostas } from './onboarding/Quiz'
 import { PalmScan } from './onboarding/PalmScan'
 import { Scanning } from './onboarding/Scanning'
 import { Revelation } from './onboarding/Revelation'
+import { Paywall } from './onboarding/Paywall'
 import { Welcome } from './onboarding/Welcome'
-import type { PalmAnalysis, Intention, Profile, Gender } from '@/types'
+import type { PalmAnalysis, Profile, Gender } from '@/types'
 
 type Step =
   | 'splash'
@@ -20,10 +21,11 @@ type Step =
   | 'email-entry'
   | 'verify-email'
   | 'basic-data'
-  | 'intention'
+  | 'quiz'
   | 'palm-scan'
   | 'scanning'
   | 'revelation'
+  | 'paywall'
   | 'welcome'
 
 interface BasicDataValues {
@@ -46,8 +48,10 @@ export function Onboarding({ onComplete, preAuthenticated }: Props) {
   )
   const [email, setEmail] = useState('')
   const [basicData, setBasicData] = useState<BasicDataValues | null>(null)
+  const [quizRespostas, setQuizRespostas] = useState<QuizRespostas | null>(null)
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null)
   const [analysis, setAnalysis] = useState<PalmAnalysis | null>(null)
+  const [revelationPreview, setRevelationPreview] = useState('')
   const [userId, setUserId] = useState<string | null>(null)
   const [scanId, setScanId] = useState<string | null>(null)
   const [pendingProfile, setPendingProfile] = useState<Profile | null>(null)
@@ -114,13 +118,18 @@ export function Onboarding({ onComplete, preAuthenticated }: Props) {
         gender: data.gender || null,
       }).eq('id', uid).then(() => {})
     }
-    setStep('intention')
+    setStep('quiz')
   }
 
-  const handleIntentionNext = (chosen: Intention) => {
+  const handleQuizComplete = (respostas: QuizRespostas) => {
+    setQuizRespostas(respostas)
     const uid = resolvedUserIdRef.current ?? userId
     if (uid) {
-      supabase.from('profiles').update({ intention: chosen }).eq('id', uid).then(() => {})
+      supabase.from('sessoes').insert({
+        user_id: uid,
+        respostas,
+        status: 'pendente',
+      }).then(() => {})
     }
     setStep('palm-scan')
   }
@@ -150,10 +159,16 @@ export function Onboarding({ onComplete, preAuthenticated }: Props) {
     setStep('revelation')
   }
 
-  const handleRevelationContinue = (_preview: string) => {
+  const handleRevelationContinue = (preview: string) => {
     const uid = resolvedUserIdRef.current ?? userId ?? crypto.randomUUID()
     setPendingProfile(buildFallbackProfile(uid))
-    setStep('welcome')
+    setRevelationPreview(preview)
+    // preAuthenticated = invited after purchase = already paid → vai direto para welcome
+    if (preAuthenticated) {
+      setStep('welcome')
+    } else {
+      setStep('paywall')
+    }
   }
 
   const name = basicData?.name ?? ''
@@ -190,8 +205,8 @@ export function Onboarding({ onComplete, preAuthenticated }: Props) {
     case 'basic-data':
       return <BasicData onContinue={handleBasicDataNext} onBack={() => setStep('email-entry')} />
 
-    case 'intention':
-      return <IntentionScreen onContinue={handleIntentionNext} onBack={() => setStep('basic-data')} />
+    case 'quiz':
+      return <QuizScreen onContinue={handleQuizComplete} onBack={() => setStep('basic-data')} />
 
     case 'palm-scan':
       return <PalmScan onCapture={handleScanComplete} onBack={() => setStep('intention')} />
@@ -213,6 +228,15 @@ export function Onboarding({ onComplete, preAuthenticated }: Props) {
           scanId={scanId!}
           userId={userId!}
           onContinue={handleRevelationContinue}
+        />
+      )
+
+    case 'paywall':
+      return (
+        <Paywall
+          preview={revelationPreview}
+          name={name}
+          onSkip={() => setStep('welcome')}
         />
       )
 
