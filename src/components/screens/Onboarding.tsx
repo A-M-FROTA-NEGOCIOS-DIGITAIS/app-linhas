@@ -13,7 +13,7 @@ import { Scanning } from './onboarding/Scanning'
 import { Revelation } from './onboarding/Revelation'
 import { Paywall } from './onboarding/Paywall'
 import { Welcome } from './onboarding/Welcome'
-import type { PalmAnalysis, Profile, Gender } from '@/types'
+import type { PalmAnalysis, Profile, Gender, Intention } from '@/types'
 
 type Step =
   | 'splash'
@@ -209,7 +209,7 @@ export function Onboarding({ onComplete, preAuthenticated }: Props) {
       return <QuizScreen onContinue={handleQuizComplete} onBack={() => setStep('basic-data')} />
 
     case 'palm-scan':
-      return <PalmScan onCapture={handleScanComplete} onBack={() => setStep('intention')} />
+      return <PalmScan onCapture={handleScanComplete} onBack={() => setStep('quiz')} />
 
     case 'scanning':
       return (
