@@ -3,6 +3,35 @@ import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/store/app'
 import type { Capitulo } from '@/types'
 
+function SignOutButton() {
+  const reset = useAppStore((s) => s.reset)
+  const [signingOut, setSigningOut] = useState(false)
+
+  const handleSignOut = async () => {
+    setSigningOut(true)
+    await supabase.auth.signOut()
+    reset()
+    window.location.href = '/'
+  }
+
+  return (
+    <button
+      onClick={handleSignOut}
+      disabled={signingOut}
+      style={{
+        position: 'absolute', top: 14, right: 16, zIndex: 20,
+        padding: 8, color: 'var(--text-muted)', opacity: signingOut ? 0.5 : 1,
+        background: 'transparent', border: 'none', cursor: 'pointer',
+      }}
+      aria-label="Sair"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+      </svg>
+    </button>
+  )
+}
+
 interface LeituraData {
   reading_id: string
   marca_adormecida: string
@@ -325,8 +354,12 @@ export function LeituraCompleta() {
     }
   }
 
-  if (fase === 'carregando') return <LoadingLeitura />
-  if (fase === 'erro') return <ErroLeitura mensagem={erro} onRetry={carregar} />
-  if (!leitura) return null
-  return <ExibicaoLeitura leitura={leitura} nome={profile?.name ?? ''} />
+  return (
+    <div className="h-full relative">
+      <SignOutButton />
+      {fase === 'carregando' && <LoadingLeitura />}
+      {fase === 'erro' && <ErroLeitura mensagem={erro} onRetry={carregar} />}
+      {fase === 'leitura' && leitura && <ExibicaoLeitura leitura={leitura} nome={profile?.name ?? ''} />}
+    </div>
+  )
 }
