@@ -9,8 +9,15 @@ export type Intention =
   | 'repeating_cycles'
   | 'everything'
 
-export type ReadingType = 'master' | 'daily' | 'themed' | 'compatibility'
+export type ReadingType = 'master' | 'daily' | 'themed' | 'compatibility' | 'core'
 export type Gender = 'male' | 'female' | 'neutral'
+export type ProdutoAlma = 'leitura_core' | 'sentenca' | 'despertar'
+
+export interface Capitulo {
+  numero: number
+  titulo: string
+  conteudo: string
+}
 
 export interface Profile {
   id: string
@@ -21,6 +28,8 @@ export interface Profile {
   gender?: Gender
   intention?: Intention
   subscription_status: SubscriptionStatus
+  marca_adormecida?: string
+  bluen_customer_id?: string
   trial_ends_at?: string
   deleted_at?: string
   created_at: string
@@ -62,10 +71,14 @@ export interface Reading {
   id: string
   user_id: string
   scan_id?: string
+  sessao_id?: string
   reading_type: ReadingType
+  produto?: ProdutoAlma
   theme?: string
   full_content?: string
   preview_content?: string
+  capitulos?: Capitulo[]
+  qualidade_aprovada?: boolean
   word_count?: number
   created_at: string
 }
