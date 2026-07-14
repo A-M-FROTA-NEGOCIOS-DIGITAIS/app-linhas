@@ -43,8 +43,16 @@ const en = {
     subtitleNew: "Enter your email. We'll send a code to confirm — no password needed.",
     emailInvalid: 'Invalid email',
     errorSending: 'Error sending code',
+    noAccountError: "We couldn't find an account with that email. You need to purchase your reading first.",
     sendCode: 'Send code →',
     placeholder: 'your@email.com',
+  },
+  semAcesso: {
+    title: "You don't have",
+    titleItalic: 'access yet',
+    body: "We couldn't find a confirmed purchase for this account. If you already bought your reading, check your email — access is sent automatically after payment confirmation.",
+    cta: 'Buy my reading',
+    signOut: 'Sign out',
   },
   verifyEmail: {
     title: 'Check',

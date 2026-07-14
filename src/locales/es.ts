@@ -43,8 +43,16 @@ const es = {
     subtitleNew: 'Ingresa tu email. Te enviaremos un código para confirmar — sin contraseña.',
     emailInvalid: 'Email inválido',
     errorSending: 'Error al enviar código',
+    noAccountError: 'No encontramos una cuenta con ese email. Necesitas comprar tu lectura primero.',
     sendCode: 'Enviar código →',
     placeholder: 'tu@email.com',
+  },
+  semAcesso: {
+    title: 'Todavía no tienes',
+    titleItalic: 'acceso liberado',
+    body: 'No encontramos una compra confirmada para esta cuenta. Si ya compraste, revisa tu email — el acceso se envía automáticamente tras la confirmación del pago.',
+    cta: 'Comprar mi lectura',
+    signOut: 'Salir',
   },
   verifyEmail: {
     title: 'Revisa',

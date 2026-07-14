@@ -43,8 +43,16 @@ const ptBR = {
     subtitleNew: 'Informe seu email. Enviaremos um código para confirmar — sem senha necessária.',
     emailInvalid: 'Email inválido',
     errorSending: 'Erro ao enviar código',
+    noAccountError: 'Não encontramos uma conta com esse email. Você precisa comprar a leitura primeiro.',
     sendCode: 'Enviar código →',
     placeholder: 'seu@email.com',
+  },
+  semAcesso: {
+    title: 'Você ainda não tem',
+    titleItalic: 'acesso liberado',
+    body: 'Não encontramos uma compra confirmada para esta conta. Se você já comprou, verifique seu email — o acesso é enviado automaticamente após a confirmação do pagamento.',
+    cta: 'Comprar minha leitura',
+    signOut: 'Sair',
   },
   verifyEmail: {
     title: 'Verifique',

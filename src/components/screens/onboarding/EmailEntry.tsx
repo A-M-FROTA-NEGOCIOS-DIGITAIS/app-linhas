@@ -23,12 +23,12 @@ export function EmailEntry({ onSuccess, onBack, isLogin }: Props) {
     try {
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: trimmed,
-        options: { shouldCreateUser: true },
+        options: { shouldCreateUser: false },
       })
       if (otpError) throw otpError
       onSuccess(trimmed)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('emailEntry.errorSending'))
+    } catch {
+      setError(t('emailEntry.noAccountError'))
     } finally {
       setLoading(false)
     }

@@ -6,13 +6,18 @@ import { supabase } from '@/lib/supabase'
 import { Onboarding } from '@/components/screens/Onboarding'
 import { AppShell } from '@/components/screens/AppShell'
 import { LeituraCompleta } from '@/components/screens/LeituraCompleta'
+import { SemAcesso } from '@/components/screens/SemAcesso'
 
-type CompraStatus = 'verificando' | 'pago' | 'sem_compra'
+type CompraStatus = 'verificando' | 'aprovado' | 'sem_compra'
+
+// Emails com acesso total ao app para testes, independente de compra
+const ADMIN_EMAILS = ['alexander.frota@gmail.com']
 
 export function App() {
-  const { authState } = useAuth()
+  const { authState, email } = useAuth()
   const profile = useAppStore((s) => s.profile)
   const [compraStatus, setCompraStatus] = useState<CompraStatus>('verificando')
+  const isAdmin = !!email && ADMIN_EMAILS.includes(email.toLowerCase())
 
   useEffect(() => {
     if (!profile?.id) {
@@ -25,10 +30,10 @@ export function App() {
       .select('id')
       .eq('user_id', profile.id)
       .eq('produto', 'leitura_core')
-      .eq('status', 'pago')
+      .eq('status', 'aprovado')
       .limit(1)
       .maybeSingle()
-      .then(({ data }) => setCompraStatus(data ? 'pago' : 'sem_compra'))
+      .then(({ data }) => setCompraStatus(data ? 'aprovado' : 'sem_compra'))
   }, [profile?.id])
 
   if ((authState === 'loading' && !profile) || (profile?.name && compraStatus === 'verificando')) {
@@ -57,16 +62,20 @@ export function App() {
     )
   }
 
-  if (compraStatus === 'pago') {
+  if (compraStatus === 'aprovado') {
     return <LeituraCompleta />
   }
 
-  return (
-    <AppShell
-      onSignOut={() => {
-        // reset() in Profile.tsx already clears the store (profile → null),
-        // which triggers App to re-render and show Onboarding — no reload needed
-      }}
-    />
-  )
+  if (isAdmin) {
+    return (
+      <AppShell
+        onSignOut={() => {
+          // reset() in Profile.tsx already clears the store (profile → null),
+          // which triggers App to re-render and show Onboarding — no reload needed
+        }}
+      />
+    )
+  }
+
+  return <SemAcesso />
 }
