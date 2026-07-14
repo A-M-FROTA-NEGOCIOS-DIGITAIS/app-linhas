@@ -28,6 +28,51 @@ async function verifySignature(rawBody: string, signatureHeader: string, secret:
   return true
 }
 
+function buildFullContent(capitulos: Array<{ titulo: string; conteudo: string }>): string {
+  return capitulos.map((c) => `${c.titulo}\n\n${c.conteudo}`).join('\n\n---\n\n')
+}
+
+// Se a leitura completa (produto principal) ja veio pronta do marketing,
+// grava direto em readings — sem chamar nossa IA de novo.
+async function criarLeituraSePronta(
+  // deno-lint-ignore no-explicit-any
+  supabase: any,
+  userId: string,
+  sessaoId: string,
+  // deno-lint-ignore no-explicit-any
+  pendente: any,
+) {
+  if (!Array.isArray(pendente.capitulos) || pendente.capitulos.length === 0) return
+
+  const fullContent = buildFullContent(pendente.capitulos)
+
+  await supabase.from('readings').insert({
+    user_id: userId,
+    sessao_id: sessaoId,
+    reading_type: 'core',
+    produto: 'leitura_core',
+    capitulos: pendente.capitulos,
+    full_content: fullContent,
+    preview_content: fullContent.slice(0, 400),
+    word_count: fullContent.split(/\s+/).length,
+    qualidade_aprovada: true,
+    tentativas_qualidade: 0,
+  })
+
+  await supabase.from('sessoes').update({
+    status: 'concluida',
+    marca_adormecida: pendente.marca_adormecida,
+    marca_coracao: pendente.marca_coracao,
+    marca_mente: pendente.marca_mente,
+    marca_vida: pendente.marca_vida,
+    updated_at: new Date().toISOString(),
+  }).eq('id', sessaoId)
+
+  if (pendente.marca_adormecida) {
+    await supabase.from('profiles').update({ marca_adormecida: pendente.marca_adormecida }).eq('id', userId)
+  }
+}
+
 // Verifica se o time de marketing ja enviou o quiz/palma deste email
 // (via intake-quiz-externo) antes da conta existir, e vincula agora.
 // deno-lint-ignore no-explicit-any
@@ -53,14 +98,22 @@ async function vincularQuizPendente(supabase: any, userId: string, email: string
     await supabase.from('profiles').update(profileUpdate).eq('id', userId)
   }
 
-  await supabase.from('sessoes').insert({
-    user_id: userId,
-    respostas: pendente.respostas,
-    analise_visual: pendente.analise_visual,
-    palma_imagem_url: pendente.palma_imagem_url,
-    audio_url: pendente.audio_url,
-    status: 'pendente',
-  })
+  const { data: sessao, error: sessaoErr } = await supabase
+    .from('sessoes')
+    .insert({
+      user_id: userId,
+      respostas: pendente.respostas,
+      analise_visual: pendente.analise_visual,
+      palma_imagem_url: pendente.palma_imagem_url,
+      audio_url: pendente.audio_url,
+      status: 'pendente',
+    })
+    .select('id')
+    .single()
+
+  if (!sessaoErr && sessao) {
+    await criarLeituraSePronta(supabase, userId, sessao.id, pendente)
+  }
 
   await supabase.from('quiz_externo_pendente').update({ processado: true }).eq('id', pendente.id)
   console.log(`Quiz externo pendente vinculado para ${email} (${userId})`)

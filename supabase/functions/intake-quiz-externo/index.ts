@@ -6,6 +6,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-intake-secret',
 }
 
+interface Capitulo {
+  numero: number
+  titulo: string
+  conteudo: string
+}
+
 interface IntakeRecord {
   email: string
   nome: string | null
@@ -18,6 +24,55 @@ interface IntakeRecord {
   audio_url: string | null
   produto: string | null
   bluen_tx_id: string | null
+  marca_adormecida: string | null
+  marca_coracao: string | null
+  marca_mente: string | null
+  marca_vida: string | null
+  capitulos: Capitulo[] | null
+}
+
+function buildFullContent(capitulos: Capitulo[]): string {
+  return capitulos.map((c) => `${c.titulo}\n\n${c.conteudo}`).join('\n\n---\n\n')
+}
+
+// Se a leitura completa (produto principal) ja veio pronta do marketing,
+// grava direto em readings — sem chamar nossa IA de novo.
+async function criarLeituraSePronta(
+  // deno-lint-ignore no-explicit-any
+  supabase: any,
+  userId: string,
+  sessaoId: string,
+  record: Pick<IntakeRecord, 'capitulos' | 'marca_adormecida' | 'marca_coracao' | 'marca_mente' | 'marca_vida'>,
+) {
+  if (!Array.isArray(record.capitulos) || record.capitulos.length === 0) return
+
+  const fullContent = buildFullContent(record.capitulos)
+
+  await supabase.from('readings').insert({
+    user_id: userId,
+    sessao_id: sessaoId,
+    reading_type: 'core',
+    produto: 'leitura_core',
+    capitulos: record.capitulos,
+    full_content: fullContent,
+    preview_content: fullContent.slice(0, 400),
+    word_count: fullContent.split(/\s+/).length,
+    qualidade_aprovada: true,
+    tentativas_qualidade: 0,
+  })
+
+  await supabase.from('sessoes').update({
+    status: 'concluida',
+    marca_adormecida: record.marca_adormecida,
+    marca_coracao: record.marca_coracao,
+    marca_mente: record.marca_mente,
+    marca_vida: record.marca_vida,
+    updated_at: new Date().toISOString(),
+  }).eq('id', sessaoId)
+
+  if (record.marca_adormecida) {
+    await supabase.from('profiles').update({ marca_adormecida: record.marca_adormecida }).eq('id', userId)
+  }
 }
 
 async function vincularSessao(
@@ -36,14 +91,21 @@ async function vincularSessao(
     await supabase.from('profiles').update(profileUpdate).eq('id', userId)
   }
 
-  await supabase.from('sessoes').insert({
-    user_id: userId,
-    respostas: record.respostas,
-    analise_visual: record.analise_visual,
-    palma_imagem_url: record.palma_imagem_url,
-    audio_url: record.audio_url,
-    status: 'pendente',
-  })
+  const { data: sessao, error: sessaoErr } = await supabase
+    .from('sessoes')
+    .insert({
+      user_id: userId,
+      respostas: record.respostas,
+      analise_visual: record.analise_visual,
+      palma_imagem_url: record.palma_imagem_url,
+      audio_url: record.audio_url,
+      status: 'pendente',
+    })
+    .select('id')
+    .single()
+  if (sessaoErr) throw sessaoErr
+
+  await criarLeituraSePronta(supabase, userId, sessao.id, record)
 }
 
 serve(async (req) => {
@@ -83,6 +145,11 @@ serve(async (req) => {
       audio_url: payload.audio_url ?? null,
       produto: payload.produto ?? null,
       bluen_tx_id: payload.bluen_tx_id ?? null,
+      marca_adormecida: payload.marca_adormecida ?? null,
+      marca_coracao: payload.marca_coracao ?? null,
+      marca_mente: payload.marca_mente ?? null,
+      marca_vida: payload.marca_vida ?? null,
+      capitulos: Array.isArray(payload.capitulos) ? payload.capitulos : null,
     }
 
     // Caso 1: webhook-bluen ja criou a conta — vincula direto
@@ -111,6 +178,11 @@ serve(async (req) => {
       audio_url: record.audio_url,
       produto: record.produto,
       bluen_tx_id: record.bluen_tx_id,
+      marca_adormecida: record.marca_adormecida,
+      marca_coracao: record.marca_coracao,
+      marca_mente: record.marca_mente,
+      marca_vida: record.marca_vida,
+      capitulos: record.capitulos,
       processado: false,
     })
     if (pendErr) throw pendErr
