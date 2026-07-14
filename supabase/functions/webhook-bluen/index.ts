@@ -28,6 +28,44 @@ async function verifySignature(rawBody: string, signatureHeader: string, secret:
   return true
 }
 
+// Verifica se o time de marketing ja enviou o quiz/palma deste email
+// (via intake-quiz-externo) antes da conta existir, e vincula agora.
+// deno-lint-ignore no-explicit-any
+async function vincularQuizPendente(supabase: any, userId: string, email: string) {
+  const { data: pendente } = await supabase
+    .from('quiz_externo_pendente')
+    .select('*')
+    .eq('email', email)
+    .eq('processado', false)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (!pendente) return
+
+  const profileUpdate: Record<string, unknown> = {}
+  if (pendente.nome) profileUpdate.name = pendente.nome
+  if (pendente.data_nascimento) profileUpdate.date_of_birth = pendente.data_nascimento
+  if (pendente.cidade_nascimento) profileUpdate.city_of_birth = pendente.cidade_nascimento
+  if (pendente.gender) profileUpdate.gender = pendente.gender
+
+  if (Object.keys(profileUpdate).length > 0) {
+    await supabase.from('profiles').update(profileUpdate).eq('id', userId)
+  }
+
+  await supabase.from('sessoes').insert({
+    user_id: userId,
+    respostas: pendente.respostas,
+    analise_visual: pendente.analise_visual,
+    palma_imagem_url: pendente.palma_imagem_url,
+    audio_url: pendente.audio_url,
+    status: 'pendente',
+  })
+
+  await supabase.from('quiz_externo_pendente').update({ processado: true }).eq('id', pendente.id)
+  console.log(`Quiz externo pendente vinculado para ${email} (${userId})`)
+}
+
 // Mapeia o evento/produto Bluen para o tipo interno
 function mapProduto(eventType: string, event: Record<string, unknown>): string {
   const productName = String(
@@ -114,6 +152,7 @@ serve(async (req) => {
           trial_ends_at: null,
         }).eq('id', userId)
         console.log(`Reactivated subscription for ${email} (${userId})`)
+        await vincularQuizPendente(supabase, userId, email)
       } else {
         const { data: inviteData, error: inviteError } = await supabase.auth.admin.inviteUserByEmail(email)
         if (inviteError) {
@@ -127,6 +166,7 @@ serve(async (req) => {
               trial_ends_at: null,
             }).eq('id', userId)
             console.log(`Created account for ${email} (${userId})`)
+            await vincularQuizPendente(supabase, userId, email)
           }
         }
       }
