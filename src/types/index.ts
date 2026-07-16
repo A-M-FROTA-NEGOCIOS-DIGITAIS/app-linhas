@@ -11,12 +11,62 @@ export type Intention =
 
 export type ReadingType = 'master' | 'daily' | 'themed' | 'compatibility' | 'core'
 export type Gender = 'male' | 'female' | 'neutral'
-export type ProdutoAlma = 'leitura_core' | 'sentenca' | 'despertar'
+export type ProdutoAlma =
+  | 'leitura_core'
+  | 'mestra'
+  | 'ritual'
+  | 'compatibilidade'
+  | 'quem_ama'
+  | '12meses'
+  | 'outra_mao'
+  | 'downsell'
+  | 'audio'
+  | 'sentenca'
+  | 'despertar'
+
+export const PRODUTOS_ESTANTE: { produto: ProdutoAlma; nome: string }[] = [
+  { produto: 'mestra', nome: 'Leitura Mestra' },
+  { produto: 'ritual', nome: 'Ritual de Ruptura' },
+  { produto: 'compatibilidade', nome: 'Compatibilidade' },
+  { produto: 'quem_ama', nome: 'Quem Te Ama' },
+  { produto: '12meses', nome: 'O Seu Ano Interior' },
+  { produto: 'outra_mao', nome: 'Sua Outra Mão' },
+  { produto: 'downsell', nome: 'A Marca da Vida' },
+  { produto: 'audio', nome: 'Áudio com Madame Aurora' },
+  { produto: 'sentenca', nome: 'A Sentença' },
+]
 
 export interface Capitulo {
   numero: number
   titulo: string
   conteudo: string
+}
+
+export interface Compra {
+  id: string
+  user_id: string
+  produto: ProdutoAlma
+  status: string
+  valor_brl?: number
+  created_at: string
+}
+
+export interface Assinatura {
+  id: string
+  user_id: string
+  status: 'ativa' | 'cancelada' | 'inadimplente'
+  bluen_sub_id: string
+  ultima_releitura?: string
+  proxima_releitura?: string
+  proxima_cobranca?: string
+}
+
+export interface Releitura {
+  id: string
+  user_id: string
+  capitulos?: Capitulo[]
+  full_content?: string
+  created_at: string
 }
 
 export interface Profile {
@@ -80,6 +130,8 @@ export interface Reading {
   capitulos?: Capitulo[]
   qualidade_aprovada?: boolean
   word_count?: number
+  audio_url?: string
+  imagem_url?: string
   created_at: string
 }
 

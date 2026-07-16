@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/store/app'
-import type { Capitulo } from '@/types'
+import type { Capitulo, Reading, ProdutoAlma } from '@/types'
+import { PRODUTOS_ESTANTE } from '@/types'
+import { Estante } from './app/Estante'
+import { AddonReadingView } from './app/AddonReadingView'
+import { SentencaView } from './app/SentencaView'
+import { DespertarView } from './app/DespertarView'
+import { TerceiroForm } from './app/TerceiroForm'
+import { OutraMaoFlow } from './app/OutraMaoFlow'
 
 function SignOutButton() {
   const reset = useAppStore((s) => s.reset)
@@ -138,7 +145,17 @@ function ErroLeitura({ mensagem, onRetry }: { mensagem: string; onRetry: () => v
   )
 }
 
-function ExibicaoLeitura({ leitura, nome }: { leitura: LeituraData; nome: string }) {
+interface ExibicaoProps {
+  leitura: LeituraData
+  nome: string
+  userId: string
+  onOpenReading: (reading: Reading) => void
+  onOpenDespertar: () => void
+  onPreencherTerceiro: (produto: 'compatibilidade' | 'quem_ama') => void
+  onEscanearOutraMao: () => void
+}
+
+function ExibicaoLeitura({ leitura, nome, userId, onOpenReading, onOpenDespertar, onPreencherTerceiro, onEscanearOutraMao }: ExibicaoProps) {
   return (
     <div className="h-full flex flex-col">
       <div className="flex-1 overflow-y-auto scroll-area">
@@ -218,37 +235,24 @@ function ExibicaoLeitura({ leitura, nome }: { leitura: LeituraData; nome: string
           ))}
         </div>
 
-        {/* Upsell pós-leitura */}
-        <div className="mx-6 mt-10 mb-12 px-5 py-6 text-center" style={{
-          border: '1px solid var(--border-subtle)',
-          borderRadius: 10,
-          background: 'var(--bg-surface)',
-        }}>
-          <p style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)', marginBottom: 8 }}>
-            O próximo passo
-          </p>
-          <p style={{
-            fontFamily: 'var(--font-serif)', fontSize: 18, fontWeight: 300,
-            color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 8,
-          }}>
-            Você reconheceu a marca.<br />
-            <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>Agora é hora de rompê-la.</em>
-          </p>
-          <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 16 }}>
-            Em breve: A Sentença — o próximo capítulo da sua jornada com Madame Aurora.
-          </p>
-          <div style={{
-            display: 'inline-block', padding: '8px 20px', borderRadius: 6,
-            border: '1px solid var(--border-subtle)',
-            fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--text-muted)',
-          }}>
-            Em breve
-          </div>
-        </div>
+        <Estante
+          userId={userId}
+          onOpenReading={onOpenReading}
+          onOpenDespertar={onOpenDespertar}
+          onPreencherTerceiro={onPreencherTerceiro}
+          onEscanearOutraMao={onEscanearOutraMao}
+        />
       </div>
     </div>
   )
 }
+
+type View =
+  | { tipo: 'leitura' }
+  | { tipo: 'addon'; reading: Reading }
+  | { tipo: 'despertar' }
+  | { tipo: 'terceiro'; produto: 'compatibilidade' | 'quem_ama' }
+  | { tipo: 'outra_mao' }
 
 export function LeituraCompleta() {
   const profile = useAppStore((s) => s.profile)
@@ -256,6 +260,7 @@ export function LeituraCompleta() {
   const [leitura, setLeitura] = useState<LeituraData | null>(null)
   const [fase, setFase] = useState<'carregando' | 'leitura' | 'erro'>('carregando')
   const [erro, setErro] = useState('')
+  const [view, setView] = useState<View>({ tipo: 'leitura' })
 
   useEffect(() => {
     if (userId) carregar()
@@ -354,12 +359,61 @@ export function LeituraCompleta() {
     }
   }
 
+  if (fase !== 'leitura' || !leitura) {
+    return (
+      <div className="h-full relative">
+        <SignOutButton />
+        {fase === 'carregando' && <LoadingLeitura />}
+        {fase === 'erro' && <ErroLeitura mensagem={erro} onRetry={carregar} />}
+      </div>
+    )
+  }
+
+  if (!userId) return null
+
+  const nomeAddon = view.tipo === 'addon' ? PRODUTOS_ESTANTE.find((p) => p.produto === view.reading.produto)?.nome ?? '' : ''
+
   return (
     <div className="h-full relative">
-      <SignOutButton />
-      {fase === 'carregando' && <LoadingLeitura />}
-      {fase === 'erro' && <ErroLeitura mensagem={erro} onRetry={carregar} />}
-      {fase === 'leitura' && leitura && <ExibicaoLeitura leitura={leitura} nome={profile?.name ?? ''} />}
+      {view.tipo === 'leitura' && <SignOutButton />}
+
+      {view.tipo === 'leitura' && (
+        <ExibicaoLeitura
+          leitura={leitura}
+          nome={profile?.name ?? ''}
+          userId={userId}
+          onOpenReading={(reading) => setView({ tipo: 'addon', reading })}
+          onOpenDespertar={() => setView({ tipo: 'despertar' })}
+          onPreencherTerceiro={(produto) => setView({ tipo: 'terceiro', produto })}
+          onEscanearOutraMao={() => setView({ tipo: 'outra_mao' })}
+        />
+      )}
+
+      {view.tipo === 'addon' && view.reading.produto === 'sentenca' && (
+        <SentencaView reading={view.reading} onBack={() => setView({ tipo: 'leitura' })} />
+      )}
+      {view.tipo === 'addon' && view.reading.produto !== 'sentenca' && (
+        <AddonReadingView reading={view.reading} titulo={nomeAddon} onBack={() => setView({ tipo: 'leitura' })} />
+      )}
+
+      {view.tipo === 'despertar' && <DespertarView userId={userId} onBack={() => setView({ tipo: 'leitura' })} />}
+
+      {view.tipo === 'terceiro' && (
+        <TerceiroForm
+          userId={userId}
+          produto={view.produto}
+          onDone={() => setView({ tipo: 'leitura' })}
+          onBack={() => setView({ tipo: 'leitura' })}
+        />
+      )}
+
+      {view.tipo === 'outra_mao' && (
+        <OutraMaoFlow
+          userId={userId}
+          onDone={() => setView({ tipo: 'leitura' })}
+          onBack={() => setView({ tipo: 'leitura' })}
+        />
+      )}
     </div>
   )
 }
