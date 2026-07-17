@@ -1,0 +1,205 @@
+# ALMA — Contexto do Produto (ler antes de qualquer alteração)
+
+> Este arquivo é a fonte de verdade sobre O QUE é o produto ALMA e o que já existe no código.
+> Sempre que houver dúvida sobre nomenclatura, regra de negócio ou prioridade, consultar aqui primeiro.
+>
+> Última atualização: 17/07 — reconciliado com o estado real do código pelo Claude Code.
+> Integração de pagamento (Bluen) em standby; produto deve ser construído de forma agnóstica à
+> plataforma de pagamento.
+
+## A ideia central
+
+"A leitura de palma que não adivinha o futuro — revela o padrão que a pessoa repete no amor e a
+**Marca Adormecida** que o criou."
+
+Mecanismo: o app lê a mão de verdade (câmera + visão computacional) + um quiz de 7 perguntas.
+Esses dados são cruzados pelo **Método das 3 Marcas**:
+- **Coração** — como a pessoa ama
+- **Mente** — como pensa o amor
+- **Vida** — o que viveu
+
+A persona que "fala" com o cliente é a **Madame Aurora**.
+
+---
+
+## Estado atual do desenvolvimento (atualizar sempre que algo mudar)
+
+### ✅ Já existe e funciona (deployado, sem erros de tipo)
+
+**Onboarding e acesso:**
+- Fluxo completo: Splash → Intro → EmailEntry (login apenas — autocadastro livre foi desativado) →
+  BasicData → Quiz (7 perguntas) → PalmScan → Scanning → Revelation → Paywall (R$47) → Welcome
+- Acesso restrito: só entra no app quem tem conta pré-criada via webhook de compra, ou está na
+  allowlist de admin (`alexander.frota@gmail.com`, em `App.tsx`). Sem compra aprovada → tela `SemAcesso`
+- `intake-quiz-externo` — recebe do funil externo de marketing (quiz + palma +, opcionalmente, a
+  leitura core já pronta) e vincula à conta. Tabela `quiz_externo_pendente` cobre o caso da conta
+  ainda não existir na hora do envio (concilia com o que chegar primeiro)
+
+**Motor de geração (Supabase Edge Functions, Deno):**
+- `gerar-leitura` — gera a leitura core (6 capítulos, Método das 3 Marcas) via Claude, com portão de
+  qualidade (Haiku avalia, até 3 tentativas). Usado como fallback quando o marketing não manda a
+  leitura pronta
+- `gerar-produto` — roteador que gera os produtos adicionais: **Mestra** (portão anti-repetição do
+  core), **Ritual**, **Compatibilidade/Quem Ama** (aguarda dados do terceiro via formulário no app),
+  **Ano Interior** (12 blocos verificados como distintos), **Downsell**, **Sentença** (frase + imagem
+  SVG compartilhável). **Áudio** tem o código pronto (ElevenLabs TTS) mas está inativo — falta a chave
+  `ELEVENLABS_API_KEY`
+- `despertar-releitura-trimestral` — job via `pg_cron` (roda 6h todo dia), gera re-leitura para
+  assinaturas do Despertar ativas cuja data já venceu
+- `webhook-bluen` — recebe confirmação de pagamento da Bluen, cria/ativa a conta do cliente, registra
+  a compra (idempotente por `bluen_tx_id`). **Em standby** — ver seção abaixo
+
+**Tabelas:** `sessoes`, `compras`, `readings`, `assinaturas`, `releituras`, `diario_marca` (vazia,
+feature futura), `quiz_externo_pendente`
+
+**App (telas):**
+- `LeituraCompleta.tsx` **é** o App Home — não existe uma tela de retorno separada. Ela gera/carrega a
+  leitura core e, na mesma tela, tem roteamento interno para:
+  - `Estante` — hub que lista os 9 produtos adicionais + Despertar, mostrando o que foi comprado,
+    o que já está pronto, e o que ainda não foi comprado ("Em breve" — ver nota de UX abaixo)
+  - `AddonReadingView` — visualizador genérico de capítulos (Mestra, Ritual, Vínculos, Ano Interior, Downsell)
+  - `SentencaView` — frase + imagem compartilhável
+  - `DespertarView` — status da assinatura + lista de re-leituras
+  - `TerceiroForm` — coleta nome/nascimento/relação de um terceiro (Compatibilidade/Quem Ama)
+  - `OutraMaoFlow` — reaproveita `PalmScan`+`Scanning` para escanear a mão não-dominante
+
+### ⚠️ Ainda NÃO existe / pendente
+
+- **Áudio** — aguardando confirmação se o cunhado já tem conta ElevenLabs, para configurar a chave
+- **Esteira dinâmica com fila de prioridade** — a `Estante` hoje é uma lista estática dos 9 produtos
+  com status (comprado/pronto/em breve). **Não existe** a lógica de "próximo produto que a pessoa
+  ainda não tem" (Mestra → Quem Você Ama → 12 Meses → Compatibilidade → Outra Mão → Áudio) descrita
+  na regra da esteira dinâmica abaixo — isso precisaria ser construído se for prioridade
+- **O Diário** — tabela `diario_marca` criada mas vazia, tratar como futuro, não construir UI ainda
+
+✅ **Resolvido (17/07):** regra "só quem tem a Mestra acessa o Despertar" agora é verificada em
+`DespertarView.tsx` — sem a Mestra aprovada, o CTA de assinar não aparece, só uma mensagem explicando
+o requisito.
+
+### ⚠️ Ponto de compliance para revisar com o dono do produto
+
+O documento original diz: *"a foto da mão é descartada na hora... a imagem nunca persiste"* (LGPD/BIPA/GDPR).
+Porém, no fluxo de `intake-quiz-externo` (dados vindos do funil externo de marketing), existe hoje um
+campo `palma_imagem_url` salvo em `sessoes`/`readings` — ou seja, uma URL apontando para a foto da
+palma **é** persistida. Isso pode conflitar com a regra de compliance declarada. Vale confirmar com
+quem cuida do jurídico/compliance se isso é aceitável (ex: se a URL aponta para um storage temporário
+do marketing que expira) ou se esse campo deve ser removido/parar de ser usado.
+
+### ⏸️ Integração de pagamento — EM STANDBY (não é prioridade agora)
+
+**Decisão do dono do produto (16/07):** a integração com a Bluen está pausada. Não se trata mais de
+confirmar nome de produto (`core` vs `leitura_core`) — a plataforma de pagamento pode mudar
+completamente (talvez não seja a Bluen). Por isso:
+
+- **Não mexer** no `webhook-bluen` nem no `mapProduto()` por enquanto — deixar como está
+- **Não é bloqueio** para o resto do desenvolvimento — o produto deve ser construído de forma
+  agnóstica à plataforma de pagamento
+- Retomar essa frente **somente quando a plataforma de pagamento for definitivamente escolhida**
+- `webhook-bluen` hoje ainda usa nomenclatura antiga (`upsell_mestra`, `bump_ritual`, etc.) e não
+  dispara `gerar-produto` automaticamente — isso é esperado e está OK ficar assim por ora
+
+**Nomenclatura de produto a manter no restante do código** (fora do webhook de pagamento):
+`leitura_core, mestra, ritual, compatibilidade, quem_ama, 12meses, outra_mao, downsell, audio, sentenca, despertar`
+(usa-se `leitura_core`, não `core`, porque é o nome já espalhado por várias tabelas/telas desde antes
+desta decisão — reconciliar para `core` só junto com a escolha final da plataforma de pagamento)
+
+---
+
+## Estrutura de produtos (o que cada um entrega)
+
+| Código | Nome | Papel | Preço BR |
+|---|---|---|---|
+| `leitura_core` | Leitura Completa | Produto principal — porta de entrada de todo mundo | R$ 47 |
+| `compatibilidade` | Compatibilidade | Bump no checkout | +R$ 27 |
+| `audio` | Áudio | Bump / micro-oferta (TTS ElevenLabs) | +R$ 14 |
+| `12meses` | O Seu Ano Interior | Bump OU Downsell 2 (mesmo produto/preço, framing diferente) | R$ 37 |
+| `mestra` | Leitura Mestra | Upsell 1 — logo após comprar o core | R$ 97 |
+| `downsell` | Capítulo da Marca | Downsell 1 — só quem recusou a Mestra | R$ 39 |
+| `quem_ama` | Quem Você Ama | Upsell 2 — pede consentimento (dado de terceiro) | R$ 67 |
+| `outra_mao` | A Outra Mão | Bump especial — exige 2º scan (mão não-dominante) na entrega | — |
+| `ritual` | O Ritual | Bump premium — protocolo prático a partir da Marca | — |
+| `sentenca` | A Sentença | Pós-entrega, app — frase-destino em imagem compartilhável | — |
+| `despertar` | O Despertar | Assinatura trimestral — só para quem tem a Mestra (regra ainda não aplicada no código) | — |
+
+### Regra da esteira dinâmica (ainda não implementada como fila de prioridade)
+Intenção: nunca repetir oferta, nunca deixar slot vazio. Cada slot puxaria da fila de prioridade o
+**próximo produto que a pessoa ainda não tem**:
+
+```
+Mestra → Quem Você Ama → 12 Meses → Compatibilidade → A Outra Mão → Áudio
+```
+
+Hoje a `Estante` só lista todos os 9 com status — essa fila de priorização precisa ser construída
+separadamente se for prioridade.
+
+### Regra de recorrência
+Só quem tem a **Leitura Mestra** acessa o Despertar (re-leitura) — checagem implementada em
+`DespertarView.tsx` (verifica `compras` com `produto='mestra'` e `status='aprovado'`).
+
+---
+
+## As 2 regras inegociáveis (nunca furar)
+
+1. **Nada é gerado antes do pagamento confirmar.** Quando a integração de pagamento for retomada, o
+   webhook da plataforma escolhida deve ser a fonte única da verdade: `webhook → grava compra
+   (idempotente por id de transação) → dispara gerar-produto`.
+2. **A foto da mão não deveria persistir.** Ver nota de compliance acima — hoje há uma exceção
+   (`palma_imagem_url`) que precisa ser revisada.
+
+---
+
+## O "portão de qualidade" (roda antes de toda entrega do core)
+
+Implementado em `gerar-leitura` via um segundo modelo (Haiku) avaliando 5 critérios:
+- especificidade (usa dados reais do quiz/palma, não é genérico)
+- voz (tom íntimo, sem clichê de horóscopo)
+- profundidade (insight real, não óbvio)
+- estrutura (6 capítulos com conteúdo substancial)
+- sem previsões de futuro
+
+Se reprovar → regenera (até 3 tentativas). Os produtos adicionais (Mestra, Ano Interior) têm suas
+próprias checagens específicas dentro de `gerar-produto` (anti-repetição, blocos distintos), mas não
+passam pelo mesmo portão de qualidade via Haiku — só o core tem essa segunda checagem por IA.
+
+---
+
+## Arquitetura / Edge Functions (Supabase) — nomes reais no código
+
+| Arquivo | Função |
+|---|---|
+| `gerar-leitura` | Gera a leitura core (6 capítulos) via Claude, com portão de qualidade via Haiku |
+| `intake-quiz-externo` | Recebe quiz/palma/leitura pronta do funil externo de marketing, vincula à conta |
+| `gerar-produto` | Roteador central dos produtos adicionais (mestra, ritual, vínculos, 12meses, downsell, sentença, áudio) |
+| `despertar-releitura-trimestral` | Job agendado (pg_cron) — re-leitura trimestral para assinantes do Despertar |
+| `webhook-bluen` | Recebe confirmação de pagamento da Bluen (em standby, ver seção acima) |
+| `analyze-palm` | Analisa a foto da palma capturada dentro do app (onboarding próprio, sem funil externo) |
+
+---
+
+## Design system
+
+- **Paleta:** navy `#1A1A2E` (fundo) · dourado `#C9A227` (CTA) · dourado-escuro `#8A6D1A` (títulos) ·
+  creme `#FBF0D2` (texto) — no código atual as variáveis CSS usadas são `--accent-gold` (`#C9A961`),
+  `--bg-primary`, `--bg-surface`, `--text-primary/secondary/muted`, `--border-subtle`
+- **Tipografia:** títulos serifada elegante (`--font-serif`); corpo sans humanista (`--font-sans`).
+  Aurora fala em itálico quando é a voz dela, romano quando é o sistema
+- **Ritmo:** respiro generoso, uma decisão por tela, nunca menu. Ouro é escasso — só no que importa
+
+---
+
+## Fora de escopo deste repositório (não é código do app)
+
+Os itens abaixo existem no documento de produto mas são de **marketing/negócio**, não geram código
+aqui — servem só como contexto de por que o produto é como é:
+- Criativos de anúncio, VSL, testes A/B de hook/preço
+- Sequência de e-mail (roda no N8N — só o "card gêmeo" no App Home é código deste repo, se vier a existir)
+- Prova social/depoimentos, FAQ de landing page
+- Preços detalhados por mercado (só importa saber que o preço varia por idioma/mercado no código)
+
+---
+
+## Stack
+
+React + TypeScript + Vite (Vercel) · Supabase (banco + Edge Functions, Deno) · Claude API (gera as
+leituras) · ElevenLabs (voz da Aurora, ainda não ativado) · Bluen (cobrança/MoR, em standby) · PostHog
+(métricas)

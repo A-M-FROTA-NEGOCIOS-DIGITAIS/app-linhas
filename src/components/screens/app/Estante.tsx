@@ -24,6 +24,18 @@ const CheckIcon = () => (
   </svg>
 )
 
+function precisaAcao(item: ItemEstante): boolean {
+  return item.comprado && !item.pronto && (item.produto === 'compatibilidade' || item.produto === 'quem_ama' || item.produto === 'outra_mao')
+}
+
+function labelStatus(item: ItemEstante): string {
+  if (!item.comprado) return 'Em breve'
+  if (item.pronto) return 'Ver'
+  if (item.produto === 'compatibilidade' || item.produto === 'quem_ama') return 'Preencher dados →'
+  if (item.produto === 'outra_mao') return 'Escanear mão →'
+  return 'Preparando…'
+}
+
 export function Estante({ userId, onOpenReading, onOpenDespertar, onPreencherTerceiro, onEscanearOutraMao }: Props) {
   const [itens, setItens] = useState<ItemEstante[] | null>(null)
   const [assinatura, setAssinatura] = useState<Assinatura | null>(null)
@@ -98,7 +110,7 @@ export function Estante({ userId, onOpenReading, onOpenDespertar, onPreencherTer
         >
           <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--text-primary)' }}>O Despertar</span>
           <span style={{ fontSize: 12, color: assinatura ? 'var(--accent-gold)' : 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
-            {assinatura ? 'Ativo' : 'Indisponível'}
+            {assinatura ? 'Ativo' : 'Em breve'}
           </span>
         </button>
 
@@ -110,7 +122,7 @@ export function Estante({ userId, onOpenReading, onOpenDespertar, onPreencherTer
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '14px 16px', borderRadius: 8, width: '100%', textAlign: 'left',
-              border: `1px solid ${item.pronto ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
+              border: `1px solid ${item.pronto || precisaAcao(item) ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
               background: item.pronto ? 'rgba(201,169,97,0.06)' : 'var(--bg-surface)',
               opacity: item.comprado ? 1 : 0.5,
               cursor: item.comprado ? 'pointer' : 'default',
@@ -120,8 +132,8 @@ export function Estante({ userId, onOpenReading, onOpenDespertar, onPreencherTer
               {item.pronto && <CheckIcon />}
               <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--text-primary)' }}>{item.nome}</span>
             </span>
-            <span style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
-              {!item.comprado ? 'Indisponível' : item.pronto ? 'Ver' : 'Preparando…'}
+            <span style={{ fontSize: 12, color: item.pronto ? 'var(--text-muted)' : precisaAcao(item) ? 'var(--accent-gold)' : 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
+              {labelStatus(item)}
             </span>
           </button>
         ))}

@@ -23,15 +23,18 @@ function formatarData(iso?: string) {
 export function DespertarView({ userId, onBack }: Props) {
   const [assinatura, setAssinatura] = useState<Assinatura | null>(null)
   const [releituras, setReleituras] = useState<Releitura[]>([])
+  const [temMestra, setTemMestra] = useState(false)
   const [carregado, setCarregado] = useState(false)
 
   useEffect(() => {
     Promise.all([
       supabase.from('assinaturas').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).maybeSingle(),
       supabase.from('releituras').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
-    ]).then(([{ data: a }, { data: r }]) => {
+      supabase.from('compras').select('id').eq('user_id', userId).eq('produto', 'mestra').eq('status', 'aprovado').limit(1).maybeSingle(),
+    ]).then(([{ data: a }, { data: r }, { data: mestra }]) => {
       setAssinatura(a as Assinatura | null)
       setReleituras((r as Releitura[]) ?? [])
+      setTemMestra(!!mestra)
       setCarregado(true)
     })
   }, [userId])
@@ -86,7 +89,7 @@ export function DespertarView({ userId, onBack }: Props) {
               </div>
             )}
           </>
-        ) : (
+        ) : temMestra ? (
           <>
             <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 24 }}>
               O Despertar é a assinatura trimestral de Madame Aurora — a cada 90 dias, uma nova leitura mostrando como sua marca evoluiu.
@@ -102,6 +105,11 @@ export function DespertarView({ userId, onBack }: Props) {
               Assinar o Despertar
             </a>
           </>
+        ) : (
+          <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+            O Despertar é exclusivo para quem já tem a Leitura Mestra — é ela que dá a profundidade
+            necessária para acompanhar como sua marca evolui a cada re-leitura.
+          </p>
         )}
       </div>
     </div>
