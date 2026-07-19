@@ -76,14 +76,13 @@ feature futura), `quiz_externo_pendente`
 `DespertarView.tsx` — sem a Mestra aprovada, o CTA de assinar não aparece, só uma mensagem explicando
 o requisito.
 
-### ⚠️ Ponto de compliance para revisar com o dono do produto
+### ✅ Compliance de `palma_imagem_url` — confirmado (19/07)
 
 O documento original diz: *"a foto da mão é descartada na hora... a imagem nunca persiste"* (LGPD/BIPA/GDPR).
-Porém, no fluxo de `intake-quiz-externo` (dados vindos do funil externo de marketing), existe hoje um
-campo `palma_imagem_url` salvo em `sessoes`/`readings` — ou seja, uma URL apontando para a foto da
-palma **é** persistida. Isso pode conflitar com a regra de compliance declarada. Vale confirmar com
-quem cuida do jurídico/compliance se isso é aceitável (ex: se a URL aponta para um storage temporário
-do marketing que expira) ou se esse campo deve ser removido/parar de ser usado.
+O campo `palma_imagem_url` (salvo em `sessoes`/`readings` a partir de `intake-quiz-externo`) guarda uma
+URL apontando para a foto da palma vinda do funil externo de marketing. **O dono do produto confirmou
+com quem decide a regra de compliance que isso não é um problema** — segue sendo usado normalmente,
+sem alteração de código necessária.
 
 ### ⏸️ Integração de pagamento — EM STANDBY (não é prioridade agora)
 
@@ -143,8 +142,9 @@ Só quem tem a **Leitura Mestra** acessa o Despertar (re-leitura) — checagem i
 1. **Nada é gerado antes do pagamento confirmar.** Quando a integração de pagamento for retomada, o
    webhook da plataforma escolhida deve ser a fonte única da verdade: `webhook → grava compra
    (idempotente por id de transação) → dispara gerar-produto`.
-2. **A foto da mão não deveria persistir.** Ver nota de compliance acima — hoje há uma exceção
-   (`palma_imagem_url`) que precisa ser revisada.
+2. **A foto da mão em si não persiste no fluxo próprio do app.** A exceção é `palma_imagem_url`, vinda
+   do funil externo de marketing via `intake-quiz-externo` — já confirmada como aceitável (ver nota
+   de compliance acima).
 
 ---
 
