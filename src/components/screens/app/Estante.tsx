@@ -30,6 +30,7 @@ function precisaAcao(item: ItemEstante): boolean {
 
 function labelStatus(item: ItemEstante): string {
   if (!item.comprado) return 'Em breve'
+  if (item.produto === 'audio') return item.pronto ? 'Ouça acima ↑' : 'Preparando…'
   if (item.pronto) return 'Ver'
   if (item.produto === 'compatibilidade' || item.produto === 'quem_ama') return 'Preencher dados →'
   if (item.produto === 'outra_mao') return 'Escanear mão →'
@@ -58,12 +59,16 @@ export function Estante({ userId, onOpenReading, onOpenDespertar, onPreencherTer
     for (const r of readingsList) if (r.produto) readingsMap[r.produto] = r
     setReadingsPorProduto(readingsMap)
 
+    // O audio fica anexado a leitura core (readings.audio_url), nao como
+    // uma leitura separada com produto='audio' — checa isso a parte.
+    const coreTemAudio = !!readingsMap['leitura_core']?.audio_url
+
     setItens(
       PRODUTOS_ESTANTE.map(({ produto, nome }) => ({
         produto,
         nome,
         comprado: comprasSet.has(produto),
-        pronto: produto in readingsMap,
+        pronto: produto === 'audio' ? coreTemAudio : produto in readingsMap,
       })),
     )
     setAssinatura(assinaturaData as Assinatura | null)
@@ -71,6 +76,7 @@ export function Estante({ userId, onOpenReading, onOpenDespertar, onPreencherTer
 
   const handleClick = (item: ItemEstante) => {
     if (!item.comprado) return
+    if (item.produto === 'audio') return
     if (item.pronto) {
       const reading = readingsPorProduto[item.produto]
       if (reading) onOpenReading(reading)

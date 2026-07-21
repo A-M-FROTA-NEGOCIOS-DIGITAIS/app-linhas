@@ -43,6 +43,7 @@ interface LeituraData {
   reading_id: string
   marca_adormecida: string
   capitulos: Capitulo[]
+  audio_url?: string
 }
 
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI']
@@ -195,6 +196,14 @@ function ExibicaoLeitura({ leitura, nome, userId, onOpenReading, onOpenDespertar
             <p style={{ fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>
               {nome}, este é o padrão que rege seus relacionamentos.
             </p>
+            {leitura.audio_url && (
+              <div className="mt-4">
+                <p style={{ fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)', marginBottom: 6 }}>
+                  Ouça de Madame Aurora
+                </p>
+                <audio controls src={leitura.audio_url} style={{ width: '100%', height: 36 }} />
+              </div>
+            )}
           </div>
         )}
 
@@ -275,7 +284,7 @@ export function LeituraCompleta() {
       // 1. Verificar se já existe leitura aprovada no DB
       const { data: existing } = await supabase
         .from('readings')
-        .select('id, capitulos, sessao_id')
+        .select('id, capitulos, sessao_id, audio_url')
         .eq('user_id', userId)
         .eq('reading_type', 'core')
         .eq('qualidade_aprovada', true)
@@ -298,6 +307,7 @@ export function LeituraCompleta() {
           reading_id: existing.id,
           marca_adormecida: marca,
           capitulos: existing.capitulos as Capitulo[],
+          audio_url: existing.audio_url ?? undefined,
         })
         setFase('leitura')
         return
@@ -340,13 +350,14 @@ export function LeituraCompleta() {
       // Cached — buscar do DB
       if (result?.reading_id) {
         const [{ data: reading }, { data: sessaoData }] = await Promise.all([
-          supabase.from('readings').select('id, capitulos').eq('id', result.reading_id).single(),
+          supabase.from('readings').select('id, capitulos, audio_url').eq('id', result.reading_id).single(),
           supabase.from('sessoes').select('marca_adormecida').eq('id', sessao.id).single(),
         ])
         setLeitura({
           reading_id: reading!.id,
           marca_adormecida: sessaoData?.marca_adormecida ?? '',
           capitulos: reading!.capitulos as Capitulo[],
+          audio_url: reading!.audio_url ?? undefined,
         })
         setFase('leitura')
         return
