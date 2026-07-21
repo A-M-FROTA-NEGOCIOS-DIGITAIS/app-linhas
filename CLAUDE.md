@@ -88,7 +88,22 @@ usavam esse padrão: `gerar-leitura`, `gerar-produto`, `despertar-releitura-trim
 
 ✅ **Resolvido (21/07): Áudio (ElevenLabs) ativado.** `ELEVENLABS_API_KEY` e `ELEVENLABS_VOICE_ID`
 configurados (voz "Elena Vinter", conta do Alexander). Testado ponta a ponta via `gerar-produto` com
-`produto:'audio'` — gera o mp3 e sobe para o bucket público `audios`.
+`produto:'audio'` — gera o mp3 e sobe para o bucket público `audios`. `LeituraCompleta` agora tem um
+player `<audio>` visível abaixo do card da Marca Adormecida quando `readings.audio_url` existe.
+
+✅ **Testado (21/07): todos os produtos do `gerar-produto` funcionam.** Além do core e do áudio, testei
+manualmente Mestra, Ritual, Ano Interior (12meses), Downsell, Sentença e Compatibilidade (com
+`contexto_terceiro` de exemplo) — todos geraram com sucesso na 1ª tentativa após a correção do bug de
+extração de texto. A imagem SVG da Sentença também foi verificada (XML válido, texto legível,
+quebra de linha correta).
+
+**Bug de schema encontrado e corrigido (21/07):** a tabela `compras` tinha um CHECK CONSTRAINT
+(`compras_produto_check`) que só aceitava os códigos **antigos** (`upsell_mestra`, `bump_ritual`,
+`bump_ano_interior`, `bump_outra_mao`, `bump_audio`, `downsell_cap_marca`, `upsell_quem_ama`,
+`pos_sentenca`, `assinatura_despertar`), enquanto todo o resto do sistema já usa os códigos novos.
+Corrigido para aceitar `leitura_core, mestra, ritual, compatibilidade, quem_ama, 12meses, outra_mao,
+downsell, audio, sentenca, despertar` — sem isso, qualquer webhook de pagamento (Bluen ou outra
+plataforma) falharia ao tentar registrar uma compra de produto adicional.
 
 ### ✅ Compliance de `palma_imagem_url` — confirmado (19/07)
 
