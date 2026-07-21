@@ -7,6 +7,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Claude pode retornar blocos de "thinking" antes do texto — nunca assumir
+// que o texto está em content[0]. Procura o primeiro bloco de texto de fato.
+function extractText(content: Array<{ type: string; text?: string }>): string {
+  const bloco = content.find((c) => c.type === 'text')
+  return bloco?.text?.trim() ?? ''
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -75,7 +82,7 @@ Guidelines:
       ]
     })
 
-    const reply = response.content[0].type === 'text' ? response.content[0].text.trim() : ''
+    const reply = extractText(response.content)
 
     await supabase.from('chat_messages').insert({ user_id, role: 'assistant', content: reply })
 

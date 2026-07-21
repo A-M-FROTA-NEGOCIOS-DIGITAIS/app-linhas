@@ -13,6 +13,13 @@ const LANG_MAP: Record<string, string> = {
   'en': 'English',
 }
 
+// Claude pode retornar blocos de "thinking" antes do texto — nunca assumir
+// que o texto está em content[0]. Procura o primeiro bloco de texto de fato.
+function extractText(content: Array<{ type: string; text?: string }>): string {
+  const bloco = content.find((c) => c.type === 'text')
+  return bloco?.text?.trim() ?? ''
+}
+
 function buildCorePrompt(
   profile: Record<string, unknown>,
   sessao: Record<string, unknown>,
@@ -197,23 +204,36 @@ serve(async (req) => {
     let qualidadeAprovada = false
     let tentativas = 0
     const MAX_TENTATIVAS = 3
+    let debugUltimoRawText = ''
+    let debugUltimoErro = ''
 
     while (!qualidadeAprovada && tentativas < MAX_TENTATIVAS) {
       tentativas++
 
-      const msg = await anthropic.messages.create({
-        model: 'claude-sonnet-5',
-        max_tokens: 4000,
-        messages: [{ role: 'user', content: prompt }],
-      })
+      let msg
+      try {
+        msg = await anthropic.messages.create({
+          model: 'claude-sonnet-5',
+          max_tokens: 4000,
+          messages: [{ role: 'user', content: prompt }],
+        })
+      } catch (apiErr) {
+        debugUltimoErro = `anthropic.messages.create falhou: ${String(apiErr)}`
+        continue
+      }
 
-      const rawText = msg.content[0].type === 'text' ? msg.content[0].text.trim() : ''
+      const rawText = extractText(msg.content)
+      debugUltimoRawText = rawText
       const jsonMatch = rawText.match(/\{[\s\S]*\}/)
-      if (!jsonMatch) continue
+      if (!jsonMatch) {
+        debugUltimoErro = 'Nenhum JSON encontrado na resposta'
+        continue
+      }
 
       try {
         leituraJson = JSON.parse(jsonMatch[0])
-      } catch {
+      } catch (parseErr) {
+        debugUltimoErro = `JSON.parse falhou: ${String(parseErr)}`
         continue
       }
 
@@ -224,19 +244,24 @@ serve(async (req) => {
         messages: [{ role: 'user', content: buildQualityPrompt(JSON.stringify(leituraJson, null, 2)) }],
       })
 
-      const qualRaw = qualMsg.content[0].type === 'text' ? qualMsg.content[0].text.trim() : ''
+      const qualRaw = extractText(qualMsg.content)
       const qualMatch = qualRaw.match(/\{[\s\S]*\}/)
       if (qualMatch) {
         try {
           const qualResult = JSON.parse(qualMatch[0])
           qualidadeAprovada = qualResult.aprovada === true
+          if (!qualidadeAprovada) debugUltimoErro = `Reprovado no portão de qualidade: ${qualRaw}`
         } catch { /* tenta de novo */ }
       }
     }
 
     if (!leituraJson) {
       await supabase.from('sessoes').update({ status: 'erro', updated_at: new Date().toISOString() }).eq('id', sessao_id)
-      return new Response(JSON.stringify({ error: 'Falha ao gerar leitura após 3 tentativas' }), {
+      return new Response(JSON.stringify({
+        error: 'Falha ao gerar leitura após 3 tentativas',
+        debug_ultimo_raw_text: debugUltimoRawText,
+        debug_ultimo_erro: debugUltimoErro,
+      }), {
         status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }

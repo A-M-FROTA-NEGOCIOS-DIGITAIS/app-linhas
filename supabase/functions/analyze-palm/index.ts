@@ -7,6 +7,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Claude pode retornar blocos de "thinking" antes do texto — nunca assumir
+// que o texto está em content[0]. Procura o primeiro bloco de texto de fato.
+function extractText(content: Array<{ type: string; text?: string }>): string {
+  const bloco = content.find((c) => c.type === 'text')
+  return bloco?.text?.trim() ?? ''
+}
+
 const PALM_SYSTEM_PROMPT = `You are an expert palmist. Analyze palm images and return a JSON object (no markdown, just raw JSON) with this exact structure:
 {
   "hand_shape": "earth|air|fire|water",
@@ -99,7 +106,7 @@ serve(async (req) => {
       }],
     })
 
-    const rawText = message.content[0].type === 'text' ? message.content[0].text.trim() : ''
+    const rawText = extractText(message.content)
     let analysis: Record<string, unknown>
 
     try {

@@ -7,6 +7,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Claude pode retornar blocos de "thinking" antes do texto — nunca assumir
+// que o texto está em content[0]. Procura o primeiro bloco de texto de fato.
+function extractText(content: Array<{ type: string; text?: string }>): string {
+  const bloco = content.find((c) => c.type === 'text')
+  return bloco?.text?.trim() ?? ''
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -65,7 +72,7 @@ Write the insight directly, no preamble, no "Today:" label. Make it feel like a 
       }]
     })
 
-    const insightText = message.content[0].type === 'text' ? message.content[0].text.trim() : ''
+    const insightText = extractText(message.content)
 
     const { data: insight, error } = await supabase
       .from('daily_insights')

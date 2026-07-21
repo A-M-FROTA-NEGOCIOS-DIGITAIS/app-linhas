@@ -7,6 +7,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Claude pode retornar blocos de "thinking" antes do texto — nunca assumir
+// que o texto está em content[0]. Procura o primeiro bloco de texto de fato.
+function extractText(content: Array<{ type: string; text?: string }>): string {
+  const bloco = content.find((c) => c.type === 'text')
+  return bloco?.text?.trim() ?? ''
+}
+
 // Roda diariamente (via pg_cron). Processa toda assinatura Despertar cuja
 // proxima_releitura ja venceu — gera nova leitura comparando com a anterior.
 serve(async (req) => {
@@ -115,7 +122,7 @@ Retorne APENAS o JSON:
     max_tokens: 3000,
     messages: [{ role: 'user', content: prompt }],
   })
-  const rawText = msg.content[0].type === 'text' ? msg.content[0].text.trim() : ''
+  const rawText = extractText(msg.content)
   const jsonMatch = rawText.match(/\{[\s\S]*\}/)
   if (!jsonMatch) throw new Error('Claude nao retornou JSON valido')
 

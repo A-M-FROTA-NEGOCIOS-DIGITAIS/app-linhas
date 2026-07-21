@@ -19,6 +19,13 @@ interface Capitulo {
   conteudo: string
 }
 
+// Claude pode retornar blocos de "thinking" antes do texto — nunca assumir
+// que o texto está em content[0]. Procura o primeiro bloco de texto de fato.
+function extractText(content: Array<{ type: string; text?: string }>): string {
+  const bloco = content.find((c) => c.type === 'text')
+  return bloco?.text?.trim() ?? ''
+}
+
 function buildFullContent(capitulos: Capitulo[]): string {
   return capitulos.map((c) => `${c.titulo}\n\n${c.conteudo}`).join('\n\n---\n\n')
 }
@@ -105,7 +112,7 @@ async function gerarJsonComClaude(anthropic: Anthropic, prompt: string): Promise
     max_tokens: 4000,
     messages: [{ role: 'user', content: prompt }],
   })
-  const rawText = msg.content[0].type === 'text' ? msg.content[0].text.trim() : ''
+  const rawText = extractText(msg.content)
   const jsonMatch = rawText.match(/\{[\s\S]*\}/)
   if (!jsonMatch) return null
   try {

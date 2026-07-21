@@ -7,6 +7,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Claude pode retornar blocos de "thinking" antes do texto — nunca assumir
+// que o texto está em content[0]. Procura o primeiro bloco de texto de fato.
+function extractText(content: Array<{ type: string; text?: string }>): string {
+  const bloco = content.find((c) => c.type === 'text')
+  return bloco?.text?.trim() ?? ''
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -44,7 +51,7 @@ serve(async (req) => {
 
     let otherAnalysis: Record<string, unknown> = {}
     try {
-      const raw = analysisMsg.content[0].type === 'text' ? analysisMsg.content[0].text : '{}'
+      const raw = extractText(analysisMsg.content) || '{}'
       otherAnalysis = JSON.parse(raw)
     } catch { /* use empty */ }
 
@@ -63,7 +70,7 @@ Write 600–800 words. Sections: THE FIRST MEETING OF HANDS, WHERE YOU ALIGN, WH
       }]
     })
 
-    const fullContent = compatMsg.content[0].type === 'text' ? compatMsg.content[0].text : ''
+    const fullContent = extractText(compatMsg.content)
     const previewContent = fullContent.slice(0, 350)
 
     const { data: reading, error } = await supabase

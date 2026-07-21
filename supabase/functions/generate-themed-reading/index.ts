@@ -7,6 +7,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Claude pode retornar blocos de "thinking" antes do texto — nunca assumir
+// que o texto está em content[0]. Procura o primeiro bloco de texto de fato.
+function extractText(content: Array<{ type: string; text?: string }>): string {
+  const bloco = content.find((c) => c.type === 'text')
+  return bloco?.text?.trim() ?? ''
+}
+
 const THEME_PROMPTS: Record<string, string> = {
   love: 'love, relationships, and emotional connection — how do their heart line and Venus mount speak to their romantic life?',
   career: 'career, money, and ambition — what do their head line, fate line, and Mercury mount reveal?',
@@ -63,7 +70,7 @@ Write 500–700 words. Be specific to their actual palm data, not generic. Intim
       }]
     })
 
-    const fullContent = message.content[0].type === 'text' ? message.content[0].text : ''
+    const fullContent = extractText(message.content)
     const previewContent = fullContent.slice(0, 350)
 
     const { data: reading, error } = await supabase
