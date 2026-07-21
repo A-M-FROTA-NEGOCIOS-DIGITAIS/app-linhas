@@ -30,7 +30,8 @@ A persona que "fala" com o cliente é a **Madame Aurora**.
 - Fluxo completo: Splash → Intro → EmailEntry (login apenas — autocadastro livre foi desativado) →
   BasicData → Quiz (7 perguntas) → PalmScan → Scanning → Revelation → Paywall (R$47) → Welcome
 - Acesso restrito: só entra no app quem tem conta pré-criada via webhook de compra, ou está na
-  allowlist de admin (`alexander.frota@gmail.com`, em `App.tsx`). Sem compra aprovada → tela `SemAcesso`
+  allowlist de admin (`jmorais@unigranrio.br`, em `App.tsx` — email real usado pra testar o app, não
+  confundir com o email da conta Claude.ai de quem desenvolve). Sem compra aprovada → tela `SemAcesso`
 - `intake-quiz-externo` — recebe do funil externo de marketing (quiz + palma +, opcionalmente, a
   leitura core já pronta) e vincula à conta. Tabela `quiz_externo_pendente` cobre o caso da conta
   ainda não existir na hora do envio (concilia com o que chegar primeiro)
@@ -42,8 +43,7 @@ A persona que "fala" com o cliente é a **Madame Aurora**.
 - `gerar-produto` — roteador que gera os produtos adicionais: **Mestra** (portão anti-repetição do
   core), **Ritual**, **Compatibilidade/Quem Ama** (aguarda dados do terceiro via formulário no app),
   **Ano Interior** (12 blocos verificados como distintos), **Downsell**, **Sentença** (frase + imagem
-  SVG compartilhável). **Áudio** tem o código pronto (ElevenLabs TTS) mas está inativo — falta a chave
-  `ELEVENLABS_API_KEY`
+  SVG compartilhável), **Áudio** via ElevenLabs TTS (voz "Elena Vinter") — **ativo e testado (21/07)**
 - `despertar-releitura-trimestral` — job via `pg_cron` (roda 6h todo dia), gera re-leitura para
   assinaturas do Despertar ativas cuja data já venceu
 - `webhook-bluen` — recebe confirmação de pagamento da Bluen, cria/ativa a conta do cliente, registra
@@ -65,7 +65,6 @@ feature futura), `quiz_externo_pendente`
 
 ### ⚠️ Ainda NÃO existe / pendente
 
-- **Áudio** — aguardando confirmação se o cunhado já tem conta ElevenLabs, para configurar a chave
 - **Esteira dinâmica com fila de prioridade** — a `Estante` hoje é uma lista estática dos 9 produtos
   com status (comprado/pronto/em breve). **Não existe** a lógica de "próximo produto que a pessoa
   ainda não tem" (Mestra → Quem Você Ama → 12 Meses → Compatibilidade → Outra Mão → Áudio) descrita
@@ -75,6 +74,21 @@ feature futura), `quiz_externo_pendente`
 ✅ **Resolvido (17/07):** regra "só quem tem a Mestra acessa o Despertar" agora é verificada em
 `DespertarView.tsx` — sem a Mestra aprovada, o CTA de assinar não aparece, só uma mensagem explicando
 o requisito.
+
+✅ **Resolvido (21/07): bug crítico de extração de texto das respostas do Claude.** Todas as edge
+functions que chamam a API da Anthropic indexavam `message.content[0]` cegamente para pegar o texto.
+Com os modelos mais novos, blocos de "thinking" podem vir antes do texto no array `content`, fazendo
+`content[0].type !== 'text'` e o texto extraído ficar vazio — causando falha silenciosa (ex:
+`gerar-leitura` falhava após as 3 tentativas de geração, sem log claro do motivo real). Corrigido com
+um helper `extractText()` (procura o primeiro bloco `type:'text'` no array) em todas as 9 funções que
+usavam esse padrão: `gerar-leitura`, `gerar-produto`, `despertar-releitura-trimestral`, `analyze-palm`,
+`ai-chat-response`, `generate-master-reading`, `generate-themed-reading`, `generate-daily-insight`,
+`compatibility-analysis`. **Se uma função de geração nova "falhar do nada" no futuro, replicar o
+`extractText()` — nunca copiar o padrão antigo `content[0].type === 'text' ? content[0].text : ''`.**
+
+✅ **Resolvido (21/07): Áudio (ElevenLabs) ativado.** `ELEVENLABS_API_KEY` e `ELEVENLABS_VOICE_ID`
+configurados (voz "Elena Vinter", conta do Alexander). Testado ponta a ponta via `gerar-produto` com
+`produto:'audio'` — gera o mp3 e sobe para o bucket público `audios`.
 
 ### ✅ Compliance de `palma_imagem_url` — confirmado (19/07)
 
