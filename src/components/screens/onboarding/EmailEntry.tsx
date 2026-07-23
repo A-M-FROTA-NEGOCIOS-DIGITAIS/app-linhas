@@ -27,8 +27,13 @@ export function EmailEntry({ onSuccess, onBack, isLogin }: Props) {
       })
       if (otpError) throw otpError
       onSuccess(trimmed)
-    } catch {
-      setError(t('emailEntry.noAccountError'))
+    } catch (err) {
+      const code = (err as { code?: number; error_code?: string })?.error_code
+      if (code === 'over_email_send_rate_limit') {
+        setError(t('emailEntry.rateLimitError'))
+      } else {
+        setError(t('emailEntry.noAccountError'))
+      }
     } finally {
       setLoading(false)
     }

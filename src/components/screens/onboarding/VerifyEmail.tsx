@@ -39,8 +39,14 @@ export function VerifyEmail({ email, onSuccess, onBack }: Props) {
 
   const handleResend = async () => {
     setResending(true)
-    await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false } })
+    setError(null)
+    const { error: resendError } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: false } })
     setResending(false)
+    if (resendError) {
+      const code = (resendError as { code?: number; error_code?: string })?.error_code
+      setError(code === 'over_email_send_rate_limit' ? t('emailEntry.rateLimitError') : resendError.message)
+      return
+    }
     setResent(true)
     setTimeout(() => setResent(false), 4000)
   }

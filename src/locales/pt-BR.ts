@@ -44,6 +44,7 @@ const ptBR = {
     emailInvalid: 'Email inválido',
     errorSending: 'Erro ao enviar código',
     noAccountError: 'Não encontramos uma conta com esse email. Você precisa comprar a leitura primeiro.',
+    rateLimitError: 'Muitos códigos enviados em pouco tempo. Aguarde alguns minutos e tente novamente.',
     sendCode: 'Enviar código →',
     placeholder: 'seu@email.com',
   },

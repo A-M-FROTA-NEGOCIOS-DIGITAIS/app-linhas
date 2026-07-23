@@ -44,6 +44,7 @@ const en = {
     emailInvalid: 'Invalid email',
     errorSending: 'Error sending code',
     noAccountError: "We couldn't find an account with that email. You need to purchase your reading first.",
+    rateLimitError: 'Too many codes sent recently. Please wait a few minutes and try again.',
     sendCode: 'Send code →',
     placeholder: 'your@email.com',
   },
