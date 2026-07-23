@@ -125,7 +125,7 @@ async function gerarJsonComClaude(anthropic: Anthropic, prompt: string): Promise
 // deno-lint-ignore no-explicit-any
 async function salvarLeituraSimples(supabase: any, userId: string, sessaoId: string, tipo: string, capitulos: Capitulo[]) {
   const fullContent = buildFullContent(capitulos)
-  await supabase.from('readings').insert({
+  const { error } = await supabase.from('readings').insert({
     user_id: userId,
     sessao_id: sessaoId,
     reading_type: tipo,
@@ -137,6 +137,7 @@ async function salvarLeituraSimples(supabase: any, userId: string, sessaoId: str
     qualidade_aprovada: true,
     tentativas_qualidade: 1,
   })
+  if (error) throw new Error(`Falha ao salvar leitura (${tipo}): ${error.message}`)
 }
 
 // --- Leitura Mestra: aprofunda sem repetir o core (portao de incremento) ---
@@ -325,7 +326,7 @@ Retorne APENAS o JSON:
   }
 
   const fullContent = meses.map((m) => `${m.titulo}\n\n${m.texto}`).join('\n\n---\n\n')
-  await supabase.from('readings').insert({
+  const { error } = await supabase.from('readings').insert({
     user_id: userId,
     sessao_id: sessao.id,
     reading_type: '12meses',
@@ -337,20 +338,60 @@ Retorne APENAS o JSON:
     qualidade_aprovada: true,
     tentativas_qualidade: 1,
   })
+  if (error) throw new Error(`Falha ao salvar Ano Interior: ${error.message}`)
   return { ok: true }
 }
 
-// --- Outra Mao: precisa de um novo scan antes de gerar ---
-// deno-lint-ignore no-explicit-any
-async function processarOutraMao(supabase: any, userId: string, sessao: any, segundaPalmaAnalise: string | undefined) {
+// --- Outra Mao: precisa de um novo scan; gera leitura comparando as duas maos ---
+async function processarOutraMao(
+  anthropic: Anthropic,
+  // deno-lint-ignore no-explicit-any
+  supabase: any,
+  userId: string,
+  // deno-lint-ignore no-explicit-any
+  sessao: any,
+  // deno-lint-ignore no-explicit-any
+  profile: any,
+  segundaPalmaAnalise: string | undefined,
+  idioma: string,
+) {
   if (!segundaPalmaAnalise) {
     console.log(`Outra mao para ${userId} aguardando novo scan`)
     return { aguardando_scan: true }
   }
+
   await supabase
     .from('sessoes')
     .update({ analise_visual: `${sessao.analise_visual ?? ''}\n\nMão não-dominante: ${segundaPalmaAnalise}` })
     .eq('id', sessao.id)
+
+  const nome = profile.name ?? 'você'
+  const marca = sessao.marca_adormecida ?? ''
+  const lang = LANG_MAP[idioma] ?? 'português brasileiro'
+
+  const prompt = `Você é Madame Aurora. ${nome} tem a Marca Adormecida "${marca}" (revelada pela mão dominante). Agora ela escaneou a mão não-dominante — o potencial não vivido, o que ela carrega mas ainda não expressa.
+
+Mão dominante (o que ela vive hoje): resumo já conhecido através da Marca Adormecida.
+Mão não-dominante (o potencial): ${segundaPalmaAnalise}
+
+Escreva 2 capítulos comparando as duas mãos — o que já se manifestou versus o que ainda dorme dentro dela. Em ${lang}.
+
+Retorne APENAS o JSON:
+{
+  "capitulos": [
+    { "numero": 1, "titulo": "O Que Você Já Vive", "conteudo": "2-3 parágrafos" },
+    { "numero": 2, "titulo": "O Que Ainda Dorme Em Você", "conteudo": "2-3 parágrafos" }
+  ]
+}`
+
+  const resultado = await gerarJsonComClaude(anthropic, prompt)
+  const capitulos = resultado?.capitulos as Capitulo[] | undefined
+  if (!capitulos || capitulos.length === 0) {
+    console.error(`Outra mao: falha ao gerar para ${userId}`)
+    return { erro: true }
+  }
+
+  await salvarLeituraSimples(supabase, userId, sessao.id, 'outra_mao', capitulos)
   return { ok: true, vinculado: true }
 }
 
@@ -433,7 +474,7 @@ Retorne APENAS o JSON:
   })
   const { data: urlData } = supabase.storage.from('sentencas').getPublicUrl(path)
 
-  await supabase.from('readings').insert({
+  const { error } = await supabase.from('readings').insert({
     user_id: userId,
     sessao_id: sessao.id,
     reading_type: 'sentenca',
@@ -444,6 +485,7 @@ Retorne APENAS o JSON:
     qualidade_aprovada: true,
     tentativas_qualidade: 1,
   })
+  if (error) throw new Error(`Falha ao salvar Sentença: ${error.message}`)
   return { ok: true, imagem_url: urlData.publicUrl }
 }
 
@@ -526,7 +568,7 @@ serve(async (req) => {
         resultado = await gerarAnoInterior(anthropic, supabase, user_id, sessao, profile, idioma)
         break
       case 'outra_mao':
-        resultado = await processarOutraMao(supabase, user_id, sessao, segunda_palma_analise)
+        resultado = await processarOutraMao(anthropic, supabase, user_id, sessao, profile, segunda_palma_analise, idioma)
         break
       case 'downsell':
         resultado = await gerarDownsell(anthropic, supabase, user_id, sessao, profile, idioma)
