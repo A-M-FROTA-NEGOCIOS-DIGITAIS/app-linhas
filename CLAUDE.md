@@ -105,6 +105,18 @@ Corrigido para aceitar `leitura_core, mestra, ritual, compatibilidade, quem_ama,
 downsell, audio, sentenca, despertar` — sem isso, qualquer webhook de pagamento (Bluen ou outra
 plataforma) falharia ao tentar registrar uma compra de produto adicional.
 
+**Bug crítico #2 encontrado e corrigido (23/07): falha silenciosa em 4 produtos.** A tabela `readings`
+tinha o MESMO tipo de problema — `readings_reading_type_check` só aceitava um conjunto antigo de
+valores, e `gerar-produto` tentava gravar `12meses`/`downsell`/`compatibilidade` (que não batiam) sem
+nunca checar o campo `error` do `.insert()`. Resultado: a API respondia `{ok:true}` mas **nada era
+salvo no banco** para esses 3 produtos + `outra_mao` (que sequer tentava gerar uma leitura, só
+marcava a sessão como vinculada). Só foi descoberto comparando a resposta da API com o conteúdo real
+do banco — nunca confiar apenas em `{ok:true}` sem verificar a gravação em casos assim.
+Corrigido: constraint atualizada, todos os `.insert()` em `readings` agora checam erro e lançam
+exceção se falharem, e `outra_mao` agora gera de fato uma leitura comparando mão dominante e
+não-dominante. **Todos os 9 produtos (core + 8 adicionais) re-testados e confirmados gravados no
+banco com `qualidade_aprovada=true`.**
+
 ### ✅ Compliance de `palma_imagem_url` — confirmado (19/07)
 
 O documento original diz: *"a foto da mão é descartada na hora... a imagem nunca persiste"* (LGPD/BIPA/GDPR).
