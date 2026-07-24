@@ -117,6 +117,31 @@ exceção se falharem, e `outra_mao` agora gera de fato uma leitura comparando m
 não-dominante. **Todos os 9 produtos (core + 8 adicionais) re-testados e confirmados gravados no
 banco com `qualidade_aprovada=true`.**
 
+### ✅ Varredura completa de falhas silenciosas (23/07)
+
+Depois de achar o bug acima duas vezes em arquivos diferentes, rodei uma varredura em TODAS as edge
+functions procurando o mesmo padrão (`.insert`/`.update`/`.upsert` sem checar `{ error }`). Achou 27
+ocorrências. Corrigidas todas as que **não dependem de nada externo**:
+`despertar-releitura-trimestral`, `gerar-leitura`, `gerar-produto` (upload de áudio + update de
+`audio_url` — mesma classe de bug, só que noutra função do arquivo), `intake-quiz-externo`,
+`ai-chat-response` (bônus: corrigido também modelo desatualizado `claude-sonnet-4-6` → `claude-sonnet-5`).
+
+**Deliberadamente NÃO corrigido ainda** (por instrução explícita do usuário — envolvem `webhook-bluen`
+e `webhook-payment`, ambos ligados a pagamento/decisão de plataforma em standby):
+- `webhook-bluen/index.ts`: 7 ocorrências, incluindo os updates de `subscription_status` (ativar/revogar
+  acesso após pagamento/reembolso) — risco alto, mas mexer nisso agora é fora de escopo até a
+  plataforma de pagamento ser decidida.
+- `webhook-payment/index.ts`: 4 ocorrências (parece ser webhook legado de RevenueCat/Stripe do
+  "Linhas" antigo, possivelmente não usado mais na prática, mas não confirmado).
+
+**Why importante lembrar:** esse é o mesmo tipo de bug batendo pela 3ª vez no mesmo dia — sempre que
+escrever uma nova edge function que grava no banco, checar `{ error }` de toda chamada Supabase por
+padrão, não como exceção.
+
+**How to apply:** quando a plataforma de pagamento for decidida e o usuário pedir pra mexer no
+webhook correspondente, aplicar a MESMA correção (checar erro, lançar exceção nos updates críticos de
+acesso/pagamento) nesse arquivo também.
+
 ### ✅ Compliance de `palma_imagem_url` — confirmado (19/07)
 
 O documento original diz: *"a foto da mão é descartada na hora... a imagem nunca persiste"* (LGPD/BIPA/GDPR).
