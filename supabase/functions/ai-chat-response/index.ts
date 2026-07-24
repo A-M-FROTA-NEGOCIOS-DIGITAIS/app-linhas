@@ -46,7 +46,8 @@ serve(async (req) => {
 
     if (!profile) throw new Error('Profile not found')
 
-    await supabase.from('chat_messages').insert({ user_id, role: 'user', content: message })
+    const { error: userMsgErr } = await supabase.from('chat_messages').insert({ user_id, role: 'user', content: message })
+    if (userMsgErr) console.error(`Falha ao salvar mensagem do usuario no historico (${user_id}):`, userMsgErr.message)
 
     const genderHint = profile.gender && profile.gender !== 'neutral'
       ? `\nUser's gender: ${profile.gender}. Use correct gendered pronouns.`
@@ -73,7 +74,7 @@ Guidelines:
     const anthropic = new Anthropic({ apiKey: Deno.env.get('ANTHROPIC_API_KEY')! })
 
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
+      model: 'claude-sonnet-5',
       max_tokens: 600,
       system: systemPrompt,
       messages: [
@@ -84,7 +85,8 @@ Guidelines:
 
     const reply = extractText(response.content)
 
-    await supabase.from('chat_messages').insert({ user_id, role: 'assistant', content: reply })
+    const { error: assistantMsgErr } = await supabase.from('chat_messages').insert({ user_id, role: 'assistant', content: reply })
+    if (assistantMsgErr) console.error(`Falha ao salvar resposta da Aurora no historico (${user_id}):`, assistantMsgErr.message)
 
     return new Response(
       JSON.stringify({ reply }),

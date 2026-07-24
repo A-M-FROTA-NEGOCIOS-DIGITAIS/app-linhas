@@ -48,7 +48,7 @@ async function criarLeituraSePronta(
 
   const fullContent = buildFullContent(record.capitulos)
 
-  await supabase.from('readings').insert({
+  const { error: readingErr } = await supabase.from('readings').insert({
     user_id: userId,
     sessao_id: sessaoId,
     reading_type: 'core',
@@ -60,8 +60,9 @@ async function criarLeituraSePronta(
     qualidade_aprovada: true,
     tentativas_qualidade: 0,
   })
+  if (readingErr) throw new Error(`Falha ao salvar leitura core pronta do marketing: ${readingErr.message}`)
 
-  await supabase.from('sessoes').update({
+  const { error: sessaoErr } = await supabase.from('sessoes').update({
     status: 'concluida',
     marca_adormecida: record.marca_adormecida,
     marca_coracao: record.marca_coracao,
@@ -69,9 +70,11 @@ async function criarLeituraSePronta(
     marca_vida: record.marca_vida,
     updated_at: new Date().toISOString(),
   }).eq('id', sessaoId)
+  if (sessaoErr) throw new Error(`Falha ao concluir sessao (${sessaoId}): ${sessaoErr.message}`)
 
   if (record.marca_adormecida) {
-    await supabase.from('profiles').update({ marca_adormecida: record.marca_adormecida }).eq('id', userId)
+    const { error: profileErr } = await supabase.from('profiles').update({ marca_adormecida: record.marca_adormecida }).eq('id', userId)
+    if (profileErr) console.error(`Falha ao sincronizar marca_adormecida no perfil (${userId}):`, profileErr.message)
   }
 }
 
@@ -88,7 +91,8 @@ async function vincularSessao(
   if (record.gender) profileUpdate.gender = record.gender
 
   if (Object.keys(profileUpdate).length > 0) {
-    await supabase.from('profiles').update(profileUpdate).eq('id', userId)
+    const { error: profileErr } = await supabase.from('profiles').update(profileUpdate).eq('id', userId)
+    if (profileErr) console.error(`Falha ao atualizar perfil a partir do intake (${userId}):`, profileErr.message)
   }
 
   const { data: sessao, error: sessaoErr } = await supabase

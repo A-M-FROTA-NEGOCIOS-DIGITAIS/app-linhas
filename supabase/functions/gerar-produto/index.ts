@@ -360,10 +360,11 @@ async function processarOutraMao(
     return { aguardando_scan: true }
   }
 
-  await supabase
+  const { error: sessaoUpdateErr } = await supabase
     .from('sessoes')
     .update({ analise_visual: `${sessao.analise_visual ?? ''}\n\nMão não-dominante: ${segundaPalmaAnalise}` })
     .eq('id', sessao.id)
+  if (sessaoUpdateErr) console.error(`Falha ao salvar analise da outra mao na sessao (${sessao.id}):`, sessaoUpdateErr.message)
 
   const nome = profile.name ?? 'você'
   const marca = sessao.marca_adormecida ?? ''
@@ -510,9 +511,13 @@ async function gerarAudioTts(supabase: any, userId: string, core: any) {
 
   const audioBuffer = await resp.arrayBuffer()
   const path = `${userId}-${Date.now()}.mp3`
-  await supabase.storage.from('audios').upload(path, audioBuffer, { contentType: 'audio/mpeg' })
+  const { error: uploadErr } = await supabase.storage.from('audios').upload(path, audioBuffer, { contentType: 'audio/mpeg' })
+  if (uploadErr) throw new Error(`Falha ao subir audio para o storage: ${uploadErr.message}`)
+
   const { data: urlData } = supabase.storage.from('audios').getPublicUrl(path)
-  await supabase.from('readings').update({ audio_url: urlData.publicUrl }).eq('id', core.id)
+  const { error: updateErr } = await supabase.from('readings').update({ audio_url: urlData.publicUrl }).eq('id', core.id)
+  if (updateErr) throw new Error(`Falha ao salvar audio_url na leitura: ${updateErr.message}`)
+
   return { audio_url: urlData.publicUrl }
 }
 

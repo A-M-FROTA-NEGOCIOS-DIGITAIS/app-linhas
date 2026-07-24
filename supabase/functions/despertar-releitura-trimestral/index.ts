@@ -132,21 +132,25 @@ Retorne APENAS o JSON:
 
   const fullContent = capitulos.map((c) => `${c.titulo}\n\n${c.conteudo}`).join('\n\n---\n\n')
 
-  await supabase.from('releituras').insert({
+  const { error: releituraErr } = await supabase.from('releituras').insert({
     user_id: userId,
     assinatura_id: assinatura.id,
     comparada_com: anterior.id,
     capitulos,
     full_content: fullContent,
   })
+  if (releituraErr) throw new Error(`Falha ao salvar re-leitura: ${releituraErr.message}`)
 
-  await supabase
+  // So avanca a proxima_releitura se a re-leitura foi salva com sucesso —
+  // senao o assinante perderia o ciclo pago sem tentar de novo por 90 dias.
+  const { error: assinaturaErr } = await supabase
     .from('assinaturas')
     .update({
       ultima_releitura: new Date().toISOString(),
       proxima_releitura: emDias(90),
     })
     .eq('id', assinatura.id)
+  if (assinaturaErr) throw new Error(`Falha ao atualizar assinatura: ${assinaturaErr.message}`)
 
   console.log(`Re-leitura trimestral gerada para ${userId}`)
 }

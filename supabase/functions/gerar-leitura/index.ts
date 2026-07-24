@@ -174,7 +174,11 @@ serve(async (req) => {
     }
 
     // Marca como processando
-    await supabase.from('sessoes').update({ status: 'processando', updated_at: new Date().toISOString() }).eq('id', sessao_id)
+    const { error: processandoErr } = await supabase
+      .from('sessoes')
+      .update({ status: 'processando', updated_at: new Date().toISOString() })
+      .eq('id', sessao_id)
+    if (processandoErr) console.error(`Falha ao marcar sessao como processando (${sessao_id}):`, processandoErr.message)
 
     // Carrega sessão e perfil em paralelo
     const [{ data: sessao, error: sessaoErr }, { data: profile, error: profileErr }] = await Promise.all([
@@ -256,7 +260,11 @@ serve(async (req) => {
     }
 
     if (!leituraJson) {
-      await supabase.from('sessoes').update({ status: 'erro', updated_at: new Date().toISOString() }).eq('id', sessao_id)
+      const { error: erroStatusErr } = await supabase
+        .from('sessoes')
+        .update({ status: 'erro', updated_at: new Date().toISOString() })
+        .eq('id', sessao_id)
+      if (erroStatusErr) console.error(`Falha ao marcar sessao com erro (${sessao_id}):`, erroStatusErr.message)
       return new Response(JSON.stringify({
         error: 'Falha ao gerar leitura após 3 tentativas',
         debug_ultimo_raw_text: debugUltimoRawText,
@@ -292,7 +300,10 @@ serve(async (req) => {
 
     const marcaAdormecida = String(leituraJson.marca_adormecida ?? '')
 
-    await Promise.all([
+    // A leitura ja foi salva com sucesso acima (readingErr checado) — essas
+    // duas atualizacoes sao complementares (status da sessao, sync de perfil).
+    // Se falharem, so loga alto: nao vale derrubar a resposta ja bem-sucedida.
+    const [{ error: sessaoUpdateErr }, { error: profileUpdateErr }] = await Promise.all([
       supabase.from('sessoes').update({
         status: 'concluida',
         marca_adormecida: marcaAdormecida,
@@ -303,6 +314,8 @@ serve(async (req) => {
       }).eq('id', sessao_id),
       supabase.from('profiles').update({ marca_adormecida: marcaAdormecida }).eq('id', user_id),
     ])
+    if (sessaoUpdateErr) console.error(`Falha ao concluir sessao (${sessao_id}):`, sessaoUpdateErr.message)
+    if (profileUpdateErr) console.error(`Falha ao sincronizar marca_adormecida no perfil (${user_id}):`, profileUpdateErr.message)
 
     return new Response(
       JSON.stringify({
