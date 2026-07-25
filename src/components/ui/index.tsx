@@ -182,59 +182,64 @@ export function TopBar({ title, onBack, right }: TopBarProps) {
 }
 
 // ── TabBar ────────────────────────────────────────────────────────────────────
-type TabId = 'today' | 'readings' | 'aurora' | 'you'
+export interface TabDef {
+  id: string
+  label: string
+  icon: React.FC<{ size?: number }>
+}
 
-const TABS: { id: TabId; label: string; icon: React.FC<{ size?: number }> }[] = [
-  {
-    id: 'today', label: 'Today',
-    icon: ({ size = 22 }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="3.5" /><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4" />
-      </svg>
-    ),
-  },
-  {
-    id: 'readings', label: 'Readings',
-    icon: ({ size = 22 }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-      </svg>
-    ),
-  },
-  {
-    id: 'aurora', label: 'Aurora',
-    icon: ({ size = 22 }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 2L9.09 8.26 2 9.27l5 4.87-1.18 6.88L12 17.77l6.18 3.25L17 14.14l5-4.87-7.09-1.01z" />
-      </svg>
-    ),
-  },
-  {
-    id: 'you', label: 'You',
-    icon: ({ size = 22 }) => (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-7 8-7s8 3 8 7" />
-      </svg>
-    ),
-  },
+// Ícones prontos reaproveitáveis por qualquer tela que monte seu próprio TabBar
+export const TabBarIcons = {
+  today: ({ size = 22 }: { size?: number }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3.5" /><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4" />
+    </svg>
+  ),
+  readings: ({ size = 22 }: { size?: number }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+    </svg>
+  ),
+  aurora: ({ size = 22 }: { size?: number }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2L9.09 8.26 2 9.27l5 4.87-1.18 6.88L12 17.77l6.18 3.25L17 14.14l5-4.87-7.09-1.01z" />
+    </svg>
+  ),
+  you: ({ size = 22 }: { size?: number }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-7 8-7s8 3 8 7" />
+    </svg>
+  ),
+  grid: ({ size = 22 }: { size?: number }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="14" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" />
+    </svg>
+  ),
+}
+
+const LINHAS_TABS: TabDef[] = [
+  { id: 'today', label: 'Today', icon: TabBarIcons.today },
+  { id: 'readings', label: 'Readings', icon: TabBarIcons.readings },
+  { id: 'aurora', label: 'Aurora', icon: TabBarIcons.aurora },
+  { id: 'you', label: 'You', icon: TabBarIcons.you },
 ]
 
 interface TabBarProps {
-  active: TabId
-  onChange: (t: TabId) => void
+  active: string
+  onChange: (t: string) => void
+  tabs?: TabDef[]
 }
 
-export function TabBar({ active, onChange }: TabBarProps) {
+export function TabBar({ active, onChange, tabs }: TabBarProps) {
   const { t } = useTranslation()
-  const TAB_LABELS: Record<TabId, string> = {
-    today: t('tabBar.today'),
-    readings: t('tabBar.readings'),
-    aurora: t('tabBar.aurora'),
-    you: t('tabBar.you'),
-  }
+  const resolvedTabs = tabs ?? LINHAS_TABS.map((tab) => ({
+    ...tab,
+    label: t(`tabBar.${tab.id}`),
+  }))
   return (
     <div className="absolute left-3 right-3 bottom-3 bg-bg-primary/80 backdrop-blur-xl border border-border-subtle rounded-[28px] px-2 py-3 flex justify-around z-10">
-      {TABS.map(({ id, icon: Icon }) => {
+      {resolvedTabs.map(({ id, icon: Icon, label }) => {
         const isActive = active === id
         return (
           <button
@@ -246,7 +251,7 @@ export function TabBar({ active, onChange }: TabBarProps) {
             )}
           >
             <Icon size={22} />
-            <span className="text-[9px] font-sans tracking-[0.16em] uppercase">{TAB_LABELS[id]}</span>
+            <span className="text-[9px] font-sans tracking-[0.16em] uppercase">{label}</span>
           </button>
         )
       })}
