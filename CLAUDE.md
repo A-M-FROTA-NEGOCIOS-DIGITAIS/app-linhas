@@ -86,6 +86,15 @@ usavam esse padrão: `gerar-leitura`, `gerar-produto`, `despertar-releitura-trim
 `compatibility-analysis`. **Se uma função de geração nova "falhar do nada" no futuro, replicar o
 `extractText()` — nunca copiar o padrão antigo `content[0].type === 'text' ? content[0].text : ''`.**
 
+✅ **Resolvido (26/07): login de admin travado + profile nunca criado.** Dois problemas combinados:
+(1) `ADMIN_EMAILS` em `App.tsx` só tinha `jmorais@unigranrio.br` — o dono do produto
+(`alexander.frota@gmail.com`) logava com o código OTP com sucesso mas, sem compra aprovada e sem
+estar na allowlist, caía em `SemAcesso`. Adicionado à allowlist. (2) **Nenhum lugar do código fazia
+`insert` em `profiles`** — `handleBasicDataNext` (Onboarding) usava `.update()`, que não grava nada
+se a linha não existir (contas criadas por convite/admin não têm linha). Resultado: o perfil nunca
+persistia e todo login recomeçava o onboarding do zero. Trocado para `.upsert()` com checagem de
+`{ error }` (mesma classe da falha silenciosa já pega 3x em 21–23/07, agora no frontend).
+
 ✅ **Resolvido (21/07): Áudio (ElevenLabs) ativado.** `ELEVENLABS_API_KEY` e `ELEVENLABS_VOICE_ID`
 configurados (voz "Elena Vinter", conta do Alexander). Testado ponta a ponta via `gerar-produto` com
 `produto:'audio'` — gera o mp3 e sobe para o bucket público `audios`. `LeituraCompleta` agora tem um

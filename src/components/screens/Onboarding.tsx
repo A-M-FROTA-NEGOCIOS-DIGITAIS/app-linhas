@@ -110,13 +110,18 @@ export function Onboarding({ onComplete, preAuthenticated }: Props) {
     setBasicData(data)
     const uid = resolvedUserIdRef.current
     if (uid) {
-      supabase.from('profiles').update({
+      // upsert, não update: contas criadas por convite/admin não têm linha em
+      // profiles ainda — um update aqui não gravaria nada (silenciosamente)
+      supabase.from('profiles').upsert({
+        id: uid,
         name: data.name,
         date_of_birth: data.birthDate || null,
         time_of_birth: data.birthTime || null,
         city_of_birth: data.birthCity || null,
         gender: data.gender || null,
-      }).eq('id', uid).then(() => {})
+      }).then(({ error }) => {
+        if (error) console.error('Falha ao salvar profile:', error.message)
+      })
     }
     setStep('quiz')
   }

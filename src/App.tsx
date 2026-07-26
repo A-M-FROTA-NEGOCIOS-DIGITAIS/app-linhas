@@ -11,7 +11,7 @@ import { SemAcesso } from '@/components/screens/SemAcesso'
 type CompraStatus = 'verificando' | 'aprovado' | 'sem_compra'
 
 // Emails com acesso total ao app para testes, independente de compra
-const ADMIN_EMAILS = ['jmorais@unigranrio.br']
+const ADMIN_EMAILS = ['jmorais@unigranrio.br', 'alexander.frota@gmail.com']
 
 export function App() {
   const { authState, email } = useAuth()
