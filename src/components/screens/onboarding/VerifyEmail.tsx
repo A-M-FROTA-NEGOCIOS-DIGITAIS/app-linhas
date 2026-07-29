@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui'
 import { supabase } from '@/lib/supabase'
@@ -16,9 +16,11 @@ export function VerifyEmail({ email, onSuccess, onBack }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [resending, setResending] = useState(false)
   const [resent, setResent] = useState(false)
+  const verificandoRef = useRef(false)
 
   const handleVerify = async () => {
-    if (code.length !== 6) return
+    if (code.length !== 6 || verificandoRef.current) return
+    verificandoRef.current = true
     setLoading(true)
     setError(null)
     try {
@@ -32,10 +34,18 @@ export function VerifyEmail({ email, onSuccess, onBack }: Props) {
       onSuccess(data.user.id)
     } catch (err) {
       setError(err instanceof Error ? err.message : t('verifyEmail.errorInvalid'))
+      verificandoRef.current = false
     } finally {
       setLoading(false)
     }
   }
+
+  // Autopreenchimento (email/SMS) às vezes atualiza o valor visível do input
+  // sem disparar o onChange do React em sincronia — reagir direto ao estado
+  // "code" aqui garante o envio mesmo se o clique no botão não pegar a tempo.
+  useEffect(() => {
+    if (code.length === 6) handleVerify()
+  }, [code])
 
   const handleResend = async () => {
     setResending(true)
@@ -75,6 +85,8 @@ export function VerifyEmail({ email, onSuccess, onBack }: Props) {
           <input
             type="text"
             inputMode="numeric"
+            autoComplete="one-time-code"
+            pattern="[0-9]*"
             maxLength={6}
             value={code}
             autoFocus
