@@ -9,7 +9,28 @@ export type Intention =
   | 'repeating_cycles'
   | 'everything'
 
-export type ReadingType = 'master' | 'daily' | 'themed' | 'compatibility' | 'core'
+// Espelha o CHECK readings_reading_type_check no banco. Os quatro ultimos sao
+// do produto antigo ("Linhas") e seguem existindo em linhas gravadas antes da
+// virada para o ALMA — nao remover sem migrar os dados.
+export type ReadingType =
+  | 'core'
+  | 'mestra'
+  | 'ritual'
+  | 'compatibilidade'
+  | 'quem_ama'
+  | '12meses'
+  | 'outra_mao'
+  | 'downsell'
+  | 'audio'
+  | 'sentenca'
+  | 'despertar'
+  | 'vinculos'
+  | 'ano_interior'
+  | 'cap_marca'
+  | 'master'
+  | 'daily'
+  | 'themed'
+  | 'compatibility'
 export type Gender = 'male' | 'female' | 'neutral'
 export type ProdutoAlma =
   | 'leitura_core'
