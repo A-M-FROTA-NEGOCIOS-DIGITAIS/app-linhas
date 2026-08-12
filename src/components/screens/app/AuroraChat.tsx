@@ -230,8 +230,8 @@ export function AuroraChat({ profile }: Props) {
             onKeyDown={handleKeyDown}
             placeholder={t('aurora.placeholder')}
             rows={1}
-            className="flex-1 bg-transparent resize-none outline-none text-sm text-text-primary placeholder:text-text-muted"
-            style={{ fontFamily: 'var(--font-sans)', lineHeight: 1.5, maxHeight: 120 }}
+            className="flex-1 bg-transparent resize-none outline-none text-text-primary placeholder:text-text-muted"
+            style={{ fontFamily: 'var(--font-sans)', fontSize: 16, lineHeight: 1.5, maxHeight: 120 }}
           />
           <button
             onClick={() => send(input)}

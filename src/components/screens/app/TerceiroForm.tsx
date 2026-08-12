@@ -67,7 +67,7 @@ export function TerceiroForm({ userId, produto, onDone, onBack }: Props) {
           placeholder="Nome da pessoa"
           style={{
             background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
-            borderRadius: 8, padding: '14px 16px', fontSize: 15, color: 'var(--text-primary)',
+            borderRadius: 8, padding: '14px 16px', fontSize: 16, color: 'var(--text-primary)',
             fontFamily: 'var(--font-sans)', outline: 'none', width: '100%',
           }}
         />
@@ -77,7 +77,7 @@ export function TerceiroForm({ userId, produto, onDone, onBack }: Props) {
           onChange={(e) => setDataNascimento(e.target.value)}
           style={{
             background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
-            borderRadius: 8, padding: '14px 16px', fontSize: 15, color: 'var(--text-primary)',
+            borderRadius: 8, padding: '14px 16px', fontSize: 16, color: 'var(--text-primary)',
             fontFamily: 'var(--font-sans)', outline: 'none', width: '100%',
           }}
         />
@@ -88,7 +88,7 @@ export function TerceiroForm({ userId, produto, onDone, onBack }: Props) {
           placeholder="Qual a relação? (ex: namorado, ex, paquera)"
           style={{
             background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
-            borderRadius: 8, padding: '14px 16px', fontSize: 15, color: 'var(--text-primary)',
+            borderRadius: 8, padding: '14px 16px', fontSize: 16, color: 'var(--text-primary)',
             fontFamily: 'var(--font-sans)', outline: 'none', width: '100%',
           }}
         />

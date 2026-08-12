@@ -57,6 +57,13 @@ body {
   overscroll-behavior: none;
 }
 
+/* O Safari do iOS dá zoom automático ao focar um campo com font-size < 16px, e
+   não desfaz o zoom no blur — a tela fica cortada nas etapas seguintes. Manter
+   todo controle de formulário em 16px evita isso sem desligar o pinch-zoom. */
+input, textarea, select {
+  font-size: 16px;
+}
+
 #root {
   display: flex;
   flex-direction: column;

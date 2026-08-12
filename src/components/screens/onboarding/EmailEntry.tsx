@@ -73,7 +73,7 @@ export function EmailEntry({ onSuccess, onBack, isLogin }: Props) {
               border: `1px solid ${error ? '#8B4040' : email ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
               borderRadius: 8,
               padding: '14px 16px',
-              fontSize: 15,
+              fontSize: 16,
               color: 'var(--text-primary)',
               fontFamily: 'var(--font-sans)',
               outline: 'none',

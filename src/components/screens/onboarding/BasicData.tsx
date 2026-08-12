@@ -26,7 +26,7 @@ export function BasicData({ onContinue, onBack }: Props) {
     boxShadow: focusedField === id ? '0 0 0 2px rgba(201,169,97,0.18)' : 'none',
     borderRadius: 8,
     padding: '14px 16px',
-    fontSize: 15,
+    fontSize: 16,
     color: 'var(--text-primary)',
     fontFamily: 'var(--font-sans)',
     outline: 'none',
