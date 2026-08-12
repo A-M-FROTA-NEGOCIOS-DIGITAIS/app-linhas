@@ -52,7 +52,14 @@ export function OutraMaoFlow({ userId, onDone, onBack }: Props) {
   }
 
   if (fase === 'analisando' && imagem) {
-    return <Scanning imageDataUrl={imagem} userId={userId} onComplete={handleAnalysisComplete} />
+    return (
+      <Scanning
+        imageDataUrl={imagem}
+        userId={userId}
+        onComplete={handleAnalysisComplete}
+        onBack={() => setFase('scan')}
+      />
+    )
   }
 
   if (fase === 'gerando') {

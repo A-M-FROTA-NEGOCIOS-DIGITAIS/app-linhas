@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Button } from '@/components/ui'
 
 interface Props {
   onComplete: (analysis: unknown) => void
   imageDataUrl: string
   userId: string
+  /** Volta para a captura da foto. Sem isso a tela de erro vira beco sem saída. */
+  onBack?: () => void
 }
 
 const isDevBypass = () => localStorage.getItem('dev_bypass') === 'true'
@@ -28,12 +31,13 @@ const FAKE_SCAN_RESULT = {
   scan_id: 'dev-bypass-scan-id',
 }
 
-export function Scanning({ onComplete, imageDataUrl, userId }: Props) {
+export function Scanning({ onComplete, imageDataUrl, userId, onBack }: Props) {
   const { t } = useTranslation()
   const [msgIndex, setMsgIndex] = useState(0)
   const [progress, setProgress] = useState(0)
   const [error, setError] = useState<string | null>(null)
-  const calledRef = useRef(false)
+  const [tentativa, setTentativa] = useState(0)
+  const tentativaAnalisadaRef = useRef(-1)
   const onCompleteRef = useRef(onComplete)
   onCompleteRef.current = onComplete
 
@@ -46,8 +50,8 @@ export function Scanning({ onComplete, imageDataUrl, userId }: Props) {
   ]
 
   useEffect(() => {
-    if (calledRef.current) return
-    calledRef.current = true
+    if (tentativaAnalisadaRef.current === tentativa) return
+    tentativaAnalisadaRef.current = tentativa
 
     const msgInterval = setInterval(() => {
       setMsgIndex((p) => Math.min(p + 1, MESSAGES.length - 1))
@@ -76,15 +80,41 @@ export function Scanning({ onComplete, imageDataUrl, userId }: Props) {
         setTimeout(() => onCompleteRef.current(data), 600)
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Unknown error'
+        // O código técnico fica no console; a tela mostra texto humano.
+        console.error('analyze-palm falhou:', msg)
         setError(msg)
       }
     }
 
     analyze()
     return () => { clearInterval(msgInterval); clearInterval(progInterval) }
-  }, [])
+  }, [tentativa])
+
+  const tentarDeNovo = () => {
+    setError(null)
+    setProgress(0)
+    setMsgIndex(0)
+    setTentativa((n) => n + 1)
+  }
 
   if (error) {
+    const ERROS_DE_IMAGEM: Record<string, string> = {
+      image_not_palm: 'scanning.errorNotPalm',
+      image_quality_low: 'scanning.errorQuality',
+      palm_not_visible: 'scanning.errorNotVisible',
+    }
+    const chaveImagem = ERROS_DE_IMAGEM[error]
+    // Reanalisar a mesma foto só resolve falha técnica. Se o problema é a
+    // própria imagem, a saída útil é tirar outra.
+    const fotoPrecisaMudar = Boolean(chaveImagem) && Boolean(onBack)
+
+    const primaria = fotoPrecisaMudar
+      ? { label: t('scanning.newPhoto'), onClick: onBack! }
+      : { label: t('scanning.retry'), onClick: tentarDeNovo }
+    const secundaria = fotoPrecisaMudar
+      ? { label: t('scanning.retry'), onClick: tentarDeNovo }
+      : onBack ? { label: t('scanning.newPhoto'), onClick: onBack } : null
+
     return (
       <div className="h-full flex flex-col items-center justify-center px-8 gap-6">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#8B4040" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -92,11 +122,15 @@ export function Scanning({ onComplete, imageDataUrl, userId }: Props) {
         </svg>
         <div className="text-center">
           <p className="text-base text-text-primary mb-2">
-            {error === 'image_not_palm' ? t('scanning.errorNotPalm') :
-             error === 'image_quality_low' ? t('scanning.errorQuality') :
-             error === 'palm_not_visible' ? t('scanning.errorNotVisible') : error}
+            {chaveImagem ? t(chaveImagem) : t('scanning.errorGeneric')}
           </p>
-          <p className="text-sm text-text-secondary">{t('scanning.errorBack')}</p>
+          {chaveImagem && <p className="text-sm text-text-secondary">{t('scanning.errorHint')}</p>}
+        </div>
+        <div className="w-full max-w-[280px] flex flex-col gap-2">
+          <Button variant="primary" fullWidth onClick={primaria.onClick}>{primaria.label}</Button>
+          {secundaria && (
+            <Button variant="ghost" fullWidth onClick={secundaria.onClick}>{secundaria.label}</Button>
+          )}
         </div>
       </div>
     )

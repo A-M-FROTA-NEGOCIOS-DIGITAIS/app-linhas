@@ -217,6 +217,7 @@ export function Onboarding({ onComplete, preAuthenticated }: Props) {
           imageDataUrl={imageDataUrl!}
           userId={resolvedUserIdRef.current ?? userId ?? ''}
           onComplete={handleAnalysisComplete}
+          onBack={() => setStep('palm-scan')}
         />
       )
 

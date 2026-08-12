@@ -127,7 +127,10 @@ const ptBR = {
     errorNotPalm: 'Isso não parece uma palma.',
     errorQuality: 'Qualidade de imagem muito baixa.',
     errorNotVisible: 'Por favor mostre sua palma aberta.',
-    errorBack: 'Volte e tente com melhor iluminação.',
+    errorGeneric: 'Não consegui ler sua palma agora.',
+    errorHint: 'Tente com mais luz e a mão bem aberta.',
+    retry: 'Tentar de novo',
+    newPhoto: 'Tirar outra foto',
   },
   revelation: {
     earth: 'Mão de terra',

@@ -88,6 +88,7 @@ export function AppShell({ onSignOut }: Props) {
           imageDataUrl={overlay.imageDataUrl}
           userId={profile.id}
           onComplete={handleScanComplete}
+          onBack={() => setOverlay({ type: 'rescan' })}
         />
       )
     }

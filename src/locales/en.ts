@@ -127,7 +127,10 @@ const en = {
     errorNotPalm: "That doesn't look like a palm.",
     errorQuality: 'Image quality too low.',
     errorNotVisible: 'Please show your open palm.',
-    errorBack: 'Go back and try with better lighting.',
+    errorGeneric: "I couldn't read your palm right now.",
+    errorHint: 'Try again with more light and your hand fully open.',
+    retry: 'Try again',
+    newPhoto: 'Take another photo',
   },
   revelation: {
     earth: 'Earth hand',

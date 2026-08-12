@@ -14,6 +14,24 @@ function extractText(content: Array<{ type: string; text?: string }>): string {
   return bloco?.text?.trim() ?? ''
 }
 
+// Mesmo pedindo "raw JSON", o modelo às vezes embrulha em cerca markdown ou
+// escreve uma frase antes. Nunca dar JSON.parse direto no texto cru.
+function parseJson(raw: string): Record<string, unknown> | null {
+  const limpo = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+  const candidatos = [limpo]
+
+  const inicio = limpo.indexOf('{')
+  const fim = limpo.lastIndexOf('}')
+  if (inicio !== -1 && fim > inicio) candidatos.push(limpo.slice(inicio, fim + 1))
+
+  for (const candidato of candidatos) {
+    try {
+      return JSON.parse(candidato)
+    } catch { /* tenta o próximo */ }
+  }
+  return null
+}
+
 const PALM_SYSTEM_PROMPT = `You are an expert palmist. Analyze palm images and return a JSON object (no markdown, just raw JSON) with this exact structure:
 {
   "hand_shape": "earth|air|fire|water",
@@ -89,7 +107,9 @@ serve(async (req) => {
 
     const message = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 500,
+      // O JSON pedido tem 4 linhas + 6 montes + overall_character; com 500 a
+      // resposta era cortada no meio e o JSON.parse quebrava (parse_error).
+      max_tokens: 2000,
       system: [
         {
           type: 'text',
@@ -107,12 +127,15 @@ serve(async (req) => {
     })
 
     const rawText = extractText(message.content)
-    let analysis: Record<string, unknown>
+    const analysis = parseJson(rawText)
 
-    try {
-      analysis = JSON.parse(rawText)
-    } catch {
-      return new Response(JSON.stringify({ error: 'parse_error', raw: rawText }), {
+    if (!analysis) {
+      // O texto cru fica só no log — o cliente nunca deve receber código técnico.
+      console.error(
+        `analyze-palm: resposta não é JSON válido (stop_reason=${message.stop_reason}):`,
+        rawText.slice(0, 500),
+      )
+      return new Response(JSON.stringify({ error: 'analysis_failed' }), {
         status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
