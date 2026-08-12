@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { marcarAberta } from '@/lib/progresso'
 import { useAppStore } from '@/store/app'
 import type { Capitulo } from '@/types'
 
@@ -266,6 +267,10 @@ export function LeituraCompleta({ onBack, onIrParaEstante }: Props) {
   useEffect(() => {
     if (userId) carregar()
   }, [userId])
+
+  useEffect(() => {
+    if (leitura?.reading_id) void marcarAberta(leitura.reading_id)
+  }, [leitura?.reading_id])
 
   const carregar = async () => {
     if (!userId) return

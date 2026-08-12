@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import { marcarAberta } from '@/lib/progresso'
 import type { Reading } from '@/types'
 
 interface Props {
@@ -14,6 +16,10 @@ const BackIcon = () => (
 
 export function AddonReadingView({ reading, titulo, onBack }: Props) {
   const capitulos = reading.capitulos ?? []
+
+  useEffect(() => {
+    void marcarAberta(reading.id)
+  }, [reading.id])
 
   return (
     <div className="h-full flex flex-col">
