@@ -133,7 +133,12 @@ export function AppShell({ onSignOut }: Props) {
       )
     }
     if (overlay.type === 'leitura-core') {
-      return <LeituraCompleta onBack={fecharOverlay} />
+      return (
+        <LeituraCompleta
+          onBack={fecharOverlay}
+          onIrParaEstante={() => { setOverlay(null); setActiveTab('estante') }}
+        />
+      )
     }
     if (overlay.type === 'sentenca') {
       return <SentencaView reading={overlay.reading} onBack={fecharOverlay} />

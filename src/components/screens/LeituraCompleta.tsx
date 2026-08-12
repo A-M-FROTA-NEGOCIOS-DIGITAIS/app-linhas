@@ -131,10 +131,10 @@ function ErroLeitura({ mensagem, onRetry }: { mensagem: string; onRetry: () => v
 interface ExibicaoProps {
   leitura: LeituraData
   nome: string
-  onBack: () => void
+  onIrParaEstante: () => void
 }
 
-function ExibicaoLeitura({ leitura, nome, onBack }: ExibicaoProps) {
+function ExibicaoLeitura({ leitura, nome, onIrParaEstante }: ExibicaoProps) {
   return (
     <div className="h-full flex flex-col">
       <div className="flex-1 overflow-y-auto scroll-area pb-24">
@@ -236,14 +236,14 @@ function ExibicaoLeitura({ leitura, nome, onBack }: ExibicaoProps) {
             <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>Sua jornada, não.</em>
           </p>
           <button
-            onClick={onBack}
+            onClick={onIrParaEstante}
             style={{
               padding: '10px 24px', borderRadius: 6,
               border: '1px solid var(--accent-gold)', color: 'var(--accent-gold)',
               fontFamily: 'var(--font-sans)', fontSize: 13, background: 'transparent',
             }}
           >
-            Voltar
+            Ver minha Estante →
           </button>
         </div>
       </div>
@@ -253,9 +253,10 @@ function ExibicaoLeitura({ leitura, nome, onBack }: ExibicaoProps) {
 
 interface Props {
   onBack: () => void
+  onIrParaEstante: () => void
 }
 
-export function LeituraCompleta({ onBack }: Props) {
+export function LeituraCompleta({ onBack, onIrParaEstante }: Props) {
   const profile = useAppStore((s) => s.profile)
   const userId = profile?.id ?? null
   const [leitura, setLeitura] = useState<LeituraData | null>(null)
@@ -377,7 +378,7 @@ export function LeituraCompleta({ onBack }: Props) {
       <ExibicaoLeitura
         leitura={leitura}
         nome={profile?.name ?? ''}
-        onBack={onBack}
+        onIrParaEstante={onIrParaEstante}
       />
     </div>
   )
