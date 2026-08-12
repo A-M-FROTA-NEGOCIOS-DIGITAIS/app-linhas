@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { marcarAberta } from '@/lib/progresso'
+import { useProgressoCapitulo } from '@/hooks/useProgressoCapitulo'
 import { useAppStore } from '@/store/app'
 import type { Capitulo } from '@/types'
 
@@ -27,6 +28,7 @@ interface LeituraData {
   marca_adormecida: string
   capitulos: Capitulo[]
   audio_url?: string
+  ultimo_capitulo_lido?: number
 }
 
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI']
@@ -133,9 +135,10 @@ interface ExibicaoProps {
   leitura: LeituraData
   nome: string
   onIrParaEstante: () => void
+  registrar: (indice: number) => (el: HTMLElement | null) => void
 }
 
-function ExibicaoLeitura({ leitura, nome, onIrParaEstante }: ExibicaoProps) {
+function ExibicaoLeitura({ leitura, nome, onIrParaEstante, registrar }: ExibicaoProps) {
   return (
     <div className="h-full flex flex-col">
       <div className="flex-1 overflow-y-auto scroll-area pb-24">
@@ -189,7 +192,7 @@ function ExibicaoLeitura({ leitura, nome, onIrParaEstante }: ExibicaoProps) {
         {/* Capítulos */}
         <div className="px-6 flex flex-col gap-10 pb-4">
           {leitura.capitulos.map((cap, i) => (
-            <div key={cap.numero ?? i}>
+            <div key={cap.numero ?? i} ref={registrar(i)}>
               {/* Divisor com número romano */}
               <div className="flex items-center gap-3 mb-4">
                 <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
@@ -263,6 +266,7 @@ export function LeituraCompleta({ onBack, onIrParaEstante }: Props) {
   const [leitura, setLeitura] = useState<LeituraData | null>(null)
   const [fase, setFase] = useState<'carregando' | 'leitura' | 'erro'>('carregando')
   const [erro, setErro] = useState('')
+  const registrar = useProgressoCapitulo(leitura?.reading_id ?? null, leitura?.ultimo_capitulo_lido ?? 0)
 
   useEffect(() => {
     if (userId) carregar()
@@ -281,7 +285,7 @@ export function LeituraCompleta({ onBack, onIrParaEstante }: Props) {
       // 1. Verificar se já existe leitura aprovada no DB
       const { data: existing } = await supabase
         .from('readings')
-        .select('id, capitulos, sessao_id, audio_url')
+        .select('id, capitulos, sessao_id, audio_url, ultimo_capitulo_lido')
         .eq('user_id', userId)
         .eq('reading_type', 'core')
         .eq('qualidade_aprovada', true)
@@ -305,6 +309,7 @@ export function LeituraCompleta({ onBack, onIrParaEstante }: Props) {
           marca_adormecida: marca,
           capitulos: existing.capitulos as Capitulo[],
           audio_url: existing.audio_url ?? undefined,
+          ultimo_capitulo_lido: existing.ultimo_capitulo_lido ?? 0,
         })
         setFase('leitura')
         return
@@ -339,6 +344,7 @@ export function LeituraCompleta({ onBack, onIrParaEstante }: Props) {
           reading_id: result.reading_id,
           marca_adormecida: result.marca_adormecida ?? '',
           capitulos: result.capitulos,
+          ultimo_capitulo_lido: 0,
         })
         setFase('leitura')
         return
@@ -347,7 +353,7 @@ export function LeituraCompleta({ onBack, onIrParaEstante }: Props) {
       // Cached — buscar do DB
       if (result?.reading_id) {
         const [{ data: reading }, { data: sessaoData }] = await Promise.all([
-          supabase.from('readings').select('id, capitulos, audio_url').eq('id', result.reading_id).single(),
+          supabase.from('readings').select('id, capitulos, audio_url, ultimo_capitulo_lido').eq('id', result.reading_id).single(),
           supabase.from('sessoes').select('marca_adormecida').eq('id', sessao.id).single(),
         ])
         setLeitura({
@@ -355,6 +361,7 @@ export function LeituraCompleta({ onBack, onIrParaEstante }: Props) {
           marca_adormecida: sessaoData?.marca_adormecida ?? '',
           capitulos: reading!.capitulos as Capitulo[],
           audio_url: reading!.audio_url ?? undefined,
+          ultimo_capitulo_lido: reading!.ultimo_capitulo_lido ?? 0,
         })
         setFase('leitura')
         return
@@ -384,6 +391,7 @@ export function LeituraCompleta({ onBack, onIrParaEstante }: Props) {
         leitura={leitura}
         nome={profile?.name ?? ''}
         onIrParaEstante={onIrParaEstante}
+        registrar={registrar}
       />
     </div>
   )

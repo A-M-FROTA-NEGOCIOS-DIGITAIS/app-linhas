@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { marcarAberta } from '@/lib/progresso'
+import { useProgressoCapitulo } from '@/hooks/useProgressoCapitulo'
 import type { Reading } from '@/types'
 
 interface Props {
@@ -16,6 +17,7 @@ const BackIcon = () => (
 
 export function AddonReadingView({ reading, titulo, onBack }: Props) {
   const capitulos = reading.capitulos ?? []
+  const registrar = useProgressoCapitulo(reading.id, reading.ultimo_capitulo_lido ?? 0)
 
   useEffect(() => {
     void marcarAberta(reading.id)
@@ -38,7 +40,7 @@ export function AddonReadingView({ reading, titulo, onBack }: Props) {
 
         <div className="px-6 flex flex-col gap-10 pb-12">
           {capitulos.map((cap, i) => (
-            <div key={cap.numero ?? i}>
+            <div key={cap.numero ?? i} ref={registrar(i)}>
               {capitulos.length > 1 && (
                 <div className="flex items-center gap-3 mb-4">
                   <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
