@@ -36,3 +36,18 @@ export function calcularStreak(datas: string[], agora = new Date()): number {
   }
   return streak
 }
+
+const FASES = [
+  'Lua nova', 'Lua crescente', 'Quarto crescente', 'Crescente gibosa',
+  'Lua cheia', 'Minguante gibosa', 'Quarto minguante', 'Lua minguante',
+]
+
+/** Fase da lua por idade sinodica. Precisao de ~1 dia, suficiente para exibicao. */
+export function faseDaLua(data = new Date()): string {
+  const SINODICO = 29.530588853
+  const NOVA_CONHECIDA = Date.UTC(2000, 0, 6, 18, 14)
+  const dias = (data.getTime() - NOVA_CONHECIDA) / 86400000
+  const idade = ((dias % SINODICO) + SINODICO) % SINODICO
+  const indice = Math.floor((idade / SINODICO) * 8 + 0.5) % 8
+  return FASES[indice]
+}

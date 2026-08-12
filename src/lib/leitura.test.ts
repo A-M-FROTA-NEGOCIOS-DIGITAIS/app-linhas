@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { tempoDeLeitura, calcularStreak } from './leitura'
+import { tempoDeLeitura, calcularStreak, faseDaLua } from './leitura'
 
 describe('tempoDeLeitura', () => {
   it('converte palavras em minutos arredondando para cima', () => {
@@ -49,5 +49,26 @@ describe('calcularStreak', () => {
     // local a diferenca daria 23h e o streak quebraria; com parse em UTC da 24h.
     const datas = ['2026-03-09', '2026-03-08', '2026-03-07']
     expect(calcularStreak(datas, new Date('2026-03-09T12:00:00Z'))).toBe(3)
+  })
+})
+
+const TODAS_AS_FASES = [
+  'Lua nova', 'Lua crescente', 'Quarto crescente', 'Crescente gibosa',
+  'Lua cheia', 'Minguante gibosa', 'Quarto minguante', 'Lua minguante',
+]
+
+describe('faseDaLua', () => {
+  it('calcula lua nova na data de referencia do ciclo medio', () => {
+    expect(faseDaLua(new Date('2026-01-18T12:00:00Z'))).toBe('Lua nova')
+  })
+
+  it('calcula lua cheia meio ciclo depois', () => {
+    expect(faseDaLua(new Date('2026-02-01T12:00:00Z'))).toBe('Lua cheia')
+  })
+
+  it('devolve sempre uma das oito fases ao longo de um mes', () => {
+    for (let d = 0; d < 30; d++) {
+      expect(TODAS_AS_FASES).toContain(faseDaLua(new Date(2026, 5, 1 + d)))
+    }
   })
 })
