@@ -5,7 +5,6 @@ import { Spinner } from '@/components/ui'
 import { supabase } from '@/lib/supabase'
 import { Onboarding } from '@/components/screens/Onboarding'
 import { AppShell } from '@/components/screens/AppShell'
-import { LeituraCompleta } from '@/components/screens/LeituraCompleta'
 import { SemAcesso } from '@/components/screens/SemAcesso'
 
 type CompraStatus = 'verificando' | 'aprovado' | 'sem_compra'
@@ -62,11 +61,11 @@ export function App() {
     )
   }
 
-  if (compraStatus === 'aprovado') {
-    return <LeituraCompleta />
-  }
-
-  if (isAdmin) {
+  // Cliente pagante e admin veem exatamente a mesma casca. A bifurcacao antiga
+  // mandava o pagante para a LeituraCompleta (2 abas) e so o admin para o
+  // AppShell (4 abas), o que fez as telas do AppShell apodrecerem sem que
+  // ninguem percebesse — nenhum cliente as abria.
+  if (compraStatus === 'aprovado' || isAdmin) {
     return (
       <AppShell
         onSignOut={() => {
