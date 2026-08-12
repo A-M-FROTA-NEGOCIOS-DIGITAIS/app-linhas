@@ -43,4 +43,11 @@ describe('calcularStreak', () => {
     const datas = ['2026-08-12', '2026-08-12', '2026-08-11']
     expect(calcularStreak(datas, hoje)).toBe(2)
   })
+
+  it('nao quebra o streak na virada do horario de verao de outros fusos', () => {
+    // 08 -> 09 de marco de 2026 e a virada do DST nos EUA. Com parse em fuso
+    // local a diferenca daria 23h e o streak quebraria; com parse em UTC da 24h.
+    const datas = ['2026-03-09', '2026-03-08', '2026-03-07']
+    expect(calcularStreak(datas, new Date('2026-03-09T12:00:00Z'))).toBe(3)
+  })
 })

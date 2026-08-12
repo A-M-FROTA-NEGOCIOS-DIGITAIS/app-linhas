@@ -16,7 +16,10 @@ export function calcularStreak(datas: string[], agora = new Date()): number {
 
   const unicas = [...new Set(datas)].sort().reverse()
   const umDia = 24 * 60 * 60 * 1000
-  const meiaNoite = (d: string) => new Date(`${d}T00:00:00`).getTime()
+  // O sufixo Z e obrigatorio: sem ele o parse usa o fuso local, e em fusos com
+  // horario de verao duas meia-noites consecutivas distam 23h ou 25h, o que
+  // quebraria a contagem no dia da virada.
+  const meiaNoite = (d: string) => new Date(`${d}T00:00:00Z`).getTime()
 
   const hoje = meiaNoite(
     new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(agora),
