@@ -51,6 +51,28 @@ export interface Compra {
   created_at: string
 }
 
+export interface ProdutoCatalogo {
+  produto: ProdutoAlma
+  nome: string
+  descricao?: string
+  preco_brl?: number
+  checkout_url?: string
+  ordem: number
+  ativo: boolean
+}
+
+/** Um produto da esteira com o estado da pessoa cruzado. */
+export interface ItemBiblioteca {
+  produto: ProdutoAlma
+  nome: string
+  preco_brl?: number
+  checkout_url?: string
+  comprado: boolean
+  pronto: boolean
+  precisaAcao: boolean
+  reading?: Reading
+}
+
 export interface Assinatura {
   id: string
   user_id: string
@@ -131,6 +153,11 @@ export interface Reading {
   qualidade_aprovada?: boolean
   word_count?: number
   audio_url?: string
+  titulo?: string
+  traco_origem?: string
+  ultimo_capitulo_lido?: number
+  aberta_em?: string
+  data_carta?: string
   imagem_url?: string
   created_at: string
 }
