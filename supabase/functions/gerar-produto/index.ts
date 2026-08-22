@@ -57,6 +57,40 @@ function normalizarTexto(texto: string): string {
   return texto.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim()
 }
 
+/**
+ * Divide o texto para o TTS sem cortar no meio de uma frase.
+ *
+ * Corta preferencialmente entre paragrafos; se um paragrafo sozinho estourar o
+ * limite, cai para o corte entre frases. O limite e conservador: o
+ * eleven_multilingual_v2 aceita mais, mas blocos menores falham menos e a
+ * emenda entre eles fica menos perceptivel.
+ */
+function dividirParaTts(texto: string, limite = 3500): string[] {
+  const juntar = (a: string, b: string, sep: string) => (a ? a + sep + b : b)
+
+  const partir = (pedacos: string[], sep: string): string[] => {
+    const blocos: string[] = []
+    let atual = ''
+    for (const pedaco of pedacos) {
+      if (atual && juntar(atual, pedaco, sep).length > limite) {
+        blocos.push(atual)
+        atual = pedaco
+      } else {
+        atual = juntar(atual, pedaco, sep)
+      }
+    }
+    if (atual) blocos.push(atual)
+    return blocos
+  }
+
+  const porParagrafo = partir(texto.split(/\n{2,}/).filter(Boolean), '\n\n')
+
+  // Um paragrafo unico maior que o limite ainda estouraria: reparte por frase.
+  return porParagrafo.flatMap((bloco) =>
+    bloco.length <= limite ? [bloco] : partir(bloco.split(/(?<=[.!?])\s+/).filter(Boolean), ' '),
+  )
+}
+
 function escapeXml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
@@ -636,26 +670,54 @@ async function gerarAudioTts(supabase: any, userId: string, core: any) {
   }
 
   const voiceId = Deno.env.get('ELEVENLABS_VOICE_ID') ?? '21m00Tcm4TlvDq8ikWAM'
-  const texto = String(core.full_content ?? '').slice(0, 5000)
+  const texto = String(core.full_content ?? '')
 
-  const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-    method: 'POST',
-    headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text: texto, model_id: 'eleven_multilingual_v2' }),
-  })
-  if (!resp.ok) {
-    // O corpo da resposta e o que diz a causa real (voice_id invalido, modelo
-    // indisponivel no plano, texto longo demais, cota). Jogar isso fora e
-    // ficar so com o status transforma um erro diagnosticavel em adivinhacao.
-    const detalhe = await resp.text().catch(() => '(sem corpo)')
-    console.error(
-      `ElevenLabs ${resp.status} para ${userId} | voice_id=${voiceId} | ` +
-      `chars=${texto.length} | corpo=${detalhe.slice(0, 600)}`,
-    )
-    throw new Error(`ElevenLabs falhou: ${resp.status}`)
+  // A leitura inteira, sem corte. O `.slice(0, 5000)` que existia aqui cortava
+  // os ultimos caracteres no meio de uma palavra — na leitura do Alexander,
+  // exatamente o fecho, a frase que vira a chave da leitura. A cliente pagava
+  // pelo audio e nunca ouvia o desfecho.
+  const blocos = dividirParaTts(texto)
+  const partes: Uint8Array[] = []
+  const idsAnteriores: string[] = []
+
+  for (const [i, bloco] of blocos.entries()) {
+    const resp = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      method: 'POST',
+      headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: bloco,
+        model_id: 'eleven_multilingual_v2',
+        // Da continuidade de entonacao entre os blocos: sem isto a voz
+        // "reinicia" a cada emenda e a costura fica audivel.
+        previous_request_ids: idsAnteriores.slice(-3),
+      }),
+    })
+
+    if (!resp.ok) {
+      // O corpo da resposta e o que diz a causa real (voice_id invalido, modelo
+      // indisponivel no plano, texto longo demais, cota). Jogar isso fora e
+      // ficar so com o status transforma um erro diagnosticavel em adivinhacao.
+      const detalhe = await resp.text().catch(() => '(sem corpo)')
+      console.error(
+        `ElevenLabs ${resp.status} para ${userId} | voice_id=${voiceId} | ` +
+        `bloco ${i + 1}/${blocos.length} | chars=${bloco.length} | corpo=${detalhe.slice(0, 600)}`,
+      )
+      throw new Error(`ElevenLabs falhou: ${resp.status}`)
+    }
+
+    const id = resp.headers.get('request-id')
+    if (id) idsAnteriores.push(id)
+    partes.push(new Uint8Array(await resp.arrayBuffer()))
   }
 
-  const audioBuffer = await resp.arrayBuffer()
+  const total = partes.reduce((soma, p) => soma + p.length, 0)
+  const audioBuffer = new Uint8Array(total)
+  let offset = 0
+  for (const parte of partes) {
+    audioBuffer.set(parte, offset)
+    offset += parte.length
+  }
+  console.log(`Audio de ${userId}: ${blocos.length} bloco(s), ${texto.length} chars, ${total} bytes`)
   const path = `${userId}-${Date.now()}.mp3`
   const { error: uploadErr } = await supabase.storage.from('audios').upload(path, audioBuffer, { contentType: 'audio/mpeg' })
   if (uploadErr) throw new Error(`Falha ao subir audio para o storage: ${uploadErr.message}`)
