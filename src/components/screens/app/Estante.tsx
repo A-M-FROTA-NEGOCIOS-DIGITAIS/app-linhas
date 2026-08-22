@@ -7,6 +7,8 @@ interface Props {
   onOpenDespertar: () => void
   onPreencherTerceiro: (produto: 'compatibilidade' | 'quem_ama') => void
   onEscanearOutraMao: () => void
+  /** O audio nao e uma leitura propria: o player vive dentro da Leitura Completa. */
+  onAbrirLeituraCore: () => void
   onRecarregar: () => void
 }
 
@@ -20,7 +22,7 @@ function labelStatus(item: ItemBiblioteca): string {
   // O Despertar e assinatura: quem manda no status e a tabela assinaturas, nao
   // a de compras. A Estante resolve isso antes de chamar esta funcao.
   if (!item.comprado) return item.checkout_url ? 'Comprar' : 'Em breve'
-  if (item.produto === 'audio') return item.pronto ? 'Ouça na leitura ↑' : 'Preparando…'
+  if (item.produto === 'audio') return item.pronto ? 'Ouvir →' : 'Preparando…'
   if (item.pronto) return 'Ver'
   if (item.produto === 'compatibilidade' || item.produto === 'quem_ama') return 'Preencher dados →'
   if (item.produto === 'outra_mao') return 'Escanear mão →'
@@ -34,7 +36,7 @@ function precoFormatado(preco?: number): string | null {
 
 export function Estante({
   itens, assinatura, onOpenReading, onOpenDespertar,
-  onPreencherTerceiro, onEscanearOutraMao, onRecarregar,
+  onPreencherTerceiro, onEscanearOutraMao, onAbrirLeituraCore, onRecarregar,
 }: Props) {
   const handleClick = (item: ItemBiblioteca) => {
     if (item.produto === 'despertar') {
@@ -45,7 +47,13 @@ export function Estante({
       if (item.checkout_url) window.open(item.checkout_url, '_blank', 'noopener')
       return
     }
-    if (item.produto === 'audio') return
+    // O audio fica anexado a leitura core (readings.audio_url), nao como leitura
+    // separada. Antes o clique caia aqui e nao fazia nada: o item parecia
+    // clicavel, o rotulo dizia "ouca" e tocar nele nao produzia efeito nenhum.
+    if (item.produto === 'audio') {
+      if (item.pronto) onAbrirLeituraCore()
+      return
+    }
     if (item.pronto) {
       if (item.reading) onOpenReading(item.reading)
       return

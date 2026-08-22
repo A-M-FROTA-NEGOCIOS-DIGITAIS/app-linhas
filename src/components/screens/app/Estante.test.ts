@@ -24,6 +24,14 @@ describe('labelStatus', () => {
     expect(labelStatus(item({ produto: 'quem_ama', comprado: true }))).toBe('Preencher dados →')
   })
 
+  it('convida a ouvir quando o audio esta pronto', () => {
+    expect(labelStatus(item({ produto: 'audio', comprado: true, pronto: true }))).toBe('Ouvir →')
+  })
+
+  it('mostra Preparando quando o audio ainda nao foi gerado', () => {
+    expect(labelStatus(item({ produto: 'audio', comprado: true }))).toBe('Preparando…')
+  })
+
   it('mostra Preparando para produto comprado que gera sozinho', () => {
     expect(labelStatus(item({ comprado: true }))).toBe('Preparando…')
   })

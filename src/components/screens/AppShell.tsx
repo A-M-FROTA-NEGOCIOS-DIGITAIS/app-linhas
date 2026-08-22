@@ -238,6 +238,7 @@ export function AppShell({ onSignOut }: Props) {
             onOpenDespertar={() => setOverlay({ type: 'despertar' })}
             onPreencherTerceiro={(produto) => setOverlay({ type: 'terceiro', produto })}
             onEscanearOutraMao={() => setOverlay({ type: 'outra-mao' })}
+            onAbrirLeituraCore={abrirLeituraCore}
             onRecarregar={() => void biblioteca.recarregar()}
           />
         )}
