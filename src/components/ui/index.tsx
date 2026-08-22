@@ -218,7 +218,7 @@ export const TabBarIcons = {
   ),
 }
 
-const LINHAS_TABS: TabDef[] = [
+const ABAS_PADRAO: TabDef[] = [
   { id: 'today', label: 'Today', icon: TabBarIcons.today },
   { id: 'readings', label: 'Readings', icon: TabBarIcons.readings },
   { id: 'aurora', label: 'Aurora', icon: TabBarIcons.aurora },
@@ -233,7 +233,7 @@ interface TabBarProps {
 
 export function TabBar({ active, onChange, tabs }: TabBarProps) {
   const { t } = useTranslation()
-  const resolvedTabs = tabs ?? LINHAS_TABS.map((tab) => ({
+  const resolvedTabs = tabs ?? ABAS_PADRAO.map((tab) => ({
     ...tab,
     label: t(`tabBar.${tab.id}`),
   }))

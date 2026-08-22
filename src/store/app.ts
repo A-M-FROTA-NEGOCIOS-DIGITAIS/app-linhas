@@ -49,6 +49,9 @@ export const useAppStore = create<AppState>()(
       setActiveTab: (t) => set({ activeTab: t }),
       reset: () => set(initial),
     }),
-    { name: 'linhas-store', partialize: (s) => ({ userId: s.userId, activeTab: s.activeTab }) }
+    // Renomeado de 'linhas-store'. So userId e activeTab sao persistidos: o
+    // userId volta da sessao do Supabase no carregamento e a aba volta para a
+    // inicial, entao trocar a chave nao tira nada de ninguem.
+    { name: 'alma-store', partialize: (s) => ({ userId: s.userId, activeTab: s.activeTab }) }
   )
 )
