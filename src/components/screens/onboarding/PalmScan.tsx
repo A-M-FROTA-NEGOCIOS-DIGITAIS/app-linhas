@@ -10,7 +10,7 @@ interface Props {
 }
 
 const PalmGuide = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="120" height="144" fill="none" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="120" height="144" fill="none" stroke="#7C9CE4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M58 230 C 50 200 44 178 44 158 C 44 142 38 130 36 116 C 34 102 40 96 48 100 C 54 102 60 110 64 122 C 64 110 62 76 64 56 C 66 42 78 40 80 54 C 82 76 82 100 84 116 C 86 100 88 70 92 54 C 94 42 106 42 108 56 C 110 78 108 102 110 118 C 112 102 116 78 120 66 C 124 54 134 54 134 68 C 134 86 130 110 130 122 C 134 112 142 100 150 96 C 160 92 166 102 162 114 C 154 132 144 152 140 168 C 134 188 130 210 126 230"/>
     <path d="M52 138 C 78 126 110 124 142 132" opacity="0.85"/>
     <path d="M50 158 C 78 152 112 150 138 156" opacity="0.7"/>
@@ -64,7 +64,7 @@ export function PalmScan({ onCapture, onBack }: Props) {
       <div className="flex flex-col gap-2 px-6 mt-3 mb-4">
         <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 30, fontWeight: 300, lineHeight: 1.2, letterSpacing: '-0.01em', color: 'var(--text-primary)' }}>
           {t('palmScan.title')}{' '}
-          <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>{t('palmScan.titleItalic')}</em>
+          <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>{t('palmScan.titleItalic')}</em>
         </h2>
         <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)', lineHeight: 1.55 }}>
           {t('palmScan.subtitle')} <strong style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{t('palmScan.subtitleBold')}</strong>{t('palmScan.subtitleSuffix')}
@@ -72,11 +72,11 @@ export function PalmScan({ onCapture, onBack }: Props) {
       </div>
 
       <div className="flex-1 px-6 flex flex-col min-h-0">
-        <div className="relative flex-1 rounded-2xl flex flex-col overflow-hidden" style={{ background: 'rgba(201,169,97,0.04)', border: '1px solid var(--border-subtle)' }}>
-          <div className="absolute top-3 left-3 w-6 h-6" style={{ borderTop: '1.5px solid var(--accent-gold)', borderLeft: '1.5px solid var(--accent-gold)', opacity: 0.7 }} />
-          <div className="absolute top-3 right-3 w-6 h-6" style={{ borderTop: '1.5px solid var(--accent-gold)', borderRight: '1.5px solid var(--accent-gold)', opacity: 0.7 }} />
-          <div className="absolute bottom-14 left-3 w-6 h-6" style={{ borderBottom: '1.5px solid var(--accent-gold)', borderLeft: '1.5px solid var(--accent-gold)', opacity: 0.7 }} />
-          <div className="absolute bottom-14 right-3 w-6 h-6" style={{ borderBottom: '1.5px solid var(--accent-gold)', borderRight: '1.5px solid var(--accent-gold)', opacity: 0.7 }} />
+        <div className="relative flex-1 rounded-2xl flex flex-col overflow-hidden" style={{ background: 'rgba(124, 156, 228,0.04)', border: '1px solid var(--border-subtle)' }}>
+          <div className="absolute top-3 left-3 w-6 h-6" style={{ borderTop: '1.5px solid var(--accent)', borderLeft: '1.5px solid var(--accent)', opacity: 0.7 }} />
+          <div className="absolute top-3 right-3 w-6 h-6" style={{ borderTop: '1.5px solid var(--accent)', borderRight: '1.5px solid var(--accent)', opacity: 0.7 }} />
+          <div className="absolute bottom-14 left-3 w-6 h-6" style={{ borderBottom: '1.5px solid var(--accent)', borderLeft: '1.5px solid var(--accent)', opacity: 0.7 }} />
+          <div className="absolute bottom-14 right-3 w-6 h-6" style={{ borderBottom: '1.5px solid var(--accent)', borderRight: '1.5px solid var(--accent)', opacity: 0.7 }} />
 
           <div className="pt-5 flex justify-center">
             <p style={{ fontFamily: 'var(--font-sans)', fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
@@ -92,7 +92,7 @@ export function PalmScan({ onCapture, onBack }: Props) {
             )}
             {processing && (
               <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.6)', borderRadius: 16 }}>
-                <Spinner size={28} className="text-accent-gold" />
+                <Spinner size={28} className="text-accent" />
               </div>
             )}
           </div>
@@ -114,7 +114,7 @@ export function PalmScan({ onCapture, onBack }: Props) {
         </div>
       </div>
 
-      <p style={{ fontFamily: 'var(--font-serif)', fontSize: 13, fontStyle: 'italic', color: 'var(--accent-gold)', textAlign: 'center', opacity: 0.75, marginTop: 14, marginBottom: 10 }}>
+      <p style={{ fontFamily: 'var(--font-serif)', fontSize: 13, fontStyle: 'italic', color: 'var(--accent)', textAlign: 'center', opacity: 0.75, marginTop: 14, marginBottom: 10 }}>
         {t('palmScan.tip')}
       </p>
 
@@ -122,7 +122,7 @@ export function PalmScan({ onCapture, onBack }: Props) {
         <button
           onClick={preview ? handleConfirm : openCamera}
           disabled={processing || confirming}
-          style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--accent-gold)', border: '4px solid rgba(201,169,97,0.25)', outline: '1px solid rgba(201,169,97,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: processing || confirming ? 'default' : 'pointer', transition: 'opacity 0.2s', opacity: processing || confirming ? 0.6 : 1 }}
+          style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--accent)', border: '4px solid rgba(124, 156, 228,0.25)', outline: '1px solid rgba(124, 156, 228,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: processing || confirming ? 'default' : 'pointer', transition: 'opacity 0.2s', opacity: processing || confirming ? 0.6 : 1 }}
         >
           {confirming ? (
             <Spinner size={22} className="text-bg-primary" />

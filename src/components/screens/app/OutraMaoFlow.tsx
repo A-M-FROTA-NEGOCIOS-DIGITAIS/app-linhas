@@ -85,7 +85,7 @@ export function OutraMaoFlow({ userId, onDone, onBack }: Props) {
   return (
     <div className="h-full flex flex-col items-center justify-center gap-4 px-8 text-center">
       <p style={{ color: 'var(--text-primary)' }}>{erro}</p>
-      <button onClick={() => setFase('scan')} style={{ color: 'var(--accent-gold)', fontSize: 14 }}>
+      <button onClick={() => setFase('scan')} style={{ color: 'var(--accent)', fontSize: 14 }}>
         Tentar novamente
       </button>
     </div>

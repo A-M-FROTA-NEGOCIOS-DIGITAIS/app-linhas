@@ -29,9 +29,9 @@ export function LanguagePicker({ className }: Props) {
             letterSpacing: '0.1em',
             padding: '5px 10px',
             borderRadius: 20,
-            border: `1px solid ${active === code ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
-            background: active === code ? 'rgba(201,169,97,0.1)' : 'transparent',
-            color: active === code ? 'var(--accent-gold)' : 'var(--text-muted)',
+            border: `1px solid ${active === code ? 'var(--accent)' : 'var(--border-subtle)'}`,
+            background: active === code ? 'rgba(124, 156, 228,0.1)' : 'transparent',
+            color: active === code ? 'var(--accent)' : 'var(--text-muted)',
             cursor: 'pointer',
             transition: 'all 0.2s',
           }}

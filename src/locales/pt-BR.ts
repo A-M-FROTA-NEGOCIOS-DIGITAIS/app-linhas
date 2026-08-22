@@ -15,7 +15,7 @@ const ptBR = {
   splash: {
     tagline: 'Suas mãos sabem.',
     taglineItalic: 'A IA traduz.',
-    footer: 'Linhas · 2026',
+    footer: 'ALMA · 2026',
     language: 'Idioma',
     start: 'Começar',
   },
@@ -273,7 +273,7 @@ const ptBR = {
     downloadData: 'Baixar meus dados',
     signOut: 'Sair',
     deleteAccount: 'Deletar conta',
-    footer: 'Linhas v1.0 · Feito com cuidado',
+    footer: 'ALMA v1.0 · Feito com cuidado',
     deleteTitle: 'Deletar sua conta?',
     deleteBody: 'Isso excluirá permanentemente seu perfil, leituras e escaneamentos de palma. Não pode ser desfeito.',
     deleteConfirm: 'Sim, deletar tudo',
@@ -284,7 +284,7 @@ const ptBR = {
     typeDaily: 'Insight diário',
     typeThemed: 'Leitura temática',
     typeCompat: 'Leitura de compatibilidade',
-    footer: 'Linhas · Aurora',
+    footer: 'ALMA · Aurora',
   },
   tabBar: {
     today: 'Hoje',

@@ -73,7 +73,7 @@ export function VerifyEmail({ email, onSuccess, onBack }: Props) {
         <div className="flex flex-col gap-3">
           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 32, fontWeight: 300, lineHeight: 1.2, color: 'var(--text-primary)' }}>
             {t('verifyEmail.title')}<br />
-            <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>{t('verifyEmail.titleItalic')}</em>
+            <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>{t('verifyEmail.titleItalic')}</em>
           </h2>
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)', lineHeight: 1.6 }}>
             {t('verifyEmail.codeSent')}{' '}
@@ -94,7 +94,7 @@ export function VerifyEmail({ email, onSuccess, onBack }: Props) {
             placeholder="000000"
             style={{
               background: 'var(--bg-surface)',
-              border: `1px solid ${error ? '#8B4040' : code.length > 0 ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
+              border: `1px solid ${error ? '#8B4040' : code.length > 0 ? 'var(--accent)' : 'var(--border-subtle)'}`,
               borderRadius: 8,
               padding: '16px',
               fontSize: 28,
@@ -116,7 +116,7 @@ export function VerifyEmail({ email, onSuccess, onBack }: Props) {
           disabled={resending || resent}
           style={{
             fontSize: 13,
-            color: resent ? 'var(--accent-gold)' : 'var(--text-muted)',
+            color: resent ? 'var(--accent)' : 'var(--text-muted)',
             fontFamily: 'var(--font-sans)',
             background: 'none',
             border: 'none',

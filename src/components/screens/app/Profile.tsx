@@ -77,7 +77,7 @@ export function Profile({ profile, biblioteca, onReScan, onSignOut, onChangeInte
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `linhas-data-${profile.id}.json`
+      a.download = `alma-dados-${profile.id}.json`
       a.click()
       URL.revokeObjectURL(url)
     } catch (e) {
@@ -89,8 +89,8 @@ export function Profile({ profile, biblioteca, onReScan, onSignOut, onChangeInte
     <div className="h-full flex flex-col scroll-area pb-24">
       <div className="px-5 pt-12 pb-4">
         <div className="w-20 h-20 rounded-full flex items-center justify-center mb-4"
-          style={{ background: 'rgba(201,169,97,0.08)', border: '1px solid rgba(201,169,97,0.3)' }}>
-          <span style={{ fontFamily: 'var(--font-serif)', fontSize: 36, color: 'var(--accent-gold)', fontWeight: 300, lineHeight: 1 }}>
+          style={{ background: 'rgba(124, 156, 228,0.08)', border: '1px solid rgba(124, 156, 228,0.3)' }}>
+          <span style={{ fontFamily: 'var(--font-serif)', fontSize: 36, color: 'var(--accent)', fontWeight: 300, lineHeight: 1 }}>
             {profile.name.charAt(0).toUpperCase()}
           </span>
         </div>
@@ -139,10 +139,10 @@ export function Profile({ profile, biblioteca, onReScan, onSignOut, onChangeInte
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-subtle)' }}>
               <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-                <path d="M4 24c6-12 18-12 24 0" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" opacity="0.6"/>
-                <path d="M7 24c4-8 14-8 18 0" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/>
-                <path d="M11 24c2-4 8-4 10 0" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" opacity="0.4"/>
-                <circle cx="16" cy="20" r="2" fill="#C9A961" opacity="0.5"/>
+                <path d="M4 24c6-12 18-12 24 0" stroke="#7C9CE4" strokeWidth="1.2" strokeLinecap="round" opacity="0.6"/>
+                <path d="M7 24c4-8 14-8 18 0" stroke="#7C9CE4" strokeWidth="1.2" strokeLinecap="round" opacity="0.5"/>
+                <path d="M11 24c2-4 8-4 10 0" stroke="#7C9CE4" strokeWidth="1.2" strokeLinecap="round" opacity="0.4"/>
+                <circle cx="16" cy="20" r="2" fill="#7C9CE4" opacity="0.5"/>
               </svg>
             </div>
             <div className="flex-1">
@@ -152,7 +152,7 @@ export function Profile({ profile, biblioteca, onReScan, onSignOut, onChangeInte
             <button
               onClick={() => { track(Events.RESCAN_INITIATED, {}); onReScan() }}
               className="text-xs font-medium px-3 py-1.5 rounded-full"
-              style={{ background: 'rgba(201,169,97,0.1)', color: 'var(--accent-gold)', border: '1px solid rgba(201,169,97,0.25)', fontFamily: 'var(--font-sans)' }}
+              style={{ background: 'rgba(124, 156, 228,0.1)', color: 'var(--accent)', border: '1px solid rgba(124, 156, 228,0.25)', fontFamily: 'var(--font-sans)' }}
             >
               {t('profile.reScan')}
             </button>

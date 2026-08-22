@@ -75,7 +75,7 @@ export function Readings({ biblioteca, temaFiltro, onLimparTema, onAbrirLeituraC
         Leituras · {biblioteca.readings.length}
       </p>
       <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 34, fontWeight: 300, color: 'var(--text-primary)', marginTop: 6 }}>
-        Suas <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>leituras</em>.
+        Suas <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>leituras</em>.
       </h1>
       <p className="text-xs text-text-muted mt-1">
         {capitulos} capítulos{streak > 0 ? ` · ${streak} dias seguidos` : ''}
@@ -89,8 +89,8 @@ export function Readings({ biblioteca, temaFiltro, onLimparTema, onAbrirLeituraC
             style={{
               flexShrink: 0, padding: '6px 14px', borderRadius: 999, fontSize: 13,
               fontFamily: 'var(--font-sans)',
-              border: `1px solid ${filtro === key ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
-              background: filtro === key ? 'var(--accent-gold)' : 'transparent',
+              border: `1px solid ${filtro === key ? 'var(--accent)' : 'var(--border-subtle)'}`,
+              background: filtro === key ? 'var(--accent)' : 'transparent',
               color: filtro === key ? 'var(--bg-primary)' : 'var(--text-secondary)',
             }}
           >
@@ -102,8 +102,8 @@ export function Readings({ biblioteca, temaFiltro, onLimparTema, onAbrirLeituraC
             onClick={onLimparTema}
             style={{
               flexShrink: 0, padding: '6px 14px', borderRadius: 999, fontSize: 13,
-              fontFamily: 'var(--font-sans)', border: '1px solid var(--accent-gold)',
-              background: 'rgba(201,169,97,0.1)', color: 'var(--accent-gold)',
+              fontFamily: 'var(--font-sans)', border: '1px solid var(--accent)',
+              background: 'rgba(124, 156, 228,0.1)', color: 'var(--accent)',
             }}
           >
             {temaFiltro} ×
@@ -124,12 +124,12 @@ export function Readings({ biblioteca, temaFiltro, onLimparTema, onAbrirLeituraC
               className="text-left"
               style={{ display: 'flex', gap: 14, padding: '14px 16px', borderRadius: 8, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
             >
-              <span style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 300, color: 'var(--accent-gold)', lineHeight: 1.2, minWidth: 28 }}>
+              <span style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 300, color: 'var(--accent)', lineHeight: 1.2, minWidth: 28 }}>
                 {String(lista.length - i).padStart(2, '0')}
               </span>
               <span className="flex-1">
                 <span className="flex items-center justify-between">
-                  <span style={{ fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent-gold)', fontFamily: 'var(--font-sans)' }}>
+                  <span style={{ fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', fontFamily: 'var(--font-sans)' }}>
                     {nomeDoTipo(reading, biblioteca.itens)}
                   </span>
                   <span className="text-[10px] text-text-muted">{dataCurta(reading.created_at)}</span>

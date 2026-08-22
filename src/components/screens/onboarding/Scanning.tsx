@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui'
+import { AuroraRetrato } from '@/components/ui/Aurora'
 
 interface Props {
   onComplete: (analysis: unknown) => void
@@ -144,20 +145,15 @@ export function Scanning({ onComplete, imageDataUrl, userId, onBack, handType = 
   }
 
   return (
-    <div className="h-full flex flex-col items-center justify-center px-8 gap-10" style={{ background: 'radial-gradient(ellipse at 50% 40%, rgba(201,169,97,0.06), transparent 60%)' }}>
+    <div className="h-full flex flex-col items-center justify-center px-8 gap-10" style={{ background: 'radial-gradient(ellipse at 50% 40%, rgba(124, 156, 228,0.06), transparent 60%)' }}>
       <div className="relative flex items-center justify-center" style={{ width: 160, height: 160 }}>
         <svg width="160" height="160" viewBox="0 0 160 160" className="absolute animate-spin-slow">
-          <circle cx="80" cy="80" r="72" stroke="#C9A961" strokeWidth="0.5" strokeDasharray="8 6" opacity="0.4"/>
+          <circle cx="80" cy="80" r="78" stroke="#7C9CE4" strokeWidth="0.5" strokeDasharray="8 6" opacity="0.4"/>
         </svg>
-        <svg width="120" height="120" viewBox="0 0 120 120" className="absolute" style={{ animation: 'spin-slow 4s linear infinite reverse' }}>
-          <circle cx="60" cy="60" r="52" stroke="#C9A961" strokeWidth="0.8" strokeDasharray="4 8" opacity="0.3"/>
+        <svg width="140" height="140" viewBox="0 0 140 140" className="absolute" style={{ animation: 'spin-slow 4s linear infinite reverse' }}>
+          <circle cx="70" cy="70" r="68" stroke="#7C9CE4" strokeWidth="0.8" strokeDasharray="4 8" opacity="0.3"/>
         </svg>
-        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-          <path d="M8 48c10-20 38-20 48 0" stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" className="animate-pulse-gold"/>
-          <path d="M14 48c8-14 28-14 36 0" stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" className="animate-pulse-gold" style={{ animationDelay: '0.3s' }}/>
-          <path d="M22 48c4-8 16-8 20 0" stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" className="animate-pulse-gold" style={{ animationDelay: '0.6s' }}/>
-          <circle cx="32" cy="38" r="3" fill="#C9A961" opacity="0.6"/>
-        </svg>
+        <AuroraRetrato tamanho={104} />
       </div>
 
       <div className="text-center flex flex-col gap-3" key={msgIndex} style={{ animation: 'fade-in 400ms ease forwards' }}>
@@ -167,7 +163,7 @@ export function Scanning({ onComplete, imageDataUrl, userId, onBack, handType = 
       </div>
 
       <div className="w-full max-w-[220px] h-px bg-border-subtle rounded-full overflow-hidden">
-        <div className="h-full bg-accent-gold rounded-full transition-all duration-700" style={{ width: `${progress}%` }} />
+        <div className="h-full bg-accent rounded-full transition-all duration-700" style={{ width: `${progress}%` }} />
       </div>
     </div>
   )

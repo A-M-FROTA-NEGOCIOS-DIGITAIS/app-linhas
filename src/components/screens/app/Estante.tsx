@@ -11,7 +11,7 @@ interface Props {
 }
 
 const CheckIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9A961" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7C9CE4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M5 12l5 5L20 6" />
   </svg>
 )
@@ -91,8 +91,8 @@ export function Estante({
               style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 6,
                 padding: '14px 16px', borderRadius: 8, width: '100%', textAlign: 'left',
-                border: `1px solid ${destacado ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
-                background: (ehDespertar ? !!assinatura : item.pronto) ? 'rgba(201,169,97,0.06)' : 'var(--bg-surface)',
+                border: `1px solid ${destacado ? 'var(--accent)' : 'var(--border-subtle)'}`,
+                background: (ehDespertar ? !!assinatura : item.pronto) ? 'rgba(124, 156, 228,0.06)' : 'var(--bg-surface)',
                 // Sem link de checkout o item segue legivel: ela precisa saber o
                 // que e o produto mesmo antes de poder compra-lo.
                 opacity: clicavel ? 1 : 0.75,
@@ -111,7 +111,7 @@ export function Estante({
                     </span>
                   )}
                 </span>
-                <span style={{ fontSize: 12, color: destacado ? 'var(--accent-gold)' : 'var(--text-muted)', fontFamily: 'var(--font-sans)', flexShrink: 0 }}>
+                <span style={{ fontSize: 12, color: destacado ? 'var(--accent)' : 'var(--text-muted)', fontFamily: 'var(--font-sans)', flexShrink: 0 }}>
                   {status}
                 </span>
               </span>

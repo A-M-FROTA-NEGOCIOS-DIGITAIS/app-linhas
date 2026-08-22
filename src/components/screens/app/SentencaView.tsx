@@ -26,7 +26,7 @@ export function SentencaView({ reading, onBack }: Props) {
         <BackIcon />
       </button>
 
-      <p style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent-gold)', fontFamily: 'var(--font-sans)', marginBottom: 8 }}>
+      <p style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)', fontFamily: 'var(--font-sans)', marginBottom: 8 }}>
         A Sentença
       </p>
       <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 24, fontWeight: 300, color: 'var(--text-primary)', marginBottom: 24 }}>
@@ -41,7 +41,7 @@ export function SentencaView({ reading, onBack }: Props) {
             style={{ maxWidth: '100%', maxHeight: '60vh', borderRadius: 12, border: '1px solid var(--border-subtle)' }}
           />
         ) : (
-          <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontStyle: 'italic', color: 'var(--accent-gold)', textAlign: 'center' }}>
+          <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontStyle: 'italic', color: 'var(--accent)', textAlign: 'center' }}>
             {reading.full_content}
           </p>
         )}
@@ -52,7 +52,7 @@ export function SentencaView({ reading, onBack }: Props) {
           onClick={handleDownload}
           style={{
             marginTop: 24, padding: '12px 24px', borderRadius: 6,
-            border: '1px solid var(--accent-gold)', color: 'var(--accent-gold)',
+            border: '1px solid var(--accent)', color: 'var(--accent)',
             fontFamily: 'var(--font-sans)', fontSize: 14, background: 'transparent',
           }}
         >

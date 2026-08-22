@@ -643,7 +643,17 @@ async function gerarAudioTts(supabase: any, userId: string, core: any) {
     headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json' },
     body: JSON.stringify({ text: texto, model_id: 'eleven_multilingual_v2' }),
   })
-  if (!resp.ok) throw new Error(`ElevenLabs falhou: ${resp.status}`)
+  if (!resp.ok) {
+    // O corpo da resposta e o que diz a causa real (voice_id invalido, modelo
+    // indisponivel no plano, texto longo demais, cota). Jogar isso fora e
+    // ficar so com o status transforma um erro diagnosticavel em adivinhacao.
+    const detalhe = await resp.text().catch(() => '(sem corpo)')
+    console.error(
+      `ElevenLabs ${resp.status} para ${userId} | voice_id=${voiceId} | ` +
+      `chars=${texto.length} | corpo=${detalhe.slice(0, 600)}`,
+    )
+    throw new Error(`ElevenLabs falhou: ${resp.status}`)
+  }
 
   const audioBuffer = await resp.arrayBuffer()
   const path = `${userId}-${Date.now()}.mp3`

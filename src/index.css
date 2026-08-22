@@ -11,20 +11,20 @@
 }
 
 :root {
-  --bg-primary:    #0A0805;
-  --bg-surface:    #14110D;
-  --bg-elevated:   #1F1A14;
-  --text-primary:   #F5F1E8;
-  --text-secondary: #9A9082;
-  --text-muted:     #5C5448;
-  --accent-gold:        #C9A961;
-  --accent-gold-deep:   #8B7339;
-  --accent-copper:      #B87333;
-  --color-success: #7A8B5C;
+  --bg-primary:    #070A14;
+  --bg-surface:    #0E1322;
+  --bg-elevated:   #171E33;
+  --text-primary:   #EEF1F8;
+  --text-secondary: #929BB2;
+  --text-muted:     #565E75;
+  --accent:        #7C9CE4;
+  --accent-deep:   #4661B0;
+  --accent-soft:   #2C3A63;
+  --color-success: #6E8FA8;
   --color-error:   #8B4040;
-  --border-subtle: rgba(201, 169, 97, 0.15);
-  --border-medium: rgba(201, 169, 97, 0.30);
-  --border-strong: rgba(201, 169, 97, 0.55);
+  --border-subtle: rgba(124, 156, 228, 0.15);
+  --border-medium: rgba(124, 156, 228, 0.30);
+  --border-strong: rgba(124, 156, 228, 0.55);
   --font-serif:    'Cormorant Garamond', Georgia, serif;
   --font-sans:     'Inter', system-ui, sans-serif;
   --font-display:  'Tenor Sans', serif;

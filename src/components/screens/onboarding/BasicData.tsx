@@ -22,8 +22,8 @@ export function BasicData({ onContinue, onBack }: Props) {
 
   const fieldStyle = (id: string) => ({
     background: 'var(--bg-surface)',
-    border: `1px solid ${focusedField === id ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
-    boxShadow: focusedField === id ? '0 0 0 2px rgba(201,169,97,0.18)' : 'none',
+    border: `1px solid ${focusedField === id ? 'var(--accent)' : 'var(--border-subtle)'}`,
+    boxShadow: focusedField === id ? '0 0 0 2px rgba(124, 156, 228,0.18)' : 'none',
     borderRadius: 8,
     padding: '14px 16px',
     fontSize: 16,
@@ -53,7 +53,7 @@ export function BasicData({ onContinue, onBack }: Props) {
             <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 34, fontWeight: 300, lineHeight: 1.2, letterSpacing: '-0.01em', color: 'var(--text-primary)' }}>
               {t('basicData.title')}<br />
               {t('basicData.titleSub')}{' '}
-              <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>{t('basicData.titleItalic')}</em>
+              <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>{t('basicData.titleItalic')}</em>
             </h2>
             <p style={{ fontSize: 14, color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)', lineHeight: 1.55 }}>
               {t('basicData.subtitle')}
@@ -74,9 +74,9 @@ export function BasicData({ onContinue, onBack }: Props) {
                     style={{
                       flex: 1, padding: '12px 8px', borderRadius: 8, fontSize: 13,
                       fontFamily: 'var(--font-sans)',
-                      border: `1px solid ${gender === g ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
-                      background: gender === g ? 'rgba(201,169,97,0.07)' : 'var(--bg-surface)',
-                      color: gender === g ? 'var(--accent-gold)' : 'var(--text-secondary)',
+                      border: `1px solid ${gender === g ? 'var(--accent)' : 'var(--border-subtle)'}`,
+                      background: gender === g ? 'rgba(124, 156, 228,0.07)' : 'var(--bg-surface)',
+                      color: gender === g ? 'var(--accent)' : 'var(--text-secondary)',
                       cursor: 'pointer', transition: 'all 0.2s',
                     }}
                   >
@@ -153,11 +153,11 @@ export function BasicData({ onContinue, onBack }: Props) {
 
             {/* Time tip */}
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', borderRadius: 8, border: '1px solid var(--border-subtle)', background: 'var(--bg-surface)' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
                 <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
               </svg>
               <p style={{ fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                <em style={{ fontFamily: 'var(--font-serif)', color: 'var(--accent-gold)', fontStyle: 'italic' }}>{t('basicData.exactTime')}</em>{' '}
+                <em style={{ fontFamily: 'var(--font-serif)', color: 'var(--accent)', fontStyle: 'italic' }}>{t('basicData.exactTime')}</em>{' '}
                 {t('basicData.timeTip')}
               </p>
             </div>

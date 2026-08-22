@@ -15,7 +15,7 @@ const es = {
   splash: {
     tagline: 'Tus manos saben.',
     taglineItalic: 'La IA traduce.',
-    footer: 'Linhas · 2026',
+    footer: 'ALMA · 2026',
     language: 'Idioma',
     start: 'Comenzar',
   },
@@ -273,7 +273,7 @@ const es = {
     downloadData: 'Descargar mis datos',
     signOut: 'Cerrar sesión',
     deleteAccount: 'Eliminar cuenta',
-    footer: 'Linhas v1.0 · Hecho con cuidado',
+    footer: 'ALMA v1.0 · Hecho con cuidado',
     deleteTitle: '¿Eliminar tu cuenta?',
     deleteBody: 'Esto eliminará permanentemente tu perfil, lecturas y escaneos de palma. No se puede deshacer.',
     deleteConfirm: 'Sí, eliminar todo',
@@ -284,7 +284,7 @@ const es = {
     typeDaily: 'Perspectiva diaria',
     typeThemed: 'Lectura temática',
     typeCompat: 'Lectura de compatibilidad',
-    footer: 'Linhas · Aurora',
+    footer: 'ALMA · Aurora',
   },
   tabBar: {
     today: 'Hoy',

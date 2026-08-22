@@ -6,27 +6,27 @@ export default {
     extend: {
       colors: {
         bg: {
-          primary: '#0A0805',
-          surface: '#14110D',
-          elevated: '#1F1A14',
+          primary: '#070A14',
+          surface: '#0E1322',
+          elevated: '#171E33',
         },
         accent: {
-          gold: '#C9A961',
-          'gold-deep': '#8B7339',
-          copper: '#B87333',
+          DEFAULT: '#7C9CE4',
+          deep: '#4661B0',
+          soft: '#2C3A63',
         },
         text: {
-          primary: '#F5F1E8',
-          secondary: '#9A9082',
-          muted: '#5C5448',
+          primary: '#EEF1F8',
+          secondary: '#929BB2',
+          muted: '#565E75',
         },
         border: {
-          subtle: 'rgba(201,169,97,0.15)',
-          medium: 'rgba(201,169,97,0.30)',
-          strong: 'rgba(201,169,97,0.55)',
+          subtle: 'rgba(124,156,228,0.15)',
+          medium: 'rgba(124,156,228,0.30)',
+          strong: 'rgba(124,156,228,0.55)',
         },
         status: {
-          success: '#7A8B5C',
+          success: '#6E8FA8',
           error: '#8B4040',
         },
       },
@@ -72,7 +72,7 @@ export default {
           from: { opacity: '0' },
           to:   { opacity: '1' },
         },
-        'pulse-gold': {
+        'pulse-accent': {
           '0%, 100%': { opacity: '1' },
           '50%':      { opacity: '0.4' },
         },
@@ -84,7 +84,7 @@ export default {
       animation: {
         'fade-up':    'fade-up 300ms cubic-bezier(0.16,1,0.3,1) forwards',
         'fade-in':    'fade-in 300ms cubic-bezier(0.16,1,0.3,1) forwards',
-        'pulse-gold': 'pulse-gold 2s ease-in-out infinite',
+        'pulse-accent': 'pulse-accent 2s ease-in-out infinite',
         'spin-slow':  'spin-slow 3s linear infinite',
       },
     },

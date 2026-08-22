@@ -52,12 +52,12 @@ function LoadingLeitura() {
     <div className="h-full flex flex-col items-center justify-center px-8 gap-8">
       {/* Glyph animado */}
       <div style={{ position: 'relative', width: 72, height: 72 }}>
-        <svg width="72" height="72" viewBox="0 0 72 72" fill="none" className="animate-pulse-gold">
-          <circle cx="36" cy="36" r="34" stroke="#C9A961" strokeWidth="0.75" strokeDasharray="4 4" />
-          <path d="M12 52c8-16 40-16 48 0" stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" />
-          <path d="M18 52c6-12 30-12 36 0" stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" />
-          <path d="M24 52c4-8 20-8 24 0" stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" />
-          <circle cx="36" cy="36" r="3" fill="#C9A961" />
+        <svg width="72" height="72" viewBox="0 0 72 72" fill="none" className="animate-pulse-accent">
+          <circle cx="36" cy="36" r="34" stroke="#7C9CE4" strokeWidth="0.75" strokeDasharray="4 4" />
+          <path d="M12 52c8-16 40-16 48 0" stroke="#7C9CE4" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="M18 52c6-12 30-12 36 0" stroke="#7C9CE4" strokeWidth="1.5" strokeLinecap="round" />
+          <path d="M24 52c4-8 20-8 24 0" stroke="#7C9CE4" strokeWidth="1.5" strokeLinecap="round" />
+          <circle cx="36" cy="36" r="3" fill="#7C9CE4" />
         </svg>
       </div>
 
@@ -86,7 +86,7 @@ function LoadingLeitura() {
           style={{
             height: '100%',
             width: '40%',
-            background: 'var(--accent-gold)',
+            background: 'var(--accent)',
             borderRadius: 1,
             animation: 'slideProgress 2s ease-in-out infinite',
           }}
@@ -117,8 +117,8 @@ function ErroLeitura({ mensagem, onRetry }: { mensagem: string; onRetry: () => v
         style={{
           padding: '12px 28px',
           borderRadius: 6,
-          border: '1px solid var(--accent-gold)',
-          color: 'var(--accent-gold)',
+          border: '1px solid var(--accent)',
+          color: 'var(--accent)',
           fontFamily: 'var(--font-sans)',
           fontSize: 14,
           cursor: 'pointer',
@@ -146,7 +146,7 @@ function ExibicaoLeitura({ leitura, nome, onIrParaEstante, registrar }: Exibicao
         <div className="px-6 pt-12 pb-6">
           <p style={{
             fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase',
-            color: 'var(--accent-gold)', fontFamily: 'var(--font-sans)', marginBottom: 8,
+            color: 'var(--accent)', fontFamily: 'var(--font-sans)', marginBottom: 8,
           }}>
             Madame Aurora
           </p>
@@ -155,23 +155,23 @@ function ExibicaoLeitura({ leitura, nome, onIrParaEstante, registrar }: Exibicao
             color: 'var(--text-primary)', lineHeight: 1.2, letterSpacing: '-0.01em',
           }}>
             Sua Leitura<br />
-            <em style={{ fontStyle: 'italic', color: 'var(--accent-gold)' }}>Completa</em>
+            <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>Completa</em>
           </h1>
         </div>
 
         {/* Card da Marca Adormecida */}
         {leitura.marca_adormecida && (
           <div className="mx-6 mb-8 px-5 py-5" style={{
-            border: '1px solid var(--accent-gold)',
+            border: '1px solid var(--accent)',
             borderRadius: 10,
-            background: 'rgba(201,169,97,0.06)',
+            background: 'rgba(124, 156, 228,0.06)',
           }}>
             <p style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)', marginBottom: 6 }}>
               Sua Marca Adormecida
             </p>
             <p style={{
               fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 300,
-              color: 'var(--accent-gold)', lineHeight: 1.3, fontStyle: 'italic',
+              color: 'var(--accent)', lineHeight: 1.3, fontStyle: 'italic',
             }}>
               {leitura.marca_adormecida}
             </p>
@@ -197,7 +197,7 @@ function ExibicaoLeitura({ leitura, nome, onIrParaEstante, registrar }: Exibicao
               <div className="flex items-center gap-3 mb-4">
                 <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
                 <span style={{
-                  fontFamily: 'var(--font-serif)', fontSize: 13, color: 'var(--accent-gold)',
+                  fontFamily: 'var(--font-serif)', fontSize: 13, color: 'var(--accent)',
                   letterSpacing: '0.1em', opacity: 0.7,
                 }}>
                   {ROMAN[i] ?? i + 1}
@@ -237,13 +237,13 @@ function ExibicaoLeitura({ leitura, nome, onIrParaEstante, registrar }: Exibicao
             color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 16,
           }}>
             Sua leitura termina aqui.<br />
-            <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>Sua jornada, não.</em>
+            <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>Sua jornada, não.</em>
           </p>
           <button
             onClick={onIrParaEstante}
             style={{
               padding: '10px 24px', borderRadius: 6,
-              border: '1px solid var(--accent-gold)', color: 'var(--accent-gold)',
+              border: '1px solid var(--accent)', color: 'var(--accent)',
               fontFamily: 'var(--font-sans)', fontSize: 13, background: 'transparent',
             }}
           >

@@ -15,7 +15,7 @@ const en = {
   splash: {
     tagline: 'Your hands know.',
     taglineItalic: 'AI translates.',
-    footer: 'Linhas · 2026',
+    footer: 'ALMA · 2026',
     language: 'Language',
     start: 'Start',
   },
@@ -267,7 +267,7 @@ const en = {
     downloadData: 'Download my data',
     signOut: 'Sign out',
     deleteAccount: 'Delete account',
-    footer: 'Linhas v1.0 · Made with care',
+    footer: 'ALMA v1.0 · Made with care',
     deleteTitle: 'Delete your account?',
     deleteBody: 'This will permanently delete your profile, readings, and palm scans. This cannot be undone.',
     deleteConfirm: 'Yes, delete everything',
@@ -278,7 +278,7 @@ const en = {
     typeDaily: 'Daily insight',
     typeThemed: 'Themed reading',
     typeCompat: 'Compatibility reading',
-    footer: 'Linhas · Aurora',
+    footer: 'ALMA · Aurora',
   },
   tabBar: {
     today: 'Today',

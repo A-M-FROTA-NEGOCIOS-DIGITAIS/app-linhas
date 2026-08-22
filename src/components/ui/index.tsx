@@ -12,10 +12,10 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'primary', fullWidth, loading, className, children, disabled, ...props }, ref) => {
     const base =
-      'inline-flex items-center justify-center gap-2 font-sans text-sm font-medium tracking-tight rounded-md transition-all duration-300 ease-out-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold/40 disabled:opacity-45 disabled:cursor-not-allowed select-none'
+      'inline-flex items-center justify-center gap-2 font-sans text-sm font-medium tracking-tight rounded-md transition-all duration-300 ease-out-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 disabled:opacity-45 disabled:cursor-not-allowed select-none'
     const variants = {
-      primary:   'bg-accent-gold text-bg-primary border border-accent-gold hover:bg-accent-gold-deep hover:border-accent-gold-deep active:opacity-80',
-      secondary: 'bg-transparent text-accent-gold border border-accent-gold hover:bg-accent-gold/10 active:opacity-80',
+      primary:   'bg-accent text-bg-primary border border-accent hover:bg-accent-deep hover:border-accent-deep active:opacity-80',
+      secondary: 'bg-transparent text-accent border border-accent hover:bg-accent/10 active:opacity-80',
       ghost:     'bg-transparent text-text-secondary border border-transparent hover:text-text-primary active:opacity-80',
     }
     return (
@@ -47,7 +47,7 @@ export function Field({ label, value, onChange, placeholder, type = 'text', erro
   const [focused, setFocused] = useState(false)
   return (
     <div className="flex flex-col gap-1.5">
-      {label && <Eyebrow>{label}{required && <span className="text-accent-gold ml-1">*</span>}</Eyebrow>}
+      {label && <Eyebrow>{label}{required && <span className="text-accent ml-1">*</span>}</Eyebrow>}
       <input
         type={type}
         value={value ?? ''}
@@ -61,7 +61,7 @@ export function Field({ label, value, onChange, placeholder, type = 'text', erro
           error
             ? 'border-status-error/70'
             : focused
-            ? 'border-accent-gold shadow-[0_0_0_2px_rgba(201,169,97,0.18)]'
+            ? 'border-accent shadow-[0_0_0_2px_rgba(124, 156, 228,0.18)]'
             : 'border-border-subtle',
         )}
       />
@@ -84,7 +84,7 @@ export function Card({ children, onClick, className, goldBorder }: CardProps) {
       onClick={onClick}
       className={cn(
         'bg-bg-surface rounded-md border transition-all duration-300',
-        goldBorder ? 'border-accent-gold/50' : 'border-border-subtle hover:border-border-medium',
+        goldBorder ? 'border-accent/50' : 'border-border-subtle hover:border-border-medium',
         onClick && 'cursor-pointer active:opacity-80',
         className,
       )}
@@ -97,7 +97,7 @@ export function Card({ children, onClick, className, goldBorder }: CardProps) {
 // ── Eyebrow ───────────────────────────────────────────────────────────────────
 export function Eyebrow({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn('text-xs font-medium tracking-widest uppercase text-accent-gold font-sans', className)}>
+    <div className={cn('text-xs font-medium tracking-widest uppercase text-accent font-sans', className)}>
       {children}
     </div>
   )
@@ -109,7 +109,7 @@ export function Hairline({ gold, className }: { gold?: boolean; className?: stri
     <hr
       className={cn(
         'border-0 h-px',
-        gold ? 'bg-accent-gold/60' : 'bg-border-subtle',
+        gold ? 'bg-accent/60' : 'bg-border-subtle',
         className,
       )}
     />
@@ -145,7 +145,7 @@ export function Chip({ children, active, onClick }: ChipProps) {
       className={cn(
         'text-xs font-sans tracking-wide px-3 py-1.5 rounded-pill border transition-all duration-300',
         active
-          ? 'border-accent-gold text-accent-gold'
+          ? 'border-accent text-accent'
           : 'border-border-subtle text-text-secondary',
       )}
     >
@@ -247,7 +247,7 @@ export function TabBar({ active, onChange, tabs }: TabBarProps) {
             onClick={() => onChange(id)}
             className={cn(
               'flex flex-col items-center gap-1 px-3 py-1.5 transition-colors duration-300',
-              isActive ? 'text-accent-gold' : 'text-text-secondary',
+              isActive ? 'text-accent' : 'text-text-secondary',
             )}
           >
             <Icon size={22} />

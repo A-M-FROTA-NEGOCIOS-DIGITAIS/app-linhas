@@ -42,7 +42,10 @@ interface Props {
 }
 
 export function Onboarding({ onComplete, preAuthenticated }: Props) {
-  const hasAccount = localStorage.getItem('linhas-has-account') === '1'
+  // Le a chave antiga tambem: quem ja usava o app tem 'linhas-has-account'
+  // gravado, e perder isso o mandaria para a tela inicial em vez da de login.
+  const hasAccount =
+    (localStorage.getItem('alma-tem-conta') ?? localStorage.getItem('linhas-has-account')) === '1'
   const [step, setStep] = useState<Step>(
     preAuthenticated ? 'basic-data' : hasAccount ? 'email-entry' : 'splash'
   )
@@ -95,7 +98,7 @@ export function Onboarding({ onComplete, preAuthenticated }: Props) {
       const { data } = await supabase.from('profiles').select('*').eq('id', uid).single()
       if (data?.name) {
         // Returning user — profile complete, go straight to app
-        localStorage.setItem('linhas-has-account', '1')
+        localStorage.setItem('alma-tem-conta', '1')
         setProfile(data as Profile)
         onComplete()
         return
@@ -243,7 +246,7 @@ export function Onboarding({ onComplete, preAuthenticated }: Props) {
 
     case 'welcome': {
       const finishOnboarding = () => {
-        localStorage.setItem('linhas-has-account', '1')
+        localStorage.setItem('alma-tem-conta', '1')
         supabase.auth.getSession().then(({ data: { session } }) => {
           const realUid = session?.user?.id ?? resolvedUserIdRef.current ?? userId
           if (realUid) {

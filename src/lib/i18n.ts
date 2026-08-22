@@ -8,7 +8,8 @@ const SUPPORTED = ['en', 'es', 'pt-BR'] as const
 type SupportedLang = typeof SUPPORTED[number]
 
 function detectLanguage(): SupportedLang {
-  const saved = localStorage.getItem('linhas_language')
+  // Idem: 'linhas_language' e a chave antiga de quem ja escolheu idioma.
+  const saved = localStorage.getItem('alma-idioma') ?? localStorage.getItem('linhas_language')
   if (saved && SUPPORTED.includes(saved as SupportedLang)) return saved as SupportedLang
 
   // Auto-detect from browser/device
@@ -36,7 +37,7 @@ i18n.use(initReactI18next).init({
 
 export const setLanguage = (lang: 'en' | 'es' | 'pt-BR') => {
   i18n.changeLanguage(lang)
-  localStorage.setItem('linhas_language', lang)
+  localStorage.setItem('alma-idioma', lang)
 }
 
 export const currentLanguage = () => i18n.language as 'en' | 'es' | 'pt-BR'

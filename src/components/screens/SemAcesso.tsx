@@ -17,14 +17,14 @@ export function SemAcesso() {
 
   return (
     <div className="h-full flex flex-col items-center justify-center px-8 gap-6 text-center">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.7">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#7C9CE4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.7">
         <rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 1 1 8 0v4" />
       </svg>
 
       <div className="flex flex-col gap-3">
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 26, fontWeight: 300, color: 'var(--text-primary)', lineHeight: 1.3 }}>
           {t('semAcesso.title')}<br />
-          <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>{t('semAcesso.titleItalic')}</em>
+          <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>{t('semAcesso.titleItalic')}</em>
         </h1>
         <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: 320 }}>
           {t('semAcesso.body')}

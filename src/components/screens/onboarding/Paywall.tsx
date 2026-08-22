@@ -8,7 +8,7 @@ interface Props {
 }
 
 const CheckIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9A961" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7C9CE4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M5 12l5 5L20 6" />
   </svg>
 )
@@ -62,7 +62,7 @@ export function Paywall({ preview, name, onSkip }: Props) {
         <div>
           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 300, color: 'var(--text-primary)', lineHeight: 1.3 }}>
             Leitura Completa<br />
-            <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>por Madame Aurora</em>
+            <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>por Madame Aurora</em>
           </h2>
         </div>
 
@@ -82,8 +82,8 @@ export function Paywall({ preview, name, onSkip }: Props) {
         <div
           style={{
             padding: '16px', borderRadius: 8,
-            border: '1px solid var(--accent-gold)',
-            background: 'rgba(201,169,97,0.06)',
+            border: '1px solid var(--accent)',
+            background: 'rgba(124, 156, 228,0.06)',
           }}
         >
           <div className="flex items-center justify-between">
@@ -96,7 +96,7 @@ export function Paywall({ preview, name, onSkip }: Props) {
               </p>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <p style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 600, color: 'var(--accent-gold)', lineHeight: 1 }}>
+              <p style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 600, color: 'var(--accent)', lineHeight: 1 }}>
                 R$47
               </p>
             </div>

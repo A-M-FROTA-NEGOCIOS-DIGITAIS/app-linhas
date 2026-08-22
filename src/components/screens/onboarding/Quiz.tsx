@@ -148,7 +148,7 @@ export function QuizScreen({ onContinue, onBack }: Props) {
             <div
               key={i}
               className="flex-1 h-0.5 rounded-full transition-all duration-400"
-              style={{ background: i <= indice ? 'var(--accent-gold)' : 'var(--border-subtle)' }}
+              style={{ background: i <= indice ? 'var(--accent)' : 'var(--border-subtle)' }}
             />
           ))}
         </div>
@@ -163,7 +163,7 @@ export function QuizScreen({ onContinue, onBack }: Props) {
         className="mb-8 transition-opacity duration-200"
         style={{ opacity: saindo ? 0 : 1 }}
       >
-        <p style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent-gold)', fontFamily: 'var(--font-sans)', marginBottom: 10 }}>
+        <p style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', fontFamily: 'var(--font-sans)', marginBottom: 10 }}>
           Madame Aurora pergunta
         </p>
         <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 26, fontWeight: 300, lineHeight: 1.25, letterSpacing: '-0.01em', color: 'var(--text-primary)' }}>
@@ -185,23 +185,23 @@ export function QuizScreen({ onContinue, onBack }: Props) {
               style={{
                 display: 'flex', alignItems: 'center', gap: 14,
                 textAlign: 'left', padding: '14px 16px', borderRadius: 8,
-                border: `1px solid ${ativa ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
-                background: ativa ? 'rgba(201,169,97,0.07)' : 'var(--bg-surface)',
+                border: `1px solid ${ativa ? 'var(--accent)' : 'var(--border-subtle)'}`,
+                background: ativa ? 'rgba(124, 156, 228,0.07)' : 'var(--bg-surface)',
                 transition: 'all 0.2s ease', width: '100%', cursor: 'pointer',
               }}
             >
               <span
                 style={{
                   width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
-                  border: `1.5px solid ${ativa ? 'var(--accent-gold)' : 'var(--border-medium)'}`,
-                  background: ativa ? 'var(--accent-gold)' : 'transparent',
+                  border: `1.5px solid ${ativa ? 'var(--accent)' : 'var(--border-medium)'}`,
+                  background: ativa ? 'var(--accent)' : 'transparent',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   transition: 'all 0.2s',
                 }}
               >
                 {ativa && <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--bg-primary)' }} />}
               </span>
-              <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: ativa ? 'var(--accent-gold)' : 'var(--text-primary)', lineHeight: 1.4, transition: 'color 0.2s' }}>
+              <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: ativa ? 'var(--accent)' : 'var(--text-primary)', lineHeight: 1.4, transition: 'color 0.2s' }}>
                 {opcao.texto}
               </span>
             </button>

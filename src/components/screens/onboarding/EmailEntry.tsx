@@ -51,8 +51,8 @@ export function EmailEntry({ onSuccess, onBack, isLogin }: Props) {
         <div className="flex flex-col gap-3">
           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 34, fontWeight: 300, lineHeight: 1.2, color: 'var(--text-primary)' }}>
             {isLogin
-              ? <>{t('emailEntry.titleReturning')}<br /><em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>{t('emailEntry.titleReturningItalic')}</em></>
-              : <>{t('emailEntry.titleNew')}<br /><em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>{t('emailEntry.titleNewItalic')}</em></>}
+              ? <>{t('emailEntry.titleReturning')}<br /><em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>{t('emailEntry.titleReturningItalic')}</em></>
+              : <>{t('emailEntry.titleNew')}<br /><em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>{t('emailEntry.titleNewItalic')}</em></>}
           </h2>
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)', lineHeight: 1.6 }}>
             {isLogin ? t('emailEntry.subtitleReturning') : t('emailEntry.subtitleNew')}
@@ -70,7 +70,7 @@ export function EmailEntry({ onSuccess, onBack, isLogin }: Props) {
             onKeyDown={(e) => e.key === 'Enter' && handleSend()}
             style={{
               background: 'var(--bg-surface)',
-              border: `1px solid ${error ? '#8B4040' : email ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
+              border: `1px solid ${error ? '#8B4040' : email ? 'var(--accent)' : 'var(--border-subtle)'}`,
               borderRadius: 8,
               padding: '14px 16px',
               fontSize: 16,

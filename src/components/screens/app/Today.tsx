@@ -83,11 +83,11 @@ export function Today({
           className="text-left w-full mt-6"
           style={{ padding: 18, borderRadius: 10, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
         >
-          <p style={{ fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent-gold)', fontFamily: 'var(--font-sans)' }}>
+          <p style={{ fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', fontFamily: 'var(--font-sans)' }}>
             {mestra ? 'Sua Leitura Mestra' : 'Sua Leitura Completa'}
           </p>
           <p style={{ fontFamily: 'var(--font-serif)', fontSize: 20, fontWeight: 300, color: 'var(--text-primary)', marginTop: 8, lineHeight: 1.3 }}>
-            <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>continue de onde parou.</em>
+            <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>continue de onde parou.</em>
           </p>
           <p className="text-xs text-text-muted mt-2">
             Capítulo {String((principal.ultimo_capitulo_lido ?? 0) + 1).padStart(2, '0')} de{' '}
@@ -114,7 +114,7 @@ export function Today({
         className="text-left w-full mt-6"
         style={{ padding: 18, borderRadius: 10, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
       >
-        <p style={{ fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent-gold)', fontFamily: 'var(--font-sans)' }}>
+        <p style={{ fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', fontFamily: 'var(--font-sans)' }}>
           Pergunte à Aurora
         </p>
         <p style={{ fontFamily: 'var(--font-serif)', fontSize: 16, fontStyle: 'italic', color: 'var(--text-primary)', marginTop: 8 }}>
@@ -126,7 +126,7 @@ export function Today({
         <button
           onClick={onReScan}
           className="text-left w-full mt-6"
-          style={{ padding: 18, borderRadius: 10, background: 'var(--bg-surface)', border: '1px solid var(--accent-gold)' }}
+          style={{ padding: 18, borderRadius: 10, background: 'var(--bg-surface)', border: '1px solid var(--accent)' }}
         >
           <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--text-primary)' }}>
             Complete o scan da sua palma

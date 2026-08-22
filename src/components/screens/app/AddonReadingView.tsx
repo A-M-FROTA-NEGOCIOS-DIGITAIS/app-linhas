@@ -30,7 +30,7 @@ export function AddonReadingView({ reading, titulo, onBack }: Props) {
           <button onClick={onBack} className="text-text-secondary active:text-text-primary transition-colors mb-6">
             <BackIcon />
           </button>
-          <p style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent-gold)', fontFamily: 'var(--font-sans)', marginBottom: 8 }}>
+          <p style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)', fontFamily: 'var(--font-sans)', marginBottom: 8 }}>
             Madame Aurora
           </p>
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 26, fontWeight: 300, color: 'var(--text-primary)', lineHeight: 1.25 }}>
@@ -44,7 +44,7 @@ export function AddonReadingView({ reading, titulo, onBack }: Props) {
               {capitulos.length > 1 && (
                 <div className="flex items-center gap-3 mb-4">
                   <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
-                  <span style={{ fontFamily: 'var(--font-serif)', fontSize: 13, color: 'var(--accent-gold)', opacity: 0.7 }}>
+                  <span style={{ fontFamily: 'var(--font-serif)', fontSize: 13, color: 'var(--accent)', opacity: 0.7 }}>
                     {i + 1}
                   </span>
                   <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />

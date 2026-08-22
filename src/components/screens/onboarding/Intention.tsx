@@ -93,7 +93,7 @@ export function IntentionScreen({ onContinue, onBack, initialValue, eyebrow }: P
         <Eyebrow>{eyebrow ?? t('intention.eyebrow')}</Eyebrow>
         <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 30, fontWeight: 300, lineHeight: 1.2, letterSpacing: '-0.01em', color: 'var(--text-primary)' }}>
           {t('intention.title')}<br />
-          <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>{t('intention.titleItalic')}</em>
+          <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>{t('intention.titleItalic')}</em>
         </h2>
         <p style={{ fontSize: 14, color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)', lineHeight: 1.55 }}>
           {t('intention.subtitle')}
@@ -110,17 +110,17 @@ export function IntentionScreen({ onContinue, onBack, initialValue, eyebrow }: P
               style={{
                 display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left',
                 padding: '14px 16px', borderRadius: 8,
-                border: `1px solid ${isActive ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
-                background: isActive ? 'rgba(201,169,97,0.07)' : 'var(--bg-surface)',
+                border: `1px solid ${isActive ? 'var(--accent)' : 'var(--border-subtle)'}`,
+                background: isActive ? 'rgba(124, 156, 228,0.07)' : 'var(--bg-surface)',
                 transition: 'all 0.2s ease', width: '100%', cursor: 'pointer',
               }}
             >
-              <span style={{ color: isActive ? 'var(--accent-gold)' : 'var(--text-muted)', flexShrink: 0, transition: 'color 0.2s' }}>{icon}</span>
+              <span style={{ color: isActive ? 'var(--accent)' : 'var(--text-muted)', flexShrink: 0, transition: 'color 0.2s' }}>{icon}</span>
               <span className="flex-1 min-w-0">
-                <span style={{ display: 'block', fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 500, color: isActive ? 'var(--accent-gold)' : 'var(--text-primary)', transition: 'color 0.2s' }}>{label}</span>
+                <span style={{ display: 'block', fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 500, color: isActive ? 'var(--accent)' : 'var(--text-primary)', transition: 'color 0.2s' }}>{label}</span>
                 <span style={{ display: 'block', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--text-secondary)', marginTop: 2, lineHeight: 1.4 }}>{sub}</span>
               </span>
-              <span style={{ width: 18, height: 18, borderRadius: '50%', border: `1.5px solid ${isActive ? 'var(--accent-gold)' : 'var(--border-medium)'}`, background: isActive ? 'var(--accent-gold)' : 'transparent', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
+              <span style={{ width: 18, height: 18, borderRadius: '50%', border: `1.5px solid ${isActive ? 'var(--accent)' : 'var(--border-medium)'}`, background: isActive ? 'var(--accent)' : 'transparent', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
                 {isActive && <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--bg-primary)' }} />}
               </span>
             </button>

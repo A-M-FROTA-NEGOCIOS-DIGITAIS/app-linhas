@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Spinner, Hairline } from '@/components/ui'
+import { AuroraAvatar, AuroraRetrato } from '@/components/ui/Aurora'
 import { supabase } from '@/lib/supabase'
 import { track, Events } from '@/lib/analytics'
 import i18n from '@/lib/i18n'
@@ -15,16 +16,15 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       {!isUser && (
-        <div className="flex-shrink-0 w-7 h-7 rounded-full mr-3 mt-0.5 flex items-center justify-center"
-          style={{ background: 'rgba(201,169,97,0.12)', border: '1px solid rgba(201,169,97,0.25)' }}>
-          <span style={{ fontFamily: 'var(--font-serif)', fontSize: 13, color: 'var(--accent-gold)', fontWeight: 300, lineHeight: 1 }}>A</span>
+        <div className="mr-3 mt-0.5">
+          <AuroraAvatar tamanho={28} />
         </div>
       )}
       <div
         className={`max-w-[78%] px-4 py-3 rounded-2xl ${isUser ? 'rounded-br-sm' : 'rounded-bl-sm'}`}
         style={{
-          background: isUser ? 'rgba(201,169,97,0.12)' : 'var(--bg-surface)',
-          border: isUser ? '1px solid rgba(201,169,97,0.2)' : '1px solid var(--border-subtle)',
+          background: isUser ? 'rgba(124, 156, 228,0.12)' : 'var(--bg-surface)',
+          border: isUser ? '1px solid rgba(124, 156, 228,0.2)' : '1px solid var(--border-subtle)',
         }}
       >
         <p style={{ fontFamily: isUser ? 'var(--font-sans)' : 'var(--font-serif)', fontSize: isUser ? 14 : 15, lineHeight: 1.65, color: 'var(--text-primary)', letterSpacing: isUser ? 0 : '0.003em' }}>
@@ -41,15 +41,10 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
 function TypingIndicator() {
   return (
     <div className="flex items-center gap-3">
-      <div className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center"
-        style={{ background: 'rgba(201,169,97,0.12)', border: '1px solid rgba(201,169,97,0.25)' }}>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 2L9.09 8.26 2 9.27l5 4.87-1.18 6.88L12 17.77l6.18 3.25L17 14.14l5-4.87-7.09-1.01z" />
-        </svg>
-      </div>
+      <AuroraAvatar tamanho={28} />
       <div className="flex gap-1 px-4 py-3 rounded-2xl rounded-bl-sm" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
         {[0, 1, 2].map((i) => (
-          <span key={i} className="w-1.5 h-1.5 rounded-full bg-text-muted animate-pulse-gold" style={{ animationDelay: `${i * 0.2}s` }} />
+          <span key={i} className="w-1.5 h-1.5 rounded-full bg-text-muted animate-pulse-accent" style={{ animationDelay: `${i * 0.2}s` }} />
         ))}
       </div>
     </div>
@@ -160,10 +155,7 @@ export function AuroraChat({ profile }: Props) {
   return (
     <div className="h-full flex flex-col">
       <div className="px-5 pt-12 pb-4 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full flex items-center justify-center"
-          style={{ background: 'rgba(201,169,97,0.12)', border: '1px solid rgba(201,169,97,0.3)' }}>
-          <span style={{ fontFamily: 'var(--font-serif)', fontSize: 16, color: 'var(--accent-gold)', fontWeight: 300, lineHeight: 1 }}>A</span>
-        </div>
+        <AuroraAvatar tamanho={36} destacado />
         <div>
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 20, fontWeight: 300, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
             {t('aurora.title')}
@@ -177,18 +169,15 @@ export function AuroraChat({ profile }: Props) {
       <div className="flex-1 scroll-area px-5 py-5">
         {loading ? (
           <div className="flex items-center justify-center h-full">
-            <Spinner size={24} className="text-accent-gold" />
+            <Spinner size={24} className="text-accent" />
           </div>
         ) : isEmpty ? (
           <div className="flex flex-col h-full">
             <div className="flex-1 flex flex-col items-center justify-center gap-4">
-              <svg width="56" height="56" viewBox="0 0 48 48" fill="none">
-                <circle cx="24" cy="24" r="20" stroke="#C9A961" strokeWidth="0.6" opacity="0.2"/>
-                <path d="M10 34c8-14 20-14 28 0" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round"/>
-                <path d="M13 34c6-10 16-10 22 0" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round"/>
-                <path d="M17 34c3-6 11-6 14 0" stroke="#C9A961" strokeWidth="1.2" strokeLinecap="round"/>
-                <circle cx="24" cy="28" r="2.5" fill="#C9A961" opacity="0.6"/>
-              </svg>
+              <AuroraRetrato tamanho={132} />
+              <p style={{ fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
+                Madame Aurora
+              </p>
               <p style={{ fontFamily: 'var(--font-serif)', fontSize: 18, fontWeight: 300, color: 'var(--text-primary)', lineHeight: 1.4, textAlign: 'center' }}>
                 {t('aurora.emptyTitle')}<br/>
                 <em style={{ color: 'var(--text-secondary)', fontSize: 15 }}>{t('aurora.emptySubtitle')}</em>
@@ -237,7 +226,7 @@ export function AuroraChat({ profile }: Props) {
             onClick={() => send(input)}
             disabled={!input.trim() || sending}
             className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-opacity"
-            style={{ background: input.trim() && !sending ? 'var(--accent-gold)' : 'var(--border-subtle)', opacity: input.trim() && !sending ? 1 : 0.5 }}
+            style={{ background: input.trim() && !sending ? 'var(--accent)' : 'var(--border-subtle)', opacity: input.trim() && !sending ? 1 : 0.5 }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={input.trim() && !sending ? 'var(--bg-primary)' : 'var(--text-muted)'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 12h14M13 5l7 7-7 7" />

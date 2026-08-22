@@ -10,9 +10,9 @@ export function Welcome({ name, gender, onReadNow, onSetupPush }: Props) {
 
   return (
     <div className="h-full flex flex-col items-center justify-center px-8 gap-8"
-      style={{ background: 'radial-gradient(ellipse at 50% 30%, rgba(201,169,97,0.06), transparent 55%)' }}>
+      style={{ background: 'radial-gradient(ellipse at 50% 30%, rgba(124, 156, 228,0.06), transparent 55%)' }}>
       <div className="text-center">
-        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 96, fontWeight: 300, color: 'var(--accent-gold)', lineHeight: 1, opacity: 0.85, letterSpacing: '-0.02em' }}>09</p>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 96, fontWeight: 300, color: 'var(--accent)', lineHeight: 1, opacity: 0.85, letterSpacing: '-0.02em' }}>09</p>
         <p className="text-xs text-text-muted tracking-widest uppercase mt-2">{t('welcome.label', { context: ctx })}</p>
       </div>
 

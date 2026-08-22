@@ -36,9 +36,9 @@ function TypewriterLine({ text, delay = 0, gold = false, onDone }: { text: strin
   }, [text, delay])
 
   return (
-    <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 300, lineHeight: 1.35, color: gold ? 'var(--accent-gold)' : 'var(--text-primary)', letterSpacing: '-0.01em', minHeight: '1.35em' }}>
+    <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 300, lineHeight: 1.35, color: gold ? 'var(--accent)' : 'var(--text-primary)', letterSpacing: '-0.01em', minHeight: '1.35em' }}>
       {displayed}
-      {!done && <span className="cursor-blink" style={{ borderRight: `2px solid ${gold ? 'var(--accent-gold)' : 'var(--text-primary)'}`, marginLeft: 2 }} />}
+      {!done && <span className="cursor-blink" style={{ borderRight: `2px solid ${gold ? 'var(--accent)' : 'var(--text-primary)'}`, marginLeft: 2 }} />}
     </p>
   )
 }
@@ -106,7 +106,7 @@ export function Revelation({ analysis, name, scanId, userId, onContinue }: Props
   }, [phase, name, userId, scanId])
 
   return (
-    <div className="h-full flex flex-col px-8 pt-16 pb-8" style={{ background: 'radial-gradient(ellipse at 50% 20%, rgba(201,169,97,0.05), transparent 55%)' }}>
+    <div className="h-full flex flex-col px-8 pt-16 pb-8" style={{ background: 'radial-gradient(ellipse at 50% 20%, rgba(124, 156, 228,0.05), transparent 55%)' }}>
       <div className="flex-1 flex flex-col justify-center gap-5">
         {lines.slice(0, phase + 1).map(({ text, gold }, i) => (
           <TypewriterLine

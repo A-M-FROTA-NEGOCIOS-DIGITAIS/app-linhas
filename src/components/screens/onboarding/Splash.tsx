@@ -19,13 +19,13 @@ export function Splash({ onContinue }: Props) {
       <div className="flex flex-col items-center gap-6">
         <div style={{ fontFamily: 'var(--font-serif)', fontSize: 76, fontWeight: 300, letterSpacing: '-0.03em', lineHeight: 1 }}>
           <span style={{ color: 'var(--text-primary)' }}>l</span>
-          <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>i</em>
+          <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>i</em>
           <span style={{ color: 'var(--text-primary)' }}>nhas</span>
         </div>
 
         <p style={{ fontFamily: 'var(--font-sans)', fontSize: 16, color: 'var(--text-secondary)', letterSpacing: '0.04em', textAlign: 'center' }}>
           {t('splash.tagline')}{' '}
-          <em style={{ fontFamily: 'var(--font-serif)', color: 'var(--accent-gold)', fontStyle: 'italic' }}>{t('splash.taglineItalic')}</em>
+          <em style={{ fontFamily: 'var(--font-serif)', color: 'var(--accent)', fontStyle: 'italic' }}>{t('splash.taglineItalic')}</em>
         </p>
       </div>
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { AuroraRetrato } from '@/components/ui/Aurora'
 
 interface Props {
   /** Mensagens que se alternam. A primeira aparece imediatamente. */
@@ -29,13 +30,7 @@ export function TelaGerando({ mensagens, rodape }: Props) {
 
   return (
     <div className="h-full flex flex-col items-center justify-center px-8 gap-8">
-      <svg width="72" height="72" viewBox="0 0 72 72" fill="none" className="animate-pulse-gold">
-        <circle cx="36" cy="36" r="34" stroke="#C9A961" strokeWidth="0.75" strokeDasharray="4 4" />
-        <path d="M12 52c8-16 40-16 48 0" stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" />
-        <path d="M18 52c6-12 30-12 36 0" stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" />
-        <path d="M24 52c4-8 20-8 24 0" stroke="#C9A961" strokeWidth="1.5" strokeLinecap="round" />
-        <circle cx="36" cy="36" r="3" fill="#C9A961" />
-      </svg>
+      <AuroraRetrato tamanho={112} />
 
       <div className="text-center flex flex-col gap-3">
         <p
@@ -63,7 +58,7 @@ export function TelaGerando({ mensagens, rodape }: Props) {
           style={{
             height: '100%',
             width: '40%',
-            background: 'var(--accent-gold)',
+            background: 'var(--accent)',
             borderRadius: 1,
             animation: 'slideProgress 2s ease-in-out infinite',
           }}

@@ -48,19 +48,19 @@ export function DespertarView({ userId, onBack }: Props) {
           <BackIcon />
         </button>
 
-        <p style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent-gold)', fontFamily: 'var(--font-sans)', marginBottom: 8 }}>
+        <p style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)', fontFamily: 'var(--font-sans)', marginBottom: 8 }}>
           O Despertar
         </p>
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 24, fontWeight: 300, color: 'var(--text-primary)', marginBottom: 24, lineHeight: 1.3 }}>
           Sua marca muda com o tempo.<br />
-          <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>Acompanhe a evolução dela.</em>
+          <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>Acompanhe a evolução dela.</em>
         </h1>
 
         {assinatura?.status === 'ativa' ? (
           <>
             <div
               className="px-5 py-4 mb-8"
-              style={{ borderRadius: 8, border: '1px solid var(--accent-gold)', background: 'rgba(201,169,97,0.06)' }}
+              style={{ borderRadius: 8, border: '1px solid var(--accent)', background: 'rgba(124, 156, 228,0.06)' }}
             >
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}>
                 Assinatura ativa · próxima re-leitura em {formatarData(assinatura.proxima_releitura)}
@@ -98,7 +98,7 @@ export function DespertarView({ userId, onBack }: Props) {
               href={CHECKOUT_URL}
               style={{
                 display: 'inline-block', padding: '12px 24px', borderRadius: 6,
-                background: 'var(--accent-gold)', color: 'var(--bg-primary)',
+                background: 'var(--accent)', color: 'var(--bg-primary)',
                 fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600, textDecoration: 'none',
               }}
             >
