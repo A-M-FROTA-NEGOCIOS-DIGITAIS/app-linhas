@@ -106,9 +106,72 @@ function buildSentencaSvg(frase: string, marcaAdormecida: string): string {
 </svg>`
 }
 
+/** Mesma conversao que o gerar-leitura usa, para os dois falarem a mesma lingua. */
+function palmAnalysisToText(analysis: Record<string, unknown>): string {
+  if (!analysis || Object.keys(analysis).length === 0) return 'análise visual não disponível'
+  const lines = (analysis.main_lines as Record<string, Record<string, string>>) ?? {}
+  const parts: string[] = []
+  if (analysis.hand_shape) parts.push(`mão tipo ${analysis.hand_shape}`)
+  if (lines.heart_line) parts.push(`linha do coração ${lines.heart_line.length ?? ''} e ${lines.heart_line.depth ?? ''} — ${lines.heart_line.interpretation ?? ''}`)
+  if (lines.head_line) parts.push(`linha da cabeça ${lines.head_line.length ?? ''} — ${lines.head_line.interpretation ?? ''}`)
+  if (lines.life_line) parts.push(`linha da vida ${lines.life_line.length ?? ''} — ${lines.life_line.interpretation ?? ''}`)
+  if (analysis.overall_character) parts.push(String(analysis.overall_character))
+  return parts.join('; ')
+}
+
+/**
+ * A sessao ja descreve a mao dominante?
+ *
+ * Nao basta checar se analise_visual existe: o processarOutraMao ANEXA a mao
+ * nao-dominante ao campo, entao uma sessao que so passou pela Outra Mao tem o
+ * campo preenchido e mesmo assim nao tem a mao principal.
+ */
+function temMaoDominante(analiseVisual: string | null | undefined): boolean {
+  const texto = (analiseVisual ?? '').trim()
+  if (!texto) return false
+  // Vindo do funil externo o texto nao tem rotulo de mao; se comeca com o
+  // rotulo da nao-dominante, e porque so ela esta la.
+  return !texto.startsWith('Mão não-dominante:')
+}
+
 // Mesmo pedindo "APENAS o JSON", o modelo as vezes embrulha em cerca markdown
 // ou escreve uma frase em volta. Nunca dar JSON.parse direto no texto cru.
-function extrairJson(raw: string): Record<string, unknown> | null {
+/**
+ * Escapa caracteres de controle crus dentro de strings JSON.
+ *
+ * CAUSA RAIZ, confirmada em 22/08 apos o dia inteiro de investigacao: o modelo
+ * escreve prosa com paragrafos e emite o byte de nova linha DE VERDADE dentro
+ * do valor da string, em vez do escape \n de dois caracteres. O JSON proibe
+ * controles crus (U+0000-U+001F) dentro de strings, entao o JSON.parse morre
+ * com "Bad control character in string literal" na primeira mudanca de
+ * paragrafo. Por isso o inicio da resposta sempre parecia bem formado e por
+ * isso a falha parecia aleatoria: depende de o modelo lembrar de escapar.
+ *
+ * Percorre o texto rastreando se esta dentro de uma string, respeitando o
+ * escape com barra invertida para nao confundir \" com o fim da string.
+ */
+function escaparControlesEmStrings(texto: string): string {
+  let resultado = ''
+  let dentroDeString = false
+  let escapado = false
+
+  for (const ch of texto) {
+    if (escapado) { resultado += ch; escapado = false; continue }
+    if (ch === '\\') { resultado += ch; escapado = true; continue }
+    if (ch === '"') { dentroDeString = !dentroDeString; resultado += ch; continue }
+
+    if (dentroDeString) {
+      if (ch === '\n') { resultado += '\\n'; continue }
+      if (ch === '\r') { resultado += '\\r'; continue }
+      if (ch === '\t') { resultado += '\\t'; continue }
+      if (ch < ' ') continue // demais controles nao tem representacao util
+    }
+    resultado += ch
+  }
+  return resultado
+}
+
+function extrairJson(raw: string): { json: Record<string, unknown> | null; erro?: string } {
   const limpo = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
   const candidatos = [limpo]
 
@@ -116,12 +179,25 @@ function extrairJson(raw: string): Record<string, unknown> | null {
   const fim = limpo.lastIndexOf('}')
   if (inicio !== -1 && fim > inicio) candidatos.push(limpo.slice(inicio, fim + 1))
 
+  // Ultimo recurso: repara os controles crus. Fica por ultimo para nao mexer
+  // no texto quando ele ja e valido.
+  candidatos.push(escaparControlesEmStrings(candidatos[candidatos.length - 1]))
+
+  let ultimoErro: string | undefined
   for (const candidato of candidatos) {
     try {
-      return JSON.parse(candidato)
-    } catch { /* tenta o proximo */ }
+      return { json: JSON.parse(candidato) }
+    } catch (err) {
+      ultimoErro = String(err)
+      // Sem a vizinhanca do ponto que quebrou, o log nao identifica a causa: o
+      // texto tem ~2200 chars e o recorte inicial corta antes do defeito.
+      const pos = Number(ultimoErro.match(/position (\d+)/)?.[1])
+      if (Number.isFinite(pos)) {
+        ultimoErro += ` | vizinhanca: ...${candidato.slice(Math.max(0, pos - 150), pos + 150)}...`
+      }
+    }
   }
-  return null
+  return { json: null, erro: ultimoErro }
 }
 
 /**
@@ -150,13 +226,14 @@ async function gerarJsonComClaude(
     })
     const rawText = extractText(msg.content)
 
-    const json = extrairJson(rawText)
+    const { json, erro } = extrairJson(rawText)
     if (json) return json
 
     console.error(
       `gerarJsonComClaude (${contexto}) tentativa ${tentativa}/${MAX_TENTATIVAS}: sem JSON valido. ` +
       `stop_reason=${msg.stop_reason} out_tokens=${msg.usage?.output_tokens} len=${rawText.length} ` +
-      `raw="${rawText.slice(0, 800)}"`,
+      `parse_erro=${erro ?? 'nenhum candidato com chaves'} ` +
+      `fim_do_texto="${rawText.slice(-250)}"`,
     )
   }
   return null
@@ -402,7 +479,14 @@ async function processarOutraMao(
 
   const { error: sessaoUpdateErr } = await supabase
     .from('sessoes')
-    .update({ analise_visual: `${sessao.analise_visual ?? ''}\n\nMão não-dominante: ${segundaPalmaAnalise}` })
+    // Junta sem deixar quebra de linha solta quando o campo estava vazio: a
+    // sessao do Alexander ficou comecando com "\n\nMão não-dominante:" porque
+    // a concatenacao antiga nao tratava o caso do campo ausente.
+    .update({
+      analise_visual: [(sessao.analise_visual ?? '').trim(), `Mão não-dominante: ${segundaPalmaAnalise}`]
+        .filter(Boolean)
+        .join('\n\n'),
+    })
     .eq('id', sessao.id)
   if (sessaoUpdateErr) console.error(`Falha ao salvar analise da outra mao na sessao (${sessao.id}):`, sessaoUpdateErr.message)
 
@@ -593,6 +677,31 @@ serve(async (req) => {
     ])
 
     if (!sessao) return new Response(JSON.stringify({ error: 'Sessão não encontrada' }), { status: 404, headers: jsonHeaders })
+
+    // Ate 22/08 esta funcao lia a palma SO de sessoes.analise_visual, que e
+    // preenchido pelo funil externo de marketing. Quem faz o scan dentro do app
+    // grava em palm_scans, entao todos os produtos pagos saiam com
+    // "Palma: nao disponivel" — sem erro, sem log, silenciosamente sem o
+    // mecanismo central do produto. O gerar-leitura ja tinha este fallback;
+    // aqui faltava. Enriquece a sessao em memoria para que todos os geradores,
+    // que leem sessao.analise_visual, recebam a palma sem mudar assinatura.
+    if (!temMaoDominante(sessao.analise_visual)) {
+      const { data: scan } = await supabase
+        .from('palm_scans')
+        .select('analysis')
+        .eq('user_id', user_id)
+        .eq('hand_type', 'dominant')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (scan?.analysis) {
+        const dominante = `Mão dominante: ${palmAnalysisToText(scan.analysis as Record<string, unknown>)}`
+        sessao.analise_visual = [dominante, (sessao.analise_visual ?? '').trim()]
+          .filter(Boolean)
+          .join('\n\n')
+      }
+    }
     if (!profile) return new Response(JSON.stringify({ error: 'Perfil não encontrado' }), { status: 404, headers: jsonHeaders })
 
     let resultado: Record<string, unknown>

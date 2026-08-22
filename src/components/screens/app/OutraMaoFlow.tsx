@@ -61,6 +61,7 @@ export function OutraMaoFlow({ userId, onDone, onBack }: Props) {
       <Scanning
         imageDataUrl={imagem}
         userId={userId}
+        handType="non_dominant"
         onComplete={handleAnalysisComplete}
         onBack={() => setFase('scan')}
       />

@@ -8,6 +8,13 @@ interface Props {
   userId: string
   /** Volta para a captura da foto. Sem isso a tela de erro vira beco sem saída. */
   onBack?: () => void
+  /**
+   * Qual mão está sendo escaneada. Era cravado como 'dominant' aqui dentro, o
+   * que fazia o fluxo da Outra Mão gravar a mão não-dominante rotulada como
+   * dominante em palm_scans — e o fallback do gerar-leitura, que pega o scan
+   * mais recente, passava a usar a mão errada.
+   */
+  handType?: 'dominant' | 'non_dominant'
 }
 
 const isDevBypass = () => localStorage.getItem('dev_bypass') === 'true'
@@ -31,7 +38,7 @@ const FAKE_SCAN_RESULT = {
   scan_id: 'dev-bypass-scan-id',
 }
 
-export function Scanning({ onComplete, imageDataUrl, userId, onBack }: Props) {
+export function Scanning({ onComplete, imageDataUrl, userId, onBack, handType = 'dominant' }: Props) {
   const { t } = useTranslation()
   const [msgIndex, setMsgIndex] = useState(0)
   const [progress, setProgress] = useState(0)
@@ -72,7 +79,7 @@ export function Scanning({ onComplete, imageDataUrl, userId, onBack }: Props) {
         const res = await fetch(`${supabaseUrl}/functions/v1/analyze-palm`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${supabaseKey}` },
-          body: JSON.stringify({ user_id: userId, image_data: imageDataUrl, hand_type: 'dominant' }),
+          body: JSON.stringify({ user_id: userId, image_data: imageDataUrl, hand_type: handType }),
         })
         const data = await res.json()
         if (!res.ok) throw new Error(data.error || data.message || JSON.stringify(data))

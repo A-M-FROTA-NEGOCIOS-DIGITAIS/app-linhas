@@ -196,6 +196,9 @@ serve(async (req) => {
         .from('palm_scans')
         .select('analysis')
         .eq('user_id', user_id)
+        // Sem este filtro o scan da Outra Mao, que e o mais recente de quem
+        // comprou esse produto, entraria no lugar da mao dominante.
+        .eq('hand_type', 'dominant')
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle()
