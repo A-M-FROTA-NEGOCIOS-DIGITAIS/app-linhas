@@ -127,6 +127,17 @@ Retorne:
 }`
 }
 
+/**
+ * A sessao ja descreve a mao dominante? Se o texto comeca com o rotulo da
+ * nao-dominante, e porque so ela esta la — o campo esta preenchido mas
+ * incompleto. Mesma funcao existe no gerar-produto.
+ */
+function temMaoDominante(analiseVisual: string | null | undefined): boolean {
+  const texto = (analiseVisual ?? '').trim()
+  if (!texto) return false
+  return !texto.startsWith('Mão não-dominante:')
+}
+
 function palmAnalysisToText(analysis: Record<string, unknown>): string {
   if (!analysis || Object.keys(analysis).length === 0) return 'análise visual não disponível'
   const lines = analysis.main_lines as Record<string, Record<string, string>> ?? {}
@@ -189,9 +200,12 @@ serve(async (req) => {
     if (sessaoErr || !sessao) throw new Error('Sessão não encontrada')
     if (profileErr || !profile) throw new Error('Perfil não encontrado')
 
-    // Resumo textual da palma: usa analise_visual da sessão ou busca o último scan
+    // Resumo textual da palma. Nao basta checar se analise_visual existe: o
+    // processarOutraMao ANEXA a mao nao-dominante nesse campo, entao uma sessao
+    // que so passou pela Outra Mao tem o campo preenchido e mesmo assim nao tem
+    // a mao principal — e o fallback nunca rodava.
     let palmResumo = sessao.analise_visual as string ?? ''
-    if (!palmResumo) {
+    if (!temMaoDominante(palmResumo)) {
       const { data: scan } = await supabase
         .from('palm_scans')
         .select('analysis')
@@ -202,7 +216,12 @@ serve(async (req) => {
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle()
-      if (scan?.analysis) palmResumo = palmAnalysisToText(scan.analysis as Record<string, unknown>)
+      if (scan?.analysis) {
+        const dominante = `Mão dominante: ${palmAnalysisToText(scan.analysis as Record<string, unknown>)}`
+        palmResumo = [dominante, palmResumo.trim()].filter(Boolean).join('
+
+')
+      }
     }
 
     const prompt = buildCorePrompt(profile, sessao, palmResumo, idioma)
