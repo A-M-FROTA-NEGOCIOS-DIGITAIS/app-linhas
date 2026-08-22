@@ -215,19 +215,31 @@ async function gerarJsonComClaude(
   anthropic: Anthropic,
   prompt: string,
   contexto = 'sem-contexto',
+  maxTokens = 4000,
 ): Promise<Record<string, unknown> | null> {
   const MAX_TENTATIVAS = 2
 
   for (let tentativa = 1; tentativa <= MAX_TENTATIVAS; tentativa++) {
     const msg = await anthropic.messages.create({
       model: 'claude-sonnet-5',
-      max_tokens: 4000,
+      max_tokens: maxTokens,
       messages: [{ role: 'user', content: prompt }],
     })
     const rawText = extractText(msg.content)
 
     const { json, erro } = extrairJson(rawText)
     if (json) return json
+
+    // Truncado: repetir com o mesmo teto da o mesmo resultado e ainda consome o
+    // tempo do worker. Em 22/08 o 12meses fez 4 chamadas de ~40s por causa
+    // disso (laco proprio x retentativa daqui) e estourou WORKER_RESOURCE_LIMIT.
+    if (msg.stop_reason === 'max_tokens') {
+      console.error(
+        `gerarJsonComClaude (${contexto}): resposta truncada em ${maxTokens} tokens. ` +
+        'Nao adianta repetir com o mesmo teto — aumente maxTokens para este produto.',
+      )
+      return null
+    }
 
     console.error(
       `gerarJsonComClaude (${contexto}) tentativa ${tentativa}/${MAX_TENTATIVAS}: sem JSON valido. ` +
@@ -300,7 +312,7 @@ Escreva em ${lang}. Cada capítulo: 200-350 palavras.`
 
   let capitulos: Capitulo[] | null = null
   for (let tentativa = 0; tentativa < 2 && !capitulos; tentativa++) {
-    const resultado = await gerarJsonComClaude(anthropic, buildPrompt(tentativa > 0), `mestra tentativa ${tentativa + 1}`)
+    const resultado = await gerarJsonComClaude(anthropic, buildPrompt(tentativa > 0), `mestra tentativa ${tentativa + 1}`, 8000)
     const candidato = resultado?.capitulos as Capitulo[] | undefined
     if (!Array.isArray(candidato) || candidato.length < 6) continue
     const densidadeOk = candidato.every((c) => (c.conteudo?.length ?? 0) >= 400)
@@ -430,7 +442,7 @@ Retorne APENAS o JSON:
 
   let meses: Array<{ mes: number; titulo: string; texto: string }> | null = null
   for (let tentativa = 0; tentativa < 2 && !meses; tentativa++) {
-    const resultado = await gerarJsonComClaude(anthropic, prompt, `12meses tentativa ${tentativa + 1}`)
+    const resultado = await gerarJsonComClaude(anthropic, prompt, `12meses tentativa ${tentativa + 1}`, 12000)
     const candidato = resultado?.meses as Array<{ mes: number; titulo: string; texto: string }> | undefined
     if (!Array.isArray(candidato) || candidato.length !== 12) continue
     const distintos = new Set(candidato.map((m) => normalizarTexto(m.texto).slice(0, 40))).size
