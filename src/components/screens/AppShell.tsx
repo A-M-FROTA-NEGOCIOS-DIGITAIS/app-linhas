@@ -1,24 +1,56 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { TabBar } from '@/components/ui'
+import { TabBar, TabBarIcons, type TabDef } from '@/components/ui'
 import { useAppStore } from '@/store/app'
 import { supabase } from '@/lib/supabase'
+import { useBiblioteca } from '@/hooks/useBiblioteca'
 import { Today } from './app/Today'
 import { Readings } from './app/Readings'
 import { AuroraChat } from './app/AuroraChat'
 import { Profile } from './app/Profile'
-import { ReadingDetail } from './app/ReadingDetail'
+import { Estante } from './app/Estante'
+import { AddonReadingView } from './app/AddonReadingView'
+import { SentencaView } from './app/SentencaView'
+import { DespertarView } from './app/DespertarView'
+import { TerceiroForm } from './app/TerceiroForm'
+import { OutraMaoFlow } from './app/OutraMaoFlow'
+import { LeituraCompleta } from './LeituraCompleta'
 import { PalmScan } from './onboarding/PalmScan'
 import { Scanning } from './onboarding/Scanning'
 import { IntentionScreen } from './onboarding/Intention'
 import type { Reading, Intention } from '@/types'
 
-type Tab = 'today' | 'readings' | 'aurora' | 'you'
+type Aba = 'today' | 'readings' | 'aurora' | 'estante' | 'you'
+
+const ABAS: TabDef[] = [
+  { id: 'today', label: 'Hoje', icon: TabBarIcons.today },
+  { id: 'readings', label: 'Leituras', icon: TabBarIcons.readings },
+  { id: 'aurora', label: 'Aurora', icon: TabBarIcons.aurora },
+  { id: 'estante', label: 'Estante', icon: TabBarIcons.grid },
+  { id: 'you', label: 'Você', icon: TabBarIcons.you },
+]
+
+/**
+ * Nomes que o catalogo do banco nao cobre. O catalogo (produtos_catalogo) e a
+ * fonte de verdade dos 9 add-ons; estes tres nao sao produtos vendidos e por
+ * isso vivem aqui. Nao acrescentar nomes de add-on nesta lista.
+ */
+const TITULOS_FORA_DO_CATALOGO: Record<string, string> = {
+  leitura_core: 'Leitura Completa',
+  daily: 'Carta do Dia',
+  themed: 'Leitura Temática',
+}
+
 type Overlay =
-  | { type: 'reading-detail'; reading: Reading }
+  | { type: 'leitura'; reading: Reading }
+  | { type: 'leitura-core' }
+  | { type: 'sentenca'; reading: Reading }
+  | { type: 'despertar' }
+  | { type: 'terceiro'; produto: 'compatibilidade' | 'quem_ama' }
+  | { type: 'outra-mao' }
   | { type: 'rescan' }
   | { type: 'scanning'; imageDataUrl: string }
-  | { type: 'change-intention' }
+  | { type: 'intencao' }
   | null
 
 interface Props {
@@ -27,60 +59,114 @@ interface Props {
 
 export function AppShell({ onSignOut }: Props) {
   const { t } = useTranslation()
-  const [activeTab, setActiveTab] = useState<Tab>('today')
-  const [overlay, setOverlay] = useState<Overlay>(null)
   const profile = useAppStore((s) => s.profile)
   const setProfile = useAppStore((s) => s.setProfile)
+  const [activeTab, setActiveTab] = useState<Aba>('today')
+  const [overlay, setOverlay] = useState<Overlay>(null)
+  const [temaFiltro, setTemaFiltro] = useState<string | null>(null)
+  const biblioteca = useBiblioteca(profile?.id ?? null)
+
   if (!profile) return null
 
-  const handleChangeIntention = async (intention: Intention) => {
-    await supabase.from('profiles').update({ intention }).eq('id', profile.id)
-    setProfile({ ...profile, intention })
-    setOverlay(null)
+  const fecharOverlay = () => setOverlay(null)
+
+  /** Nome de exibicao de uma leitura: catalogo do banco primeiro, sempre. */
+  const resolverTitulo = (reading: Reading): string => {
+    const doCatalogo = biblioteca.itens.find((i) => i.produto === reading.produto)?.nome
+    if (doCatalogo) return doCatalogo
+    const foraDoCatalogo =
+      (reading.produto ? TITULOS_FORA_DO_CATALOGO[reading.produto] : undefined) ??
+      TITULOS_FORA_DO_CATALOGO[reading.reading_type]
+    return foraDoCatalogo ?? reading.titulo ?? 'Leitura'
   }
 
-  const handleOpenReading = (reading: Reading) => {
-    setOverlay({ type: 'reading-detail', reading })
+  const abrirLeitura = (reading: Reading) => {
+    setOverlay(
+      reading.produto === 'sentenca'
+        ? { type: 'sentenca', reading }
+        : { type: 'leitura', reading },
+    )
   }
 
-  const handleReScan = () => {
-    setOverlay({ type: 'rescan' })
+  const abrirLeituraCore = () => setOverlay({ type: 'leitura-core' })
+
+  const irParaTema = (tema: string) => {
+    setTemaFiltro(tema)
+    setActiveTab('readings')
   }
+
+  const handleReScan = () => setOverlay({ type: 'rescan' })
 
   const handleScanCapture = (imageDataUrl: string) => {
     setOverlay({ type: 'scanning', imageDataUrl })
   }
 
-  const handleScanComplete = (_data: unknown) => {
+  const handleScanComplete = async (_analise: unknown) => {
+    await biblioteca.recarregar()
     setOverlay(null)
-    setActiveTab('today')
   }
 
-  // Overlays take full screen priority
+  const handleFluxoConcluido = async () => {
+    await biblioteca.recarregar()
+    setOverlay(null)
+  }
+
+  const handleChangeIntention = async (intention: Intention) => {
+    const { error } = await supabase.from('profiles').update({ intention }).eq('id', profile.id)
+    if (error) {
+      console.error('AppShell: falha ao salvar a intencao', error.message)
+      return
+    }
+    setProfile({ ...profile, intention })
+    setOverlay(null)
+  }
+
+  // Overlays ocupam a tela inteira e escondem a TabBar.
   if (overlay) {
-    if (overlay.type === 'reading-detail') {
+    if (overlay.type === 'leitura') {
       return (
-        <ReadingDetail
+        <AddonReadingView
           reading={overlay.reading}
-          onBack={() => setOverlay(null)}
+          titulo={resolverTitulo(overlay.reading)}
+          onBack={fecharOverlay}
+        />
+      )
+    }
+    if (overlay.type === 'leitura-core') {
+      return (
+        <LeituraCompleta
+          onBack={fecharOverlay}
+          onIrParaEstante={() => { setOverlay(null); setActiveTab('estante') }}
+        />
+      )
+    }
+    if (overlay.type === 'sentenca') {
+      return <SentencaView reading={overlay.reading} onBack={fecharOverlay} />
+    }
+    if (overlay.type === 'despertar') {
+      return <DespertarView userId={profile.id} onBack={fecharOverlay} />
+    }
+    if (overlay.type === 'terceiro') {
+      return (
+        <TerceiroForm
+          userId={profile.id}
+          produto={overlay.produto}
+          onDone={handleFluxoConcluido}
+          onBack={fecharOverlay}
+        />
+      )
+    }
+    if (overlay.type === 'outra-mao') {
+      return (
+        <OutraMaoFlow
+          userId={profile.id}
+          onDone={handleFluxoConcluido}
+          onBack={fecharOverlay}
         />
       )
     }
     if (overlay.type === 'rescan') {
-      return (
-        <div className="h-full flex flex-col">
-          <button
-            onClick={() => setOverlay(null)}
-            className="absolute top-14 left-5 z-10 p-2"
-            style={{ color: 'var(--text-muted)' }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <PalmScan onCapture={handleScanCapture} onBack={() => setOverlay(null)} />
-        </div>
-      )
+      return <PalmScan onCapture={handleScanCapture} onBack={fecharOverlay} />
     }
     if (overlay.type === 'scanning') {
       return (
@@ -92,24 +178,14 @@ export function AppShell({ onSignOut }: Props) {
         />
       )
     }
-    if (overlay.type === 'change-intention') {
+    if (overlay.type === 'intencao') {
       return (
-        <div className="h-full flex flex-col relative">
-          <button
-            onClick={() => setOverlay(null)}
-            className="absolute top-14 left-5 z-10 p-2"
-            style={{ color: 'var(--text-muted)' }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <IntentionScreen
-            initialValue={profile.intention ?? undefined}
-            eyebrow={t('profile.yourIntention')}
-            onContinue={handleChangeIntention}
-          />
-        </div>
+        <IntentionScreen
+          initialValue={profile.intention ?? undefined}
+          eyebrow={t('profile.yourIntention')}
+          onContinue={handleChangeIntention}
+          onBack={fecharOverlay}
+        />
       )
     }
   }
@@ -120,33 +196,51 @@ export function AppShell({ onSignOut }: Props) {
         {activeTab === 'today' && (
           <Today
             profile={profile}
-            onOpenReading={(reading) => setOverlay({ type: 'reading-detail', reading })}
-            onOpenChat={() => setActiveTab('aurora')}
+            biblioteca={biblioteca}
+            onAbrirLeituraCore={abrirLeituraCore}
+            onAbrirLeitura={abrirLeitura}
+            onIrParaTema={irParaTema}
+            onAbrirAurora={() => setActiveTab('aurora')}
             onReScan={handleReScan}
           />
         )}
         {activeTab === 'readings' && (
           <Readings
-            profile={profile}
-            onOpenReading={handleOpenReading}
+            biblioteca={biblioteca}
+            temaFiltro={temaFiltro}
+            onLimparTema={() => setTemaFiltro(null)}
+            onAbrirLeituraCore={abrirLeituraCore}
+            onAbrirLeitura={abrirLeitura}
           />
         )}
-        {activeTab === 'aurora' && (
-          <AuroraChat profile={profile} />
+        {activeTab === 'aurora' && <AuroraChat profile={profile} />}
+        {activeTab === 'estante' && (
+          <Estante
+            itens={biblioteca.itens}
+            assinatura={biblioteca.assinatura}
+            onOpenReading={abrirLeitura}
+            onOpenDespertar={() => setOverlay({ type: 'despertar' })}
+            onPreencherTerceiro={(produto) => setOverlay({ type: 'terceiro', produto })}
+            onEscanearOutraMao={() => setOverlay({ type: 'outra-mao' })}
+            onRecarregar={() => void biblioteca.recarregar()}
+          />
         )}
         {activeTab === 'you' && (
           <Profile
             profile={profile}
+            biblioteca={biblioteca}
             onReScan={handleReScan}
             onSignOut={onSignOut}
-            onChangeIntention={() => setOverlay({ type: 'change-intention' })}
+            onChangeIntention={() => setOverlay({ type: 'intencao' })}
+            onAbrirDespertar={() => setOverlay({ type: 'despertar' })}
           />
         )}
       </div>
 
       <TabBar
+        tabs={ABAS}
         active={activeTab}
-        onChange={(tab) => setActiveTab(tab as Tab)}
+        onChange={(id) => setActiveTab(id as Aba)}
       />
     </div>
   )

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Card, Eyebrow, Hairline } from '@/components/ui'
 import { LanguagePicker } from '@/components/ui/LanguagePicker'
@@ -6,13 +6,17 @@ import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/store/app'
 import { track, Events } from '@/lib/analytics'
 import { getZodiacSign } from '@/lib/utils'
+import { calcularStreak } from '@/lib/leitura'
+import type { useBiblioteca } from '@/hooks/useBiblioteca'
 import type { Profile as ProfileType } from '@/types'
 
 interface Props {
   profile: ProfileType
+  biblioteca: ReturnType<typeof useBiblioteca>
   onReScan: () => void
   onSignOut: () => void
   onChangeIntention: () => void
+  onAbrirDespertar: () => void
 }
 
 const INTENTION_LABELS_KEY: Record<string, string> = {
@@ -24,24 +28,22 @@ const INTENTION_LABELS_KEY: Record<string, string> = {
   everything: 'intention.everythingLabel',
 }
 
-export function Profile({ profile, onReScan, onSignOut, onChangeIntention }: Props) {
+export function Profile({ profile, biblioteca, onReScan, onSignOut, onChangeIntention, onAbrirDespertar }: Props) {
   const { t } = useTranslation()
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [readingCount, setReadingCount] = useState(0)
   const reset = useAppStore((s) => s.reset)
 
   const zodiac = profile.date_of_birth ? getZodiacSign(profile.date_of_birth) : null
-  const daysActive = Math.max(1, Math.floor((Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24)))
 
-  useEffect(() => {
-    supabase
-      .from('readings')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', profile.id)
-      .then(({ count }) => { if (count) setReadingCount(count) })
-  }, [profile.id])
+  // O tipo de mao ("mao de fogo") vem de palm_scans.analysis.hand_shape, que o
+  // useBiblioteca ainda nao carrega. Entra no Plano 2, junto com a miniatura da
+  // palma. Ate la a linha mostra so signo e cidade.
+  const maoLabel: string | null = null
+  const mesEntrada = new Intl.DateTimeFormat('pt-BR', { month: 'short', year: 'numeric' })
+    .format(new Date(profile.created_at))
+  const plano = biblioteca.assinatura ? t('profile.planoDespertar') : null
 
   const handleSignOut = async () => {
     setSigningOut(true)
@@ -95,24 +97,41 @@ export function Profile({ profile, onReScan, onSignOut, onChangeIntention }: Pro
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 300, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
           {profile.name}
         </h1>
-        {zodiac && <p className="text-xs text-text-muted tracking-wider uppercase mt-1">{zodiac}</p>}
+        <p className="text-xs text-text-muted tracking-wider uppercase mt-1">
+          {[zodiac, maoLabel, profile.city_of_birth].filter(Boolean).join(' · ')}
+        </p>
+        <p className="text-[11px] text-text-muted mt-1">
+          {t('profile.memberSince', { mes: mesEntrada })}{plano ? ` · ${plano}` : ''}
+        </p>
       </div>
 
-      <div className="flex mx-5 mb-4 py-4" style={{ borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)' }}>
-        {[
-          { value: readingCount, label: t('profile.readings') },
-          { value: readingCount, label: t('profile.chapters') },
-          { value: daysActive, label: t('profile.days') },
-        ].map(({ value, label }, i) => (
-          <>
-            {i > 0 && <div key={`div-${i}`} style={{ width: 1, background: 'var(--border-subtle)' }} />}
-            <div key={label} className="flex-1 text-center">
-              <p style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 300, color: 'var(--text-primary)', lineHeight: 1 }}>{value}</p>
-              <p className="text-[10px] text-text-muted uppercase tracking-widest mt-1.5">{label}</p>
-            </div>
-          </>
-        ))}
-      </div>
+      {(() => {
+        const leituras = biblioteca.readings.length
+        const capitulos = biblioteca.readings.reduce((soma, r) => soma + (r.capitulos?.length ?? 0), 0)
+        const dias = calcularStreak(
+          biblioteca.readings
+            .filter((r) => r.reading_type === 'daily' && r.aberta_em)
+            .map((r) => (r.data_carta ?? r.created_at).slice(0, 10)),
+        )
+        const stats = [
+          { valor: leituras, label: t('profile.readings') },
+          { valor: capitulos, label: t('profile.chapters') },
+          { valor: dias, label: t('profile.days') },
+        ]
+        return (
+          <div className="flex mx-5 mb-4 py-4" style={{ borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)' }}>
+            {stats.map(({ valor, label }, i) => (
+              <React.Fragment key={label}>
+                {i > 0 && <div style={{ width: 1, background: 'var(--border-subtle)' }} />}
+                <div className="flex-1 text-center">
+                  <p style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 300, color: 'var(--text-primary)', lineHeight: 1 }}>{valor}</p>
+                  <p className="text-[10px] text-text-muted uppercase tracking-widest mt-1.5">{label}</p>
+                </div>
+              </React.Fragment>
+            ))}
+          </div>
+        )
+      })()}
 
       <div className="px-5 flex flex-col gap-5">
         <Card className="p-5">
@@ -162,6 +181,13 @@ export function Profile({ profile, onReScan, onSignOut, onChangeIntention }: Pro
 
         <div className="flex flex-col gap-1">
           <Eyebrow className="mb-3">{t('profile.account')}</Eyebrow>
+
+          <button onClick={onAbrirDespertar} className="flex items-center justify-between px-4 py-3.5 rounded-md text-sm text-text-secondary text-left" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+            {t('profile.subscription')}
+            <span className="text-xs text-text-muted">
+              {biblioteca.assinatura ? t('profile.subscriptionActive') : t('profile.subscriptionNone')}
+            </span>
+          </button>
 
           <button onClick={handleDownloadData} className="flex items-center justify-between px-4 py-3.5 rounded-md text-sm text-text-secondary text-left" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
             {t('profile.downloadData')}

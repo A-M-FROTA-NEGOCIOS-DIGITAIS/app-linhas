@@ -1,149 +1,141 @@
-import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Card, Chip, Eyebrow, Hairline, Spinner } from '@/components/ui'
-import { supabase } from '@/lib/supabase'
-import { getMoonPhase, formatDate } from '@/lib/utils'
-import { track, Events } from '@/lib/analytics'
-import i18n from '@/lib/i18n'
-import type { Profile, DailyInsight, Reading } from '@/types'
+import type { useBiblioteca } from '@/hooks/useBiblioteca'
+import { faseDaLua } from '@/lib/leitura'
+import type { Profile, Reading } from '@/types'
 
 interface Props {
   profile: Profile
-  onOpenReading: (reading: Reading) => void
-  onOpenChat: () => void
+  biblioteca: ReturnType<typeof useBiblioteca>
+  onAbrirLeituraCore: () => void
+  onAbrirLeitura: (reading: Reading) => void
+  onIrParaTema: (tema: string) => void
+  onAbrirAurora: () => void
   onReScan: () => void
 }
 
-export function Today({ profile, onOpenReading, onOpenChat, onReScan }: Props) {
-  const { t } = useTranslation()
-  const [insight, setInsight] = useState<DailyInsight | null>(null)
-  const [masterReading, setMasterReading] = useState<Reading | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [activeChip, setActiveChip] = useState('today')
+const TEMAS = [
+  { key: 'amor', label: 'Amor' },
+  { key: 'carreira', label: 'Carreira' },
+  { key: 'familia', label: 'Família' },
+  { key: 'decisao', label: 'Decisão' },
+]
 
-  const CHIPS = [
-    { key: 'today', label: t('today.chipToday') },
-    { key: 'love', label: t('today.chipLove') },
-    { key: 'career', label: t('today.chipCareer') },
-    { key: 'family', label: t('today.chipFamily') },
-    { key: 'decision', label: t('today.chipDecision') },
-  ]
+function saudacao(agora = new Date()): string {
+  const h = agora.getHours()
+  if (h < 12) return 'Bom dia'
+  if (h < 18) return 'Boa tarde'
+  return 'Boa noite'
+}
 
-  const moonPhaseKey = getMoonPhase()
-  const localeMap: Record<string, string> = { 'pt-BR': 'pt-BR', 'es': 'es', 'en': 'en-US' }
-  const dateLocale = localeMap[i18n.language] ?? 'en-US'
-  const today = new Date().toLocaleDateString(dateLocale, { weekday: 'long', month: 'long', day: 'numeric' })
+export function Today({
+  profile, biblioteca, onAbrirLeituraCore, onAbrirLeitura,
+  onIrParaTema, onAbrirAurora, onReScan,
+}: Props) {
+  const primeiroNome = profile.name.trim().split(' ')[0]
+  const agora = new Date()
+  const dataLabel = new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: '2-digit', month: 'short' })
+    .format(agora).toUpperCase()
 
-  useEffect(() => {
-    const safetyTimer = setTimeout(() => setLoading(false), 8000)
-    const load = async () => {
-      try {
-        const todayStr = new Date().toISOString().split('T')[0]
-        const [insightRes, readingRes] = await Promise.all([
-          supabase.from('daily_insights').select('*').eq('user_id', profile.id).eq('scheduled_for', todayStr).maybeSingle(),
-          supabase.from('readings').select('*').eq('user_id', profile.id).eq('reading_type', 'master').order('created_at', { ascending: false }).limit(1).maybeSingle(),
-        ])
-        if (insightRes.data) setInsight(insightRes.data)
-        if (readingRes.data) setMasterReading(readingRes.data)
-      } catch {
-        // silent fail
-      } finally {
-        clearTimeout(safetyTimer)
-        setLoading(false)
-      }
-    }
-    load()
-    return () => clearTimeout(safetyTimer)
-  }, [profile.id])
-
-  const handleOpenInsight = () => {
-    if (insight) track(Events.DAILY_INSIGHT_OPENED, { insight_id: insight.id })
-  }
-
-  if (loading) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <Spinner size={24} className="text-accent-gold" />
-      </div>
-    )
-  }
+  const mestra = biblioteca.itens.find((i) => i.produto === 'mestra' && i.pronto)?.reading
+  const core = biblioteca.readings.find((r) => r.produto === 'leitura_core')
+  const principal = mestra ?? core
+  const pendencias = biblioteca.itens.filter((i) => i.precisaAcao)
 
   return (
-    <div className="flex-1 flex flex-col scroll-area pb-24">
-      <div className="px-5 pt-12 pb-6">
-        <div className="flex justify-between items-start">
-          <div>
-            <p className="text-xs text-text-muted tracking-wider uppercase font-sans">{today}</p>
-            <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 300, color: 'var(--text-primary)', letterSpacing: '-0.01em', lineHeight: 1.2 }}>
-              {t('today.greeting')}<br /><em style={{ color: 'var(--accent-gold)' }}>{profile.name}.</em>
-            </h1>
-          </div>
-          <div className="text-right">
-            <p className="text-xs text-text-muted">{t('today.moon')}</p>
-            <p className="text-xs text-accent-gold tracking-wide">{t(`today.moon_${moonPhaseKey}`)}</p>
-          </div>
-        </div>
+    <div className="h-full scroll-area px-6 pt-12 pb-28">
+      <div className="flex items-center justify-between">
+        <p style={{ fontSize: 11, letterSpacing: '0.1em', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
+          {dataLabel}
+        </p>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
+          {faseDaLua(agora)}
+        </p>
       </div>
 
-      <div className="px-5 flex flex-col gap-4">
-        {insight ? (
-          <Card goldBorder onClick={handleOpenInsight} className="p-5">
-            <Eyebrow className="mb-3">{t('today.todayInsight')}</Eyebrow>
-            <p style={{ fontFamily: 'var(--font-serif)', fontSize: 16, lineHeight: 1.65, color: 'var(--text-primary)' }}>
-              {insight.insight_text}
-            </p>
-            {insight.focused_line && (
-              <p className="text-xs text-text-muted mt-3 uppercase tracking-wider">
-                {t('today.focusLine', { line: insight.focused_line.replace('_', ' ') })}
-              </p>
-            )}
-          </Card>
-        ) : (
-          <Card className="p-5">
-            <Eyebrow className="mb-2">{t('today.todayInsight')}</Eyebrow>
-            <p className="text-sm text-text-secondary">{t('today.noInsight')}</p>
-          </Card>
-        )}
+      <p style={{ fontFamily: 'var(--font-serif)', fontSize: 15, fontStyle: 'italic', color: 'var(--text-secondary)', marginTop: 18 }}>
+        {saudacao(agora)}, {primeiroNome}.
+      </p>
 
-        <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-5 px-5">
-          {CHIPS.map(({ key, label }) => (
-            <Chip key={key} active={activeChip === key} onClick={() => setActiveChip(key)}>
-              {label}
-            </Chip>
+      {profile.marca_adormecida && (
+        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 32, fontWeight: 300, lineHeight: 1.15, color: 'var(--text-primary)', marginTop: 6 }}>
+          {profile.marca_adormecida}
+        </h1>
+      )}
+
+      <div className="flex gap-2 mt-6 overflow-x-auto scroll-area">
+        {TEMAS.map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => onIrParaTema(key)}
+            style={{
+              flexShrink: 0, padding: '6px 14px', borderRadius: 999, fontSize: 13,
+              fontFamily: 'var(--font-sans)', border: '1px solid var(--border-subtle)',
+              background: 'transparent', color: 'var(--text-secondary)',
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {principal && (
+        <button
+          onClick={() => (principal === core ? onAbrirLeituraCore() : onAbrirLeitura(principal))}
+          className="text-left w-full mt-6"
+          style={{ padding: 18, borderRadius: 10, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+        >
+          <p style={{ fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent-gold)', fontFamily: 'var(--font-sans)' }}>
+            {mestra ? 'Sua Leitura Mestra' : 'Sua Leitura Completa'}
+          </p>
+          <p style={{ fontFamily: 'var(--font-serif)', fontSize: 20, fontWeight: 300, color: 'var(--text-primary)', marginTop: 8, lineHeight: 1.3 }}>
+            <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>continue de onde parou.</em>
+          </p>
+          <p className="text-xs text-text-muted mt-2">
+            Capítulo {String((principal.ultimo_capitulo_lido ?? 0) + 1).padStart(2, '0')} de{' '}
+            {String(principal.capitulos?.length ?? 6).padStart(2, '0')}
+          </p>
+        </button>
+      )}
+
+      {pendencias.length > 0 && (
+        <div className="mt-6">
+          <p style={{ fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)', marginBottom: 8 }}>
+            Precisa de você
+          </p>
+          {pendencias.map((item) => (
+            <p key={item.produto} className="text-sm text-text-secondary">
+              {item.nome} — abra a Estante para concluir
+            </p>
           ))}
         </div>
+      )}
 
-        {masterReading && (
-          <Card onClick={() => onOpenReading(masterReading)} className="p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1">
-                <Eyebrow className="mb-2">{t('today.masterReading')}</Eyebrow>
-                <p className="text-sm text-text-secondary line-clamp-2">{masterReading.preview_content}</p>
-              </div>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
-                <path d="M5 12h14M13 5l7 7-7 7" />
-              </svg>
-            </div>
-          </Card>
-        )}
+      <button
+        onClick={onAbrirAurora}
+        className="text-left w-full mt-6"
+        style={{ padding: 18, borderRadius: 10, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}
+      >
+        <p style={{ fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent-gold)', fontFamily: 'var(--font-sans)' }}>
+          Pergunte à Aurora
+        </p>
+        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 16, fontStyle: 'italic', color: 'var(--text-primary)', marginTop: 8 }}>
+          "Por que esse padrão volta sempre?"
+        </p>
+      </button>
 
-        <Card onClick={onOpenChat} className="p-5">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <Eyebrow className="mb-1">{t('today.askAurora')}</Eyebrow>
-              <p className="text-xs text-text-secondary">{t('today.askAuroraSub')}</p>
-            </div>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-gold)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2L9.09 8.26 2 9.27l5 4.87-1.18 6.88L12 17.77l6.18 3.25L17 14.14l5-4.87-7.09-1.01z" />
-            </svg>
-          </div>
-        </Card>
-
-        <Card onClick={onReScan} className="p-5">
-          <Eyebrow className="mb-1">{t('today.reScan')}</Eyebrow>
-          <p className="text-xs text-text-secondary">{t('today.reScanSub')}</p>
-        </Card>
-      </div>
+      {!core && (
+        <button
+          onClick={onReScan}
+          className="text-left w-full mt-6"
+          style={{ padding: 18, borderRadius: 10, background: 'var(--bg-surface)', border: '1px solid var(--accent-gold)' }}
+        >
+          <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--text-primary)' }}>
+            Complete o scan da sua palma
+          </p>
+          <p className="text-xs text-text-muted mt-1">
+            Sem ele a Madame Aurora não consegue ler suas linhas.
+          </p>
+        </button>
+      )}
     </div>
   )
 }

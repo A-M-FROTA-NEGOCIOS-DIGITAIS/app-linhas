@@ -9,7 +9,28 @@ export type Intention =
   | 'repeating_cycles'
   | 'everything'
 
-export type ReadingType = 'master' | 'daily' | 'themed' | 'compatibility' | 'core'
+// Espelha o CHECK readings_reading_type_check no banco. Os quatro ultimos sao
+// do produto antigo ("Linhas") e seguem existindo em linhas gravadas antes da
+// virada para o ALMA — nao remover sem migrar os dados.
+export type ReadingType =
+  | 'core'
+  | 'mestra'
+  | 'ritual'
+  | 'compatibilidade'
+  | 'quem_ama'
+  | '12meses'
+  | 'outra_mao'
+  | 'downsell'
+  | 'audio'
+  | 'sentenca'
+  | 'despertar'
+  | 'vinculos'
+  | 'ano_interior'
+  | 'cap_marca'
+  | 'master'
+  | 'daily'
+  | 'themed'
+  | 'compatibility'
 export type Gender = 'male' | 'female' | 'neutral'
 export type ProdutoAlma =
   | 'leitura_core'
@@ -49,6 +70,28 @@ export interface Compra {
   status: string
   valor_brl?: number
   created_at: string
+}
+
+export interface ProdutoCatalogo {
+  produto: ProdutoAlma
+  nome: string
+  descricao?: string
+  preco_brl?: number
+  checkout_url?: string
+  ordem: number
+  ativo: boolean
+}
+
+/** Um produto da esteira com o estado da pessoa cruzado. */
+export interface ItemBiblioteca {
+  produto: ProdutoAlma
+  nome: string
+  preco_brl?: number
+  checkout_url?: string
+  comprado: boolean
+  pronto: boolean
+  precisaAcao: boolean
+  reading?: Reading
 }
 
 export interface Assinatura {
@@ -131,6 +174,11 @@ export interface Reading {
   qualidade_aprovada?: boolean
   word_count?: number
   audio_url?: string
+  titulo?: string
+  traco_origem?: string
+  ultimo_capitulo_lido?: number
+  aberta_em?: string
+  data_carta?: string
   imagem_url?: string
   created_at: string
 }

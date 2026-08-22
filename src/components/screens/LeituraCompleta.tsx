@@ -1,47 +1,23 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { marcarAberta } from '@/lib/progresso'
+import { useProgressoCapitulo } from '@/hooks/useProgressoCapitulo'
 import { useAppStore } from '@/store/app'
-import { TabBar, TabBarIcons, type TabDef } from '@/components/ui'
-import type { Capitulo, Reading, ProdutoAlma } from '@/types'
-import { PRODUTOS_ESTANTE } from '@/types'
-import { Estante } from './app/Estante'
-import { AddonReadingView } from './app/AddonReadingView'
-import { SentencaView } from './app/SentencaView'
-import { DespertarView } from './app/DespertarView'
-import { TerceiroForm } from './app/TerceiroForm'
-import { OutraMaoFlow } from './app/OutraMaoFlow'
+import type { Capitulo } from '@/types'
 
-type HomeTab = 'leitura' | 'estante'
-
-const HOME_TABS: TabDef[] = [
-  { id: 'leitura', label: 'Leitura', icon: TabBarIcons.readings },
-  { id: 'estante', label: 'Estante', icon: TabBarIcons.grid },
-]
-
-function SignOutButton() {
-  const reset = useAppStore((s) => s.reset)
-  const [signingOut, setSigningOut] = useState(false)
-
-  const handleSignOut = async () => {
-    setSigningOut(true)
-    await supabase.auth.signOut()
-    reset()
-    window.location.href = '/'
-  }
-
+function BotaoVoltar({ onBack }: { onBack: () => void }) {
   return (
     <button
-      onClick={handleSignOut}
-      disabled={signingOut}
+      onClick={onBack}
       style={{
-        position: 'absolute', top: 14, right: 16, zIndex: 20,
-        padding: 8, color: 'var(--text-muted)', opacity: signingOut ? 0.5 : 1,
+        position: 'absolute', top: 10, left: 12, zIndex: 20,
+        padding: 8, color: 'var(--text-muted)',
         background: 'transparent', border: 'none', cursor: 'pointer',
       }}
-      aria-label="Sair"
+      aria-label="Voltar"
     >
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+        <path d="M19 12H5M12 19l-7-7 7-7" />
       </svg>
     </button>
   )
@@ -52,6 +28,7 @@ interface LeituraData {
   marca_adormecida: string
   capitulos: Capitulo[]
   audio_url?: string
+  ultimo_capitulo_lido?: number
 }
 
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI']
@@ -157,10 +134,11 @@ function ErroLeitura({ mensagem, onRetry }: { mensagem: string; onRetry: () => v
 interface ExibicaoProps {
   leitura: LeituraData
   nome: string
-  onGoToEstante: () => void
+  onIrParaEstante: () => void
+  registrar: (indice: number) => (el: HTMLElement | null) => void
 }
 
-function ExibicaoLeitura({ leitura, nome, onGoToEstante }: ExibicaoProps) {
+function ExibicaoLeitura({ leitura, nome, onIrParaEstante, registrar }: ExibicaoProps) {
   return (
     <div className="h-full flex flex-col">
       <div className="flex-1 overflow-y-auto scroll-area pb-24">
@@ -214,7 +192,7 @@ function ExibicaoLeitura({ leitura, nome, onGoToEstante }: ExibicaoProps) {
         {/* Capítulos */}
         <div className="px-6 flex flex-col gap-10 pb-4">
           {leitura.capitulos.map((cap, i) => (
-            <div key={cap.numero ?? i}>
+            <div key={cap.numero ?? i} ref={registrar(i)}>
               {/* Divisor com número romano */}
               <div className="flex items-center gap-3 mb-4">
                 <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
@@ -262,7 +240,7 @@ function ExibicaoLeitura({ leitura, nome, onGoToEstante }: ExibicaoProps) {
             <em style={{ color: 'var(--accent-gold)', fontStyle: 'italic' }}>Sua jornada, não.</em>
           </p>
           <button
-            onClick={onGoToEstante}
+            onClick={onIrParaEstante}
             style={{
               padding: '10px 24px', borderRadius: 6,
               border: '1px solid var(--accent-gold)', color: 'var(--accent-gold)',
@@ -277,57 +255,26 @@ function ExibicaoLeitura({ leitura, nome, onGoToEstante }: ExibicaoProps) {
   )
 }
 
-interface EstanteTabProps {
-  userId: string
-  onOpenReading: (reading: Reading) => void
-  onOpenDespertar: () => void
-  onPreencherTerceiro: (produto: 'compatibilidade' | 'quem_ama') => void
-  onEscanearOutraMao: () => void
+interface Props {
+  onBack: () => void
+  onIrParaEstante: () => void
 }
 
-function EstanteTab({ userId, onOpenReading, onOpenDespertar, onPreencherTerceiro, onEscanearOutraMao }: EstanteTabProps) {
-  return (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 overflow-y-auto scroll-area pb-24">
-        <div className="px-6 pt-12 pb-2">
-          <p style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent-gold)', fontFamily: 'var(--font-sans)', marginBottom: 8 }}>
-            Sua jornada
-          </p>
-          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 26, fontWeight: 300, color: 'var(--text-primary)', lineHeight: 1.2 }}>
-            A Estante
-          </h1>
-        </div>
-        <Estante
-          userId={userId}
-          onOpenReading={onOpenReading}
-          onOpenDespertar={onOpenDespertar}
-          onPreencherTerceiro={onPreencherTerceiro}
-          onEscanearOutraMao={onEscanearOutraMao}
-        />
-      </div>
-    </div>
-  )
-}
-
-type View =
-  | { tipo: 'tabs' }
-  | { tipo: 'addon'; reading: Reading }
-  | { tipo: 'despertar' }
-  | { tipo: 'terceiro'; produto: 'compatibilidade' | 'quem_ama' }
-  | { tipo: 'outra_mao' }
-
-export function LeituraCompleta() {
+export function LeituraCompleta({ onBack, onIrParaEstante }: Props) {
   const profile = useAppStore((s) => s.profile)
   const userId = profile?.id ?? null
   const [leitura, setLeitura] = useState<LeituraData | null>(null)
   const [fase, setFase] = useState<'carregando' | 'leitura' | 'erro'>('carregando')
   const [erro, setErro] = useState('')
-  const [view, setView] = useState<View>({ tipo: 'tabs' })
-  const [activeTab, setActiveTab] = useState<HomeTab>('leitura')
+  const registrar = useProgressoCapitulo(leitura?.reading_id ?? null, leitura?.ultimo_capitulo_lido ?? 0)
 
   useEffect(() => {
     if (userId) carregar()
   }, [userId])
+
+  useEffect(() => {
+    if (leitura?.reading_id) void marcarAberta(leitura.reading_id)
+  }, [leitura?.reading_id])
 
   const carregar = async () => {
     if (!userId) return
@@ -338,7 +285,7 @@ export function LeituraCompleta() {
       // 1. Verificar se já existe leitura aprovada no DB
       const { data: existing } = await supabase
         .from('readings')
-        .select('id, capitulos, sessao_id, audio_url')
+        .select('id, capitulos, sessao_id, audio_url, ultimo_capitulo_lido')
         .eq('user_id', userId)
         .eq('reading_type', 'core')
         .eq('qualidade_aprovada', true)
@@ -362,6 +309,7 @@ export function LeituraCompleta() {
           marca_adormecida: marca,
           capitulos: existing.capitulos as Capitulo[],
           audio_url: existing.audio_url ?? undefined,
+          ultimo_capitulo_lido: existing.ultimo_capitulo_lido ?? 0,
         })
         setFase('leitura')
         return
@@ -396,6 +344,7 @@ export function LeituraCompleta() {
           reading_id: result.reading_id,
           marca_adormecida: result.marca_adormecida ?? '',
           capitulos: result.capitulos,
+          ultimo_capitulo_lido: 0,
         })
         setFase('leitura')
         return
@@ -404,7 +353,7 @@ export function LeituraCompleta() {
       // Cached — buscar do DB
       if (result?.reading_id) {
         const [{ data: reading }, { data: sessaoData }] = await Promise.all([
-          supabase.from('readings').select('id, capitulos, audio_url').eq('id', result.reading_id).single(),
+          supabase.from('readings').select('id, capitulos, audio_url, ultimo_capitulo_lido').eq('id', result.reading_id).single(),
           supabase.from('sessoes').select('marca_adormecida').eq('id', sessao.id).single(),
         ])
         setLeitura({
@@ -412,6 +361,7 @@ export function LeituraCompleta() {
           marca_adormecida: sessaoData?.marca_adormecida ?? '',
           capitulos: reading!.capitulos as Capitulo[],
           audio_url: reading!.audio_url ?? undefined,
+          ultimo_capitulo_lido: reading!.ultimo_capitulo_lido ?? 0,
         })
         setFase('leitura')
         return
@@ -427,67 +377,22 @@ export function LeituraCompleta() {
   if (fase !== 'leitura' || !leitura) {
     return (
       <div className="h-full relative">
-        <SignOutButton />
+        <BotaoVoltar onBack={onBack} />
         {fase === 'carregando' && <LoadingLeitura />}
         {fase === 'erro' && <ErroLeitura mensagem={erro} onRetry={carregar} />}
       </div>
     )
   }
 
-  if (!userId) return null
-
-  const nomeAddon = view.tipo === 'addon' ? PRODUTOS_ESTANTE.find((p) => p.produto === view.reading.produto)?.nome ?? '' : ''
-  const voltarParaTabs = () => setView({ tipo: 'tabs' })
-
   return (
     <div className="h-full relative">
-      {view.tipo === 'tabs' && <SignOutButton />}
-
-      {view.tipo === 'tabs' && activeTab === 'leitura' && (
-        <ExibicaoLeitura
-          leitura={leitura}
-          nome={profile?.name ?? ''}
-          onGoToEstante={() => setActiveTab('estante')}
-        />
-      )}
-      {view.tipo === 'tabs' && activeTab === 'estante' && (
-        <EstanteTab
-          userId={userId}
-          onOpenReading={(reading) => setView({ tipo: 'addon', reading })}
-          onOpenDespertar={() => setView({ tipo: 'despertar' })}
-          onPreencherTerceiro={(produto) => setView({ tipo: 'terceiro', produto })}
-          onEscanearOutraMao={() => setView({ tipo: 'outra_mao' })}
-        />
-      )}
-      {view.tipo === 'tabs' && (
-        <TabBar tabs={HOME_TABS} active={activeTab} onChange={(id) => setActiveTab(id as HomeTab)} />
-      )}
-
-      {view.tipo === 'addon' && view.reading.produto === 'sentenca' && (
-        <SentencaView reading={view.reading} onBack={voltarParaTabs} />
-      )}
-      {view.tipo === 'addon' && view.reading.produto !== 'sentenca' && (
-        <AddonReadingView reading={view.reading} titulo={nomeAddon} onBack={voltarParaTabs} />
-      )}
-
-      {view.tipo === 'despertar' && <DespertarView userId={userId} onBack={voltarParaTabs} />}
-
-      {view.tipo === 'terceiro' && (
-        <TerceiroForm
-          userId={userId}
-          produto={view.produto}
-          onDone={voltarParaTabs}
-          onBack={voltarParaTabs}
-        />
-      )}
-
-      {view.tipo === 'outra_mao' && (
-        <OutraMaoFlow
-          userId={userId}
-          onDone={voltarParaTabs}
-          onBack={voltarParaTabs}
-        />
-      )}
+      <BotaoVoltar onBack={onBack} />
+      <ExibicaoLeitura
+        leitura={leitura}
+        nome={profile?.name ?? ''}
+        onIrParaEstante={onIrParaEstante}
+        registrar={registrar}
+      />
     </div>
   )
 }
