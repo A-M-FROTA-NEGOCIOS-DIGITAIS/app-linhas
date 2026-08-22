@@ -106,20 +106,60 @@ function buildSentencaSvg(frase: string, marcaAdormecida: string): string {
 </svg>`
 }
 
-async function gerarJsonComClaude(anthropic: Anthropic, prompt: string): Promise<Record<string, unknown> | null> {
-  const msg = await anthropic.messages.create({
-    model: 'claude-sonnet-5',
-    max_tokens: 4000,
-    messages: [{ role: 'user', content: prompt }],
-  })
-  const rawText = extractText(msg.content)
-  const jsonMatch = rawText.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) return null
-  try {
-    return JSON.parse(jsonMatch[0])
-  } catch {
-    return null
+// Mesmo pedindo "APENAS o JSON", o modelo as vezes embrulha em cerca markdown
+// ou escreve uma frase em volta. Nunca dar JSON.parse direto no texto cru.
+function extrairJson(raw: string): Record<string, unknown> | null {
+  const limpo = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+  const candidatos = [limpo]
+
+  const inicio = limpo.indexOf('{')
+  const fim = limpo.lastIndexOf('}')
+  if (inicio !== -1 && fim > inicio) candidatos.push(limpo.slice(inicio, fim + 1))
+
+  for (const candidato of candidatos) {
+    try {
+      return JSON.parse(candidato)
+    } catch { /* tenta o proximo */ }
   }
+  return null
+}
+
+/**
+ * Em 22/08 a Compatibilidade falhou em producao com esta funcao devolvendo
+ * `null` silenciosamente. A investigacao mostrou que a falha e intermitente
+ * (1 falha contra 5 sucessos seguidos) e NAO e truncamento — a saida usa cerca
+ * de um terco do max_tokens. Como a malformacao exata nao pode ser reproduzida
+ * sob demanda, o tratamento e: parser tolerante, uma retentativa, e log do
+ * texto cru para identificar a causa na proxima ocorrencia.
+ *
+ * A retentativa vive aqui, e nao em cada gerador, para cobrir os 7 pontos de
+ * chamada de uma vez.
+ */
+async function gerarJsonComClaude(
+  anthropic: Anthropic,
+  prompt: string,
+  contexto = 'sem-contexto',
+): Promise<Record<string, unknown> | null> {
+  const MAX_TENTATIVAS = 2
+
+  for (let tentativa = 1; tentativa <= MAX_TENTATIVAS; tentativa++) {
+    const msg = await anthropic.messages.create({
+      model: 'claude-sonnet-5',
+      max_tokens: 4000,
+      messages: [{ role: 'user', content: prompt }],
+    })
+    const rawText = extractText(msg.content)
+
+    const json = extrairJson(rawText)
+    if (json) return json
+
+    console.error(
+      `gerarJsonComClaude (${contexto}) tentativa ${tentativa}/${MAX_TENTATIVAS}: sem JSON valido. ` +
+      `stop_reason=${msg.stop_reason} out_tokens=${msg.usage?.output_tokens} len=${rawText.length} ` +
+      `raw="${rawText.slice(0, 800)}"`,
+    )
+  }
+  return null
 }
 
 // deno-lint-ignore no-explicit-any
@@ -183,7 +223,7 @@ Escreva em ${lang}. Cada capítulo: 200-350 palavras.`
 
   let capitulos: Capitulo[] | null = null
   for (let tentativa = 0; tentativa < 2 && !capitulos; tentativa++) {
-    const resultado = await gerarJsonComClaude(anthropic, buildPrompt(tentativa > 0))
+    const resultado = await gerarJsonComClaude(anthropic, buildPrompt(tentativa > 0), `mestra tentativa ${tentativa + 1}`)
     const candidato = resultado?.capitulos as Capitulo[] | undefined
     if (!Array.isArray(candidato) || candidato.length < 6) continue
     const densidadeOk = candidato.every((c) => (c.conteudo?.length ?? 0) >= 400)
@@ -227,7 +267,7 @@ Retorne APENAS o JSON:
   "frase_final": "uma frase de fechamento memorável"
 }`
 
-  const resultado = await gerarJsonComClaude(anthropic, prompt)
+  const resultado = await gerarJsonComClaude(anthropic, prompt, 'ritual')
   const passos = resultado?.passos as Array<{ numero: number; texto: string }> | undefined
   if (!passos || passos.length === 0) {
     console.error(`Ritual: falha ao gerar para ${userId}`)
@@ -276,7 +316,7 @@ Retorne APENAS o JSON:
   ]
 }`
 
-  const resultado = await gerarJsonComClaude(anthropic, prompt)
+  const resultado = await gerarJsonComClaude(anthropic, prompt, tipo)
   const capitulos = resultado?.capitulos as Capitulo[] | undefined
   if (!capitulos || capitulos.length === 0) {
     console.error(`Vinculo (${tipo}): falha ao gerar para ${userId}`)
@@ -313,7 +353,7 @@ Retorne APENAS o JSON:
 
   let meses: Array<{ mes: number; titulo: string; texto: string }> | null = null
   for (let tentativa = 0; tentativa < 2 && !meses; tentativa++) {
-    const resultado = await gerarJsonComClaude(anthropic, prompt)
+    const resultado = await gerarJsonComClaude(anthropic, prompt, `12meses tentativa ${tentativa + 1}`)
     const candidato = resultado?.meses as Array<{ mes: number; titulo: string; texto: string }> | undefined
     if (!Array.isArray(candidato) || candidato.length !== 12) continue
     const distintos = new Set(candidato.map((m) => normalizarTexto(m.texto).slice(0, 40))).size
@@ -385,7 +425,7 @@ Retorne APENAS o JSON:
   ]
 }`
 
-  const resultado = await gerarJsonComClaude(anthropic, prompt)
+  const resultado = await gerarJsonComClaude(anthropic, prompt, 'outra_mao')
   const capitulos = resultado?.capitulos as Capitulo[] | undefined
   if (!capitulos || capitulos.length === 0) {
     console.error(`Outra mao: falha ao gerar para ${userId}`)
@@ -419,7 +459,7 @@ Palma: ${sessao.analise_visual ?? 'não disponível'}
 Retorne APENAS o JSON:
 { "titulo": "A Marca da Vida", "conteudo": "3-4 parágrafos, tom íntimo e direto, em ${lang}" }`
 
-  const resultado = await gerarJsonComClaude(anthropic, prompt)
+  const resultado = await gerarJsonComClaude(anthropic, prompt, 'downsell')
   const conteudo = resultado?.conteudo as string | undefined
   if (!conteudo) {
     console.error(`Downsell: falha ao gerar para ${userId}`)
@@ -461,7 +501,7 @@ ${resumoCore}
 Retorne APENAS o JSON:
 { "frase": "a frase, máximo 140 caracteres, em ${lang}", "legenda": "uma legenda curta de apoio, opcional" }`
 
-  const resultado = await gerarJsonComClaude(anthropic, prompt)
+  const resultado = await gerarJsonComClaude(anthropic, prompt, 'sentenca')
   const frase = resultado?.frase as string | undefined
   if (!frase) {
     console.error(`Sentenca: falha ao gerar para ${userId}`)
@@ -590,6 +630,16 @@ serve(async (req) => {
         return new Response(JSON.stringify({ error: `produto desconhecido: ${produto}` }), { status: 400, headers: jsonHeaders })
     }
 
+    // Falha de geracao nao pode sair como 200. Antes desta guarda, um
+    // `{erro:true}` virava sucesso HTTP e so era detectado por quem conhecesse
+    // a chave `erro` em portugues no corpo da resposta.
+    if (resultado?.erro) {
+      return new Response(JSON.stringify({ error: 'geracao_falhou', produto }), {
+        status: 502, headers: jsonHeaders,
+      })
+    }
+
+    // `aguardando_dados` NAO e erro: e o vinculo esperando os dados do terceiro.
     return new Response(JSON.stringify({ received: true, produto, ...resultado }), { headers: jsonHeaders })
   } catch (err) {
     console.error('gerar-produto error:', err)
