@@ -87,22 +87,22 @@ function buildSentencaSvg(frase: string, marcaAdormecida: string): string {
   const textos = linhas
     .map(
       (linha, i) =>
-        `<text x="540" y="${startY + i * lineHeight}" text-anchor="middle" font-family="Georgia, serif" font-size="52" font-style="italic" fill="#F5EFE0">${escapeXml(linha)}</text>`,
+        `<text x="540" y="${startY + i * lineHeight}" text-anchor="middle" font-family="Georgia, serif" font-size="52" font-style="italic" fill="#EEF1F8">${escapeXml(linha)}</text>`,
     )
     .join('\n')
 
   return `<svg width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#0D0B08"/>
-      <stop offset="100%" stop-color="#1A150D"/>
+      <stop offset="0%" stop-color="#070A14"/>
+      <stop offset="100%" stop-color="#131A2E"/>
     </linearGradient>
   </defs>
   <rect width="1080" height="1920" fill="url(#bg)"/>
-  <text x="540" y="180" text-anchor="middle" font-family="sans-serif" font-size="28" letter-spacing="6" fill="#C9A961">MADAME AURORA</text>
-  <text x="540" y="240" text-anchor="middle" font-family="sans-serif" font-size="20" letter-spacing="3" fill="#8A8172">${escapeXml(marcaAdormecida.toUpperCase())}</text>
+  <text x="540" y="180" text-anchor="middle" font-family="sans-serif" font-size="28" letter-spacing="6" fill="#7C9CE4">MADAME AURORA</text>
+  <text x="540" y="240" text-anchor="middle" font-family="sans-serif" font-size="20" letter-spacing="3" fill="#8892AB">${escapeXml(marcaAdormecida.toUpperCase())}</text>
   ${textos}
-  <text x="540" y="1780" text-anchor="middle" font-family="sans-serif" font-size="22" letter-spacing="4" fill="#8A8172">ALMA</text>
+  <text x="540" y="1780" text-anchor="middle" font-family="sans-serif" font-size="22" letter-spacing="4" fill="#8892AB">ALMA</text>
 </svg>`
 }
 
