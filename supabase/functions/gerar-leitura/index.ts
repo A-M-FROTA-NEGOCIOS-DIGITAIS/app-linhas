@@ -138,6 +138,49 @@ function temMaoDominante(analiseVisual: string | null | undefined): boolean {
   return !texto.startsWith('Mão não-dominante:')
 }
 
+
+/**
+ * Escolhe o scan da mao dominante que vale a pena usar.
+ *
+ * A regra antiga era "o mais recente vence", e isso descartava silenciosamente
+ * uma foto boa em favor de uma ruim: em 22/08 a mesma mao, fotografada com luz
+ * e sem luz, foi lida como "ar, linhas longas" e "agua, linhas medias". Como o
+ * tipo de mao atravessa a leitura inteira, a diferenca nao e cosmetica.
+ *
+ * Agora prefere a maior qualidade declarada pelo analyze-palm e so usa a data
+ * como desempate.
+ */
+const ORDEM_QUALIDADE: Record<string, number> = { high: 0, medium: 1, low: 2 }
+
+// deno-lint-ignore no-explicit-any
+async function melhorScanDominante(supabase: any, userId: string): Promise<Record<string, unknown> | null> {
+  const { data, error } = await supabase
+    .from('palm_scans')
+    .select('analysis, created_at')
+    .eq('user_id', userId)
+    .eq('hand_type', 'dominant')
+    .order('created_at', { ascending: false })
+    .limit(8)
+
+  if (error) {
+    console.error(`melhorScanDominante (${userId}):`, error.message)
+    return null
+  }
+
+  const candidatos = (data ?? []).filter((s: { analysis?: unknown }) => s.analysis)
+  if (candidatos.length === 0) return null
+
+  candidatos.sort((a: { analysis: Record<string, string>; created_at: string },
+                   b: { analysis: Record<string, string>; created_at: string }) => {
+    const qa = ORDEM_QUALIDADE[a.analysis.image_quality] ?? 3
+    const qb = ORDEM_QUALIDADE[b.analysis.image_quality] ?? 3
+    if (qa !== qb) return qa - qb
+    return b.created_at.localeCompare(a.created_at)
+  })
+
+  return candidatos[0].analysis as Record<string, unknown>
+}
+
 function palmAnalysisToText(analysis: Record<string, unknown>): string {
   if (!analysis || Object.keys(analysis).length === 0) return 'análise visual não disponível'
   const lines = analysis.main_lines as Record<string, Record<string, string>> ?? {}
@@ -206,21 +249,10 @@ serve(async (req) => {
     // a mao principal — e o fallback nunca rodava.
     let palmResumo = sessao.analise_visual as string ?? ''
     if (!temMaoDominante(palmResumo)) {
-      const { data: scan } = await supabase
-        .from('palm_scans')
-        .select('analysis')
-        .eq('user_id', user_id)
-        // Sem este filtro o scan da Outra Mao, que e o mais recente de quem
-        // comprou esse produto, entraria no lugar da mao dominante.
-        .eq('hand_type', 'dominant')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-      if (scan?.analysis) {
-        const dominante = `Mão dominante: ${palmAnalysisToText(scan.analysis as Record<string, unknown>)}`
-        palmResumo = [dominante, palmResumo.trim()].filter(Boolean).join('
-
-')
+      const analise = await melhorScanDominante(supabase, user_id)
+      if (analise) {
+        const dominante = `Mão dominante: ${palmAnalysisToText(analise)}`
+        palmResumo = [dominante, palmResumo.trim()].filter(Boolean).join('\n\n')
       }
     }
 
