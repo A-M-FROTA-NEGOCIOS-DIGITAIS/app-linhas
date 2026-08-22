@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui'
+import { TelaGerando } from '@/components/ui/TelaGerando'
 import { supabase } from '@/lib/supabase'
 
 interface Props {
@@ -15,6 +16,43 @@ const BackIcon = () => (
   </svg>
 )
 
+const MENSAGENS = [
+  'Madame Aurora está lendo o encontro das duas histórias…',
+  'Cruzando a sua Marca com essa relação…',
+  'Procurando onde o padrão aparece…',
+  'Escrevendo a sua leitura…',
+]
+
+// Campo com rotulo. Sem rotulo, o input de data vazio no iOS vira uma caixa
+// cinza sem nenhuma indicacao do que e — foi o "campo estranho" relatado.
+const campoStyle: React.CSSProperties = {
+  background: 'var(--bg-surface)',
+  border: '1px solid var(--border-subtle)',
+  borderRadius: 8,
+  padding: '14px 16px',
+  fontSize: 16,
+  color: 'var(--text-primary)',
+  fontFamily: 'var(--font-sans)',
+  outline: 'none',
+  width: '100%',
+  // O iOS desenha o proprio controle em input[type=date] e ignora parte do
+  // estilo. Sem isto ele fica visivelmente diferente dos outros dois campos.
+  WebkitAppearance: 'none',
+  appearance: 'none',
+  minHeight: 52,
+}
+
+function Campo({ rotulo, children }: { rotulo: string; children: React.ReactNode }) {
+  return (
+    <label className="flex flex-col gap-1.5">
+      <span style={{ fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
+        {rotulo}
+      </span>
+      {children}
+    </label>
+  )
+}
+
 export function TerceiroForm({ userId, produto, onDone, onBack }: Props) {
   const [nome, setNome] = useState('')
   const [dataNascimento, setDataNascimento] = useState('')
@@ -22,7 +60,7 @@ export function TerceiroForm({ userId, produto, onDone, onBack }: Props) {
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
 
-  const titulo = produto === 'compatibilidade' ? 'Compatibilidade' : 'Quem Te Ama'
+  const titulo = produto === 'compatibilidade' ? 'Compatibilidade' : 'Quem Você Ama'
 
   const handleSubmit = async () => {
     if (!nome.trim()) return
@@ -36,18 +74,28 @@ export function TerceiroForm({ userId, produto, onDone, onBack }: Props) {
           contexto_terceiro: { nome, data_nascimento: dataNascimento || null, relacao: relacao || null },
         },
       })
-      if (error) throw new Error(error.message)
-      if (data?.erro) throw new Error('Não foi possível gerar a leitura agora. Tente novamente.')
+      // A funcao responde 502 quando a geracao falha, e o invoke transforma
+      // isso em `error`. O detalhe tecnico fica no console; a tela mostra texto
+      // humano. `data.error` cobre o caso de a resposta vir 200 por engano.
+      if (error || data?.error) {
+        console.error('gerar-produto falhou:', error?.message ?? data?.error)
+        throw new Error('falha')
+      }
       onDone()
     } catch (err) {
-      setErro(err instanceof Error ? err.message : 'Erro inesperado')
+      console.error('TerceiroForm:', err)
+      setErro('Não consegui gerar sua leitura agora. Seus dados continuam aqui — é só tentar de novo.')
     } finally {
       setLoading(false)
     }
   }
 
+  if (loading) {
+    return <TelaGerando mensagens={MENSAGENS} rodape="Isso leva cerca de meio minuto." />
+  }
+
   return (
-    <div className="h-full flex flex-col px-6 pt-12 pb-8">
+    <div className="h-full flex flex-col px-6 pt-12 pb-8 scroll-area">
       <button onClick={onBack} className="text-text-secondary active:text-text-primary transition-colors mb-6 self-start">
         <BackIcon />
       </button>
@@ -60,42 +108,43 @@ export function TerceiroForm({ userId, produto, onDone, onBack }: Props) {
       </p>
 
       <div className="flex flex-col gap-4 flex-1">
-        <input
-          type="text"
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-          placeholder="Nome da pessoa"
-          style={{
-            background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
-            borderRadius: 8, padding: '14px 16px', fontSize: 16, color: 'var(--text-primary)',
-            fontFamily: 'var(--font-sans)', outline: 'none', width: '100%',
-          }}
-        />
-        <input
-          type="date"
-          value={dataNascimento}
-          onChange={(e) => setDataNascimento(e.target.value)}
-          style={{
-            background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
-            borderRadius: 8, padding: '14px 16px', fontSize: 16, color: 'var(--text-primary)',
-            fontFamily: 'var(--font-sans)', outline: 'none', width: '100%',
-          }}
-        />
-        <input
-          type="text"
-          value={relacao}
-          onChange={(e) => setRelacao(e.target.value)}
-          placeholder="Qual a relação? (ex: namorado, ex, paquera)"
-          style={{
-            background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)',
-            borderRadius: 8, padding: '14px 16px', fontSize: 16, color: 'var(--text-primary)',
-            fontFamily: 'var(--font-sans)', outline: 'none', width: '100%',
-          }}
-        />
-        {erro && <p style={{ fontSize: 13, color: '#8B4040' }}>{erro}</p>}
+        <Campo rotulo="Nome da pessoa">
+          <input
+            type="text"
+            value={nome}
+            onChange={(e) => setNome(e.target.value)}
+            placeholder="Como você a chama"
+            style={campoStyle}
+          />
+        </Campo>
+
+        <Campo rotulo="Data de nascimento (opcional)">
+          <input
+            type="date"
+            value={dataNascimento}
+            onChange={(e) => setDataNascimento(e.target.value)}
+            style={campoStyle}
+          />
+        </Campo>
+
+        <Campo rotulo="Qual a relação (opcional)">
+          <input
+            type="text"
+            value={relacao}
+            onChange={(e) => setRelacao(e.target.value)}
+            placeholder="namorado, ex, paquera…"
+            style={campoStyle}
+          />
+        </Campo>
+
+        {erro && (
+          <p style={{ fontSize: 13, color: '#8B4040', fontFamily: 'var(--font-sans)', lineHeight: 1.5 }}>
+            {erro}
+          </p>
+        )}
       </div>
 
-      <Button variant="primary" fullWidth loading={loading} disabled={!nome.trim()} onClick={handleSubmit}>
+      <Button variant="primary" fullWidth disabled={!nome.trim()} onClick={handleSubmit}>
         Gerar minha leitura
       </Button>
     </div>

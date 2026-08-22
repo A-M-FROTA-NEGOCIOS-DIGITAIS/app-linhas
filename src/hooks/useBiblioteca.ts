@@ -48,8 +48,11 @@ export function useBiblioteca(userId: string | null) {
   const [assinatura, setAssinatura] = useState<Assinatura | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const recarregar = useCallback(async () => {
-    if (!userId) { setLoading(false); return }
+  // Devolve os itens recem-carregados alem de guardar no estado. Quem chama
+  // logo apos gerar um produto precisa da lista NOVA para abrir a leitura: o
+  // estado so chega no proximo render, e o closure enxergaria a lista velha.
+  const recarregar = useCallback(async (): Promise<ItemBiblioteca[]> => {
+    if (!userId) { setLoading(false); return [] }
     setLoading(true)
 
     const [catalogoRes, comprasRes, readingsRes, assinaturaRes] = await Promise.all([
@@ -67,11 +70,15 @@ export function useBiblioteca(userId: string | null) {
     const listaCompras = (comprasRes.data as Compra[] | null) ?? []
     const listaReadings = (readingsRes.data as Reading[] | null) ?? []
 
+    const novosItens = cruzarBiblioteca(catalogo, listaCompras, listaReadings)
+
     setCompras(listaCompras)
     setReadings(listaReadings)
     setAssinatura(assinaturaRes.data as Assinatura | null)
-    setItens(cruzarBiblioteca(catalogo, listaCompras, listaReadings))
+    setItens(novosItens)
     setLoading(false)
+
+    return novosItens
   }, [userId])
 
   useEffect(() => { void recarregar() }, [recarregar])

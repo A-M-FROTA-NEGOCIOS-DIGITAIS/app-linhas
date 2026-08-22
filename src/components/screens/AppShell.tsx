@@ -18,7 +18,7 @@ import { LeituraCompleta } from './LeituraCompleta'
 import { PalmScan } from './onboarding/PalmScan'
 import { Scanning } from './onboarding/Scanning'
 import { IntentionScreen } from './onboarding/Intention'
-import type { Reading, Intention } from '@/types'
+import type { Reading, Intention, ProdutoAlma } from '@/types'
 
 type Aba = 'today' | 'readings' | 'aurora' | 'estante' | 'you'
 
@@ -106,8 +106,24 @@ export function AppShell({ onSignOut }: Props) {
     setOverlay(null)
   }
 
-  const handleFluxoConcluido = async () => {
-    await biblioteca.recarregar()
+  /**
+   * Chamado quando um fluxo termina de gerar um produto. Abre a leitura recem
+   * criada em vez de devolver a pessoa para a Estante: depois de esperar ~25s
+   * gerando, cair de volta na lista sem nenhum sinal de que deu certo faz o
+   * sucesso parecer falha.
+   *
+   * Usa os itens que o recarregar() devolve, e nao biblioteca.itens, porque o
+   * estado so chega no proximo render — o closure aqui ainda tem a lista velha,
+   * sem a leitura que acabou de nascer.
+   */
+  const handleFluxoConcluido = async (produto?: ProdutoAlma) => {
+    const itens = await biblioteca.recarregar()
+    const recemCriada = produto ? itens.find((i) => i.produto === produto)?.reading : undefined
+
+    if (recemCriada) {
+      abrirLeitura(recemCriada)
+      return
+    }
     setOverlay(null)
   }
 
@@ -151,7 +167,7 @@ export function AppShell({ onSignOut }: Props) {
         <TerceiroForm
           userId={profile.id}
           produto={overlay.produto}
-          onDone={handleFluxoConcluido}
+          onDone={() => handleFluxoConcluido(overlay.produto)}
           onBack={fecharOverlay}
         />
       )
@@ -160,7 +176,7 @@ export function AppShell({ onSignOut }: Props) {
       return (
         <OutraMaoFlow
           userId={profile.id}
-          onDone={handleFluxoConcluido}
+          onDone={() => handleFluxoConcluido('outra_mao')}
           onBack={fecharOverlay}
         />
       )

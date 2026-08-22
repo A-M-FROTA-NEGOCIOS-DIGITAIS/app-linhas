@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { PalmScan } from '@/components/screens/onboarding/PalmScan'
 import { Scanning } from '@/components/screens/onboarding/Scanning'
-import { Spinner } from '@/components/ui'
+import { TelaGerando } from '@/components/ui/TelaGerando'
 import type { PalmAnalysis } from '@/types'
 
 interface Props {
@@ -34,10 +34,15 @@ export function OutraMaoFlow({ userId, onDone, onBack }: Props) {
       const { error } = await supabase.functions.invoke('gerar-produto', {
         body: { user_id: userId, produto: 'outra_mao', segunda_palma_analise: resumirAnalise(d.analysis) },
       })
-      if (error) throw new Error(error.message)
+      // 502 quando a geracao falha; o invoke transforma isso em `error`.
+      if (error) {
+        console.error('gerar-produto (outra_mao) falhou:', error.message)
+        throw new Error('falha')
+      }
       onDone()
     } catch (err) {
-      setErro(err instanceof Error ? err.message : 'Erro inesperado')
+      console.error('OutraMaoFlow:', err)
+      setErro('Não consegui combinar as duas mãos agora. Tente de novo.')
       setFase('erro')
     }
   }
@@ -64,12 +69,15 @@ export function OutraMaoFlow({ userId, onDone, onBack }: Props) {
 
   if (fase === 'gerando') {
     return (
-      <div className="h-full flex flex-col items-center justify-center gap-4">
-        <Spinner size={24} className="text-accent-gold" />
-        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 18, color: 'var(--text-primary)' }}>
-          Combinando as duas mãos…
-        </p>
-      </div>
+      <TelaGerando
+        mensagens={[
+          'Combinando as duas mãos…',
+          'A mão que você usa mostra o que construiu…',
+          'A outra guarda o que você trouxe…',
+          'Medindo a distância entre elas…',
+        ]}
+        rodape="Isso leva cerca de meio minuto."
+      />
     )
   }
 
