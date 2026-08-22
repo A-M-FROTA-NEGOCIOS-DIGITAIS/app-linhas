@@ -24,12 +24,13 @@ export function cruzarBiblioteca(
 
   return [...catalogo]
     .sort((a, b) => a.ordem - b.ordem)
-    .map(({ produto, nome, preco_brl, checkout_url }) => {
+    .map(({ produto, nome, descricao, preco_brl, checkout_url }) => {
       const comprado = compradas.has(produto)
       const pronto = produto === 'audio' ? coreTemAudio : produto in porProduto
       return {
         produto,
         nome,
+        descricao,
         preco_brl,
         checkout_url,
         comprado,

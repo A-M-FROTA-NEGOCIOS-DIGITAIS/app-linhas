@@ -17,7 +17,9 @@ const CheckIcon = () => (
 )
 
 function labelStatus(item: ItemBiblioteca): string {
-  if (!item.comprado) return item.checkout_url ? 'Comprar' : 'Indisponível'
+  // O Despertar e assinatura: quem manda no status e a tabela assinaturas, nao
+  // a de compras. A Estante resolve isso antes de chamar esta funcao.
+  if (!item.comprado) return item.checkout_url ? 'Comprar' : 'Em breve'
   if (item.produto === 'audio') return item.pronto ? 'Ouça na leitura ↑' : 'Preparando…'
   if (item.pronto) return 'Ver'
   if (item.produto === 'compatibilidade' || item.produto === 'quem_ama') return 'Preencher dados →'
@@ -35,6 +37,10 @@ export function Estante({
   onPreencherTerceiro, onEscanearOutraMao, onRecarregar,
 }: Props) {
   const handleClick = (item: ItemBiblioteca) => {
+    if (item.produto === 'despertar') {
+      onOpenDespertar()
+      return
+    }
     if (!item.comprado) {
       if (item.checkout_url) window.open(item.checkout_url, '_blank', 'noopener')
       return
@@ -59,54 +65,62 @@ export function Estante({
 
   return (
     <div className="h-full scroll-area px-6 pt-12 pb-28">
-      <p style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)', marginBottom: 12 }}>
+      <p style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
         Sua Estante
+      </p>
+      <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)', lineHeight: 1.5, marginTop: 6, marginBottom: 16 }}>
+        Cada peça parte da mesma mão — a sua. O que você já tem abre aqui; o resto espera.
       </p>
 
       <div className="flex flex-col gap-2">
-        <button
-          onClick={onOpenDespertar}
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '14px 16px', borderRadius: 8, width: '100%', textAlign: 'left',
-            border: `1px solid ${assinatura ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
-            background: assinatura ? 'rgba(201,169,97,0.06)' : 'var(--bg-surface)',
-          }}
-        >
-          <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--text-primary)' }}>O Despertar</span>
-          <span style={{ fontSize: 12, color: assinatura ? 'var(--accent-gold)' : 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
-            {assinatura ? 'Ativo' : 'Ver'}
-          </span>
-        </button>
-
         {itens.map((item) => {
-          const vendavel = !item.comprado && !!item.checkout_url
-          const destacado = item.pronto || item.precisaAcao || vendavel
+          const ehDespertar = item.produto === 'despertar'
+          // A assinatura, nao a compra, diz se o Despertar esta ativo.
+          const ativo = ehDespertar ? !!assinatura : item.comprado
+          const vendavel = !ativo && !!item.checkout_url
+          const clicavel = ehDespertar || ativo || vendavel
+          const destacado = ehDespertar ? !!assinatura : item.pronto || item.precisaAcao || vendavel
           const preco = precoFormatado(item.preco_brl)
+          const status = ehDespertar ? (assinatura ? 'Ativo' : 'Ver') : labelStatus(item)
+
           return (
             <button
               key={item.produto}
               onClick={() => handleClick(item)}
-              disabled={!item.comprado && !vendavel}
+              disabled={!clicavel}
               style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 6,
                 padding: '14px 16px', borderRadius: 8, width: '100%', textAlign: 'left',
                 border: `1px solid ${destacado ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
-                background: item.pronto ? 'rgba(201,169,97,0.06)' : 'var(--bg-surface)',
-                opacity: item.comprado || vendavel ? 1 : 0.4,
-                cursor: item.comprado || vendavel ? 'pointer' : 'default',
+                background: (ehDespertar ? !!assinatura : item.pronto) ? 'rgba(201,169,97,0.06)' : 'var(--bg-surface)',
+                // Sem link de checkout o item segue legivel: ela precisa saber o
+                // que e o produto mesmo antes de poder compra-lo.
+                opacity: clicavel ? 1 : 0.75,
+                cursor: clicavel ? 'pointer' : 'default',
               }}
             >
-              <span className="flex items-center gap-2">
-                {item.pronto && <CheckIcon />}
-                <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--text-primary)' }}>{item.nome}</span>
-                {vendavel && preco && (
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>{preco}</span>
-                )}
+              <span className="flex items-center justify-between gap-3">
+                <span className="flex items-center gap-2 min-w-0">
+                  {item.pronto && !ehDespertar && <CheckIcon />}
+                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--text-primary)' }}>
+                    {item.nome}
+                  </span>
+                  {preco && !ativo && (
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-sans)', flexShrink: 0 }}>
+                      {preco}
+                    </span>
+                  )}
+                </span>
+                <span style={{ fontSize: 12, color: destacado ? 'var(--accent-gold)' : 'var(--text-muted)', fontFamily: 'var(--font-sans)', flexShrink: 0 }}>
+                  {status}
+                </span>
               </span>
-              <span style={{ fontSize: 12, color: destacado ? 'var(--accent-gold)' : 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
-                {labelStatus(item)}
-              </span>
+
+              {item.descricao && (
+                <span style={{ fontFamily: 'var(--font-sans)', fontSize: 12.5, lineHeight: 1.55, color: 'var(--text-secondary)' }}>
+                  {item.descricao}
+                </span>
+              )}
             </button>
           )
         })}

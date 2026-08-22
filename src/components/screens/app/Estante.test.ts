@@ -12,8 +12,8 @@ describe('labelStatus', () => {
     expect(labelStatus(item({ checkout_url: 'https://pay/x' }))).toBe('Comprar')
   })
 
-  it('nao oferece Comprar quando o link ainda nao chegou', () => {
-    expect(labelStatus(item())).toBe('Indisponível')
+  it('mostra Em breve quando o link ainda nao chegou', () => {
+    expect(labelStatus(item())).toBe('Em breve')
   })
 
   it('mostra Ver quando comprou e esta pronto', () => {

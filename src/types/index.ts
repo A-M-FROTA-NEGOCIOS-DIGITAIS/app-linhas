@@ -86,6 +86,7 @@ export interface ProdutoCatalogo {
 export interface ItemBiblioteca {
   produto: ProdutoAlma
   nome: string
+  descricao?: string
   preco_brl?: number
   checkout_url?: string
   comprado: boolean
