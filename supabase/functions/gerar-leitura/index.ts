@@ -181,6 +181,61 @@ async function melhorScanDominante(supabase: any, userId: string): Promise<Recor
   return candidatos[0].analysis as Record<string, unknown>
 }
 
+/**
+ * Escapa caracteres de controle crus dentro de strings JSON.
+ *
+ * O modelo escreve prosa com paragrafos e as vezes emite o byte de nova linha
+ * DE VERDADE dentro do valor da string, em vez do escape de dois caracteres.
+ * JSON proibe controles crus dentro de strings, entao o JSON.parse morre com
+ * "Bad control character in string literal" na primeira mudanca de paragrafo.
+ *
+ * Aqui isso custava caro: cada falha de parse queimava uma das 3 tentativas,
+ * cada uma com uma geracao Sonnet mais a avaliacao Haiku. Tres tentativas
+ * estouravam o limite de 150s da plataforma e a funcao morria sem gravar nada.
+ * O timeout era sintoma deste bug.
+ */
+function escaparControlesEmStrings(texto: string): string {
+  let resultado = ''
+  let dentroDeString = false
+  let escapado = false
+
+  for (const ch of texto) {
+    if (escapado) { resultado += ch; escapado = false; continue }
+    if (ch === '\\') { resultado += ch; escapado = true; continue }
+    if (ch === '"') { dentroDeString = !dentroDeString; resultado += ch; continue }
+
+    if (dentroDeString) {
+      if (ch === '\n') { resultado += '\\n'; continue }
+      if (ch === '\r') { resultado += '\\r'; continue }
+      if (ch === '\t') { resultado += '\\t'; continue }
+      if (ch < ' ') continue
+    }
+    resultado += ch
+  }
+  return resultado
+}
+
+function extrairJson(raw: string): { json: Record<string, unknown> | null; erro?: string } {
+  const limpo = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+  const candidatos = [limpo]
+
+  const inicio = limpo.indexOf('{')
+  const fim = limpo.lastIndexOf('}')
+  if (inicio !== -1 && fim > inicio) candidatos.push(limpo.slice(inicio, fim + 1))
+
+  candidatos.push(escaparControlesEmStrings(candidatos[candidatos.length - 1]))
+
+  let ultimoErro: string | undefined
+  for (const candidato of candidatos) {
+    try {
+      return { json: JSON.parse(candidato) }
+    } catch (err) {
+      ultimoErro = String(err)
+    }
+  }
+  return { json: null, erro: ultimoErro }
+}
+
 function palmAnalysisToText(analysis: Record<string, unknown>): string {
   if (!analysis || Object.keys(analysis).length === 0) return 'análise visual não disponível'
   const lines = analysis.main_lines as Record<string, Record<string, string>> ?? {}
@@ -282,18 +337,14 @@ serve(async (req) => {
 
       const rawText = extractText(msg.content)
       debugUltimoRawText = rawText
-      const jsonMatch = rawText.match(/\{[\s\S]*\}/)
-      if (!jsonMatch) {
-        debugUltimoErro = 'Nenhum JSON encontrado na resposta'
-        continue
-      }
 
-      try {
-        leituraJson = JSON.parse(jsonMatch[0])
-      } catch (parseErr) {
-        debugUltimoErro = `JSON.parse falhou: ${String(parseErr)}`
+      const { json, erro: erroParse } = extrairJson(rawText)
+      if (!json) {
+        debugUltimoErro = `Sem JSON valido: ${erroParse ?? 'nenhum candidato'} | stop_reason=${msg.stop_reason}`
+        console.error(`gerar-leitura tentativa ${tentativas}: ${debugUltimoErro}`)
         continue
       }
+      leituraJson = json
 
       // Portão de qualidade via Haiku (rápido e barato)
       const qualMsg = await anthropic.messages.create({
