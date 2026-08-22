@@ -12,7 +12,7 @@ export default defineConfig({
       manifest: {
         name: 'ALMA — Leitura de Palma',
         short_name: 'ALMA',
-        description: 'Your hands know. AI translates.',
+        description: 'Sua mão guarda o padrão que você repete no amor.',
         theme_color: '#070A14',
         background_color: '#070A14',
         display: 'standalone',
