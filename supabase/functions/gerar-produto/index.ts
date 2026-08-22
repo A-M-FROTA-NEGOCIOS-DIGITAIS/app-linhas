@@ -58,6 +58,25 @@ function normalizarTexto(texto: string): string {
 }
 
 /**
+ * Remove a tag ID3 do inicio de um mp3.
+ *
+ * Concatenar arquivos mp3 embute o cabecalho do segundo no meio do fluxo. A
+ * maioria dos players ressincroniza e ignora, mas alguns dao um clique ou uma
+ * fracao de segundo de silencio na emenda. Conferido no audio de 22/08: havia
+ * uma segunda tag ID3 na posicao 4231880, por volta de 4min24s.
+ *
+ * O tamanho da tag vem em quatro bytes "syncsafe" (7 bits uteis cada), e o
+ * cabecalho em si ocupa 10 bytes.
+ */
+function semTagId3(bytes: Uint8Array): Uint8Array {
+  if (bytes.length < 10) return bytes
+  if (bytes[0] !== 0x49 || bytes[1] !== 0x44 || bytes[2] !== 0x33) return bytes
+  const tamanho = (bytes[6] << 21) | (bytes[7] << 14) | (bytes[8] << 7) | bytes[9]
+  const inicio = 10 + tamanho
+  return inicio < bytes.length ? bytes.subarray(inicio) : bytes
+}
+
+/**
  * Divide o texto para o TTS sem cortar no meio de uma frase.
  *
  * Corta preferencialmente entre paragrafos; se um paragrafo sozinho estourar o
@@ -750,7 +769,10 @@ async function gerarAudioTts(supabase: any, userId: string, core: any) {
 
     const id = resp.headers.get('request-id')
     if (id) idsAnteriores.push(id)
-    partes.push(new Uint8Array(await resp.arrayBuffer()))
+    // So o primeiro bloco mantem a tag ID3; nos demais ela seria lixo no
+    // meio do fluxo de audio.
+    const bytes = new Uint8Array(await resp.arrayBuffer())
+    partes.push(i === 0 ? bytes : semTagId3(bytes))
   }
 
   const total = partes.reduce((soma, p) => soma + p.length, 0)
