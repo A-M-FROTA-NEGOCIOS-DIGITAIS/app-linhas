@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'icons/apple-touch-icon.png', 'fonts/TenorSans-Regular.ttf'],
+      includeAssets: ['icons/app-icon.svg', 'icons/favicon-32.png', 'icons/apple-touch-icon.png'],
       manifest: {
         name: 'ALMA — Leitura de Palma',
         short_name: 'ALMA',
