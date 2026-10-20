@@ -1,6 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <rect width="512" height="512" rx="96" fill="#070A14"/>
-  <text x="256" y="392" text-anchor="middle"
-        font-family="Cormorant Garamond, Cormorant, Garamond, Georgia, serif"
-        font-weight="300" font-size="404" fill="#7C9CE4">A</text>
+  <defs>
+    <radialGradient id="ceu" cx="50%" cy="28%" r="80%">
+      <stop offset="0" stop-color="#2A2470"/><stop offset=".5" stop-color="#0C1031"/><stop offset="1" stop-color="#05071A"/>
+    </radialGradient>
+    <radialGradient id="violeta"><stop offset="0" stop-color="#7C5CFF" stop-opacity=".75"/><stop offset="1" stop-color="#7C5CFF" stop-opacity="0"/></radialGradient>
+    <radialGradient id="rosa"><stop offset="0" stop-color="#E26AA0" stop-opacity=".6"/><stop offset="1" stop-color="#E26AA0" stop-opacity="0"/></radialGradient>
+    <radialGradient id="agua"><stop offset="0" stop-color="#3FD6C2" stop-opacity=".45"/><stop offset="1" stop-color="#3FD6C2" stop-opacity="0"/></radialGradient>
+    <linearGradient id="lua" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFE3A8"/><stop offset=".6" stop-color="#E7B865"/><stop offset="1" stop-color="#F49AC1"/>
+    </linearGradient>
+    <radialGradient id="halo"><stop offset="0" stop-color="#F2C879" stop-opacity=".45"/><stop offset=".55" stop-color="#E26AA0" stop-opacity=".12"/><stop offset="1" stop-color="#E26AA0" stop-opacity="0"/></radialGradient>
+    <clipPath id="forma"><rect width="512" height="512" rx="112"/></clipPath>
+  </defs>
+  <g clip-path="url(#forma)">
+    <rect width="512" height="512" fill="url(#ceu)"/>
+    <circle cx="130" cy="150" r="230" fill="url(#violeta)"/>
+    <circle cx="420" cy="380" r="210" fill="url(#rosa)"/>
+    <circle cx="150" cy="470" r="200" fill="url(#agua)"/>
+    <g fill="#FFFFFF">
+      <circle cx="96" cy="92" r="3" opacity=".8"/><circle cx="410" cy="110" r="2.4" opacity=".7"/>
+      <circle cx="440" cy="250" r="1.8" opacity=".6"/><circle cx="76" cy="300" r="2" opacity=".55"/>
+      <circle cx="360" cy="440" r="2.2" opacity=".6"/><circle cx="210" cy="64" r="1.6" opacity=".6"/>
+    </g>
+    <path d="M396 150l3 9 9 3-9 3-3 9-3-9-9-3 9-3z" fill="#FFE7B8" opacity=".9"/>
+    <g transform="translate(58.8 52.0) scale(17)">
+      <circle cx="11.6" cy="12" r="12.5" fill="url(#halo)"/>
+      <path d="M15.5 3.2a8.8 8.8 0 1 0 5.3 13.6A7.2 7.2 0 0 1 15.5 3.2z" fill="url(#lua)"/>
+    </g>
+  </g>
 </svg>
