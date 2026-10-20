@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { AuroraRetrato } from '@/components/ui/Aurora'
+import { OrbitaAurora } from '@/components/ui/Orbita'
 
 interface Props {
   /** Mensagens que se alternam. A primeira aparece imediatamente. */
@@ -16,8 +16,8 @@ interface Props {
  * produto relatou ("fica gerando infinito e nao vai") num fluxo que na verdade
  * tinha funcionado e salvo a leitura.
  *
- * Segue o padrao que a Scanning e a LeituraCompleta ja usam: frase serifada que
- * troca a cada 3,5s sobre um glifo pulsando.
+ * Visual aurora: órbitas com o retrato da Aurora no núcleo (padrão do Processando
+ * do quiz) e a frase em Cormorant que troca a cada 3,5s.
  */
 export function TelaGerando({ mensagens, rodape }: Props) {
   const [indice, setIndice] = useState(0)
@@ -29,40 +29,18 @@ export function TelaGerando({ mensagens, rodape }: Props) {
   }, [mensagens.length])
 
   return (
-    <div className="h-full flex flex-col items-center justify-center px-8 gap-8">
-      <AuroraRetrato tamanho={112} />
+    <div className="h-full flex flex-col items-center justify-center px-8 gap-7">
+      <OrbitaAurora tamanho={260} />
 
       <div className="text-center flex flex-col gap-3">
-        <p
-          key={indice}
-          style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: 20,
-            fontWeight: 300,
-            color: 'var(--text-primary)',
-            lineHeight: 1.4,
-            transition: 'opacity 0.5s',
-          }}
-        >
+        <p key={indice} className="alma-display italic text-[26px]" style={{ animation: 'alma-reveal .8s ease-out both' }}>
           {mensagens[indice]}
         </p>
-        {rodape && (
-          <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--text-muted)' }}>
-            {rodape}
-          </p>
-        )}
+        {rodape && <p className="text-[13px] text-text-muted">{rodape}</p>}
       </div>
 
-      <div style={{ width: 120, height: 1, background: 'var(--border-subtle)', borderRadius: 1, overflow: 'hidden' }}>
-        <div
-          style={{
-            height: '100%',
-            width: '40%',
-            background: 'var(--accent)',
-            borderRadius: 1,
-            animation: 'slideProgress 2s ease-in-out infinite',
-          }}
-        />
+      <div className="alma-progress w-40 overflow-hidden">
+        <div className="alma-progress__fill" style={{ width: '100%' }} />
       </div>
     </div>
   )

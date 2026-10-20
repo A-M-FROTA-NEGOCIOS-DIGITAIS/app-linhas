@@ -1,43 +1,44 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, Eyebrow } from '@/components/ui'
+import { useFundo } from '@/components/ui/AuroraFundo'
 
 interface Props { onContinue: () => void; onBack: () => void }
 
-const PalmIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="130" height="156" fill="none" stroke="#7C9CE4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M58 230 C 50 200 44 178 44 158 C 44 142 38 130 36 116 C 34 102 40 96 48 100 C 54 102 60 110 64 122 C 64 110 62 76 64 56 C 66 42 78 40 80 54 C 82 76 82 100 84 116 C 86 100 88 70 92 54 C 94 42 106 42 108 56 C 110 78 108 102 110 118 C 112 102 116 78 120 66 C 124 54 134 54 134 68 C 134 86 130 110 130 122 C 134 112 142 100 150 96 C 160 92 166 102 162 114 C 154 132 144 152 140 168 C 134 188 130 210 126 230"/>
-    <path d="M52 138 C 78 126 110 124 142 132" opacity="0.85"/>
-    <path d="M50 158 C 78 152 112 150 138 156" opacity="0.7"/>
-    <path d="M66 130 C 60 152 60 178 70 200" opacity="0.6"/>
-    <path d="M104 230 C 102 200 100 174 102 152" opacity="0.5"/>
-  </svg>
+// Referência: app/reference/L02-Onboarding — ilustração em órbita, um ícone por capítulo.
+
+const Mao = () => (
+  <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M38 110 L30 70 C28 62 36 58 40 66 L44 76 L42 28 C42 20 52 20 52 28 L54 62 L55 18 C55 10 66 10 66 18 L66 60 L70 26 C71 18 81 19 80 27 L76 66 L82 44 C84 37 93 39 91 46 L84 82 C81 98 74 108 70 112" stroke="#F2C879" strokeOpacity=".7" strokeWidth="2" />
+    <path className="alma-intro-ln" d="M40 84 C52 76 66 74 80 78" stroke="url(#alma-intro-g)" strokeWidth="2.4" />
+    <path className="alma-intro-ln alma-intro-ln--2" d="M42 72 C54 64 68 62 78 66" stroke="url(#alma-intro-g)" strokeWidth="2.4" />
+    <path className="alma-intro-ln alma-intro-ln--3" d="M46 70 C42 84 46 98 56 108" stroke="url(#alma-intro-g)" strokeWidth="2.4" />
+  </g>
 )
 
-const ScanIcon = () => (
-  <svg width="110" height="110" viewBox="0 0 72 72" fill="none">
-    <circle cx="36" cy="36" r="30" stroke="#7C9CE4" strokeWidth="0.8" opacity="0.2" strokeDasharray="4 4"/>
-    <circle cx="36" cy="36" r="20" stroke="#7C9CE4" strokeWidth="0.9" opacity="0.4"/>
-    <circle cx="36" cy="36" r="10" stroke="#7C9CE4" strokeWidth="1" opacity="0.65"/>
-    <circle cx="36" cy="36" r="2.5" fill="#7C9CE4" opacity="0.9"/>
-    <path d="M36 6v6M36 60v6M6 36h6M60 36h6" stroke="#7C9CE4" strokeWidth="1" strokeLinecap="round" opacity="0.35"/>
-  </svg>
+const Olho = () => (
+  <g fill="none" strokeLinecap="round">
+    <path d="M10 60 C 30 30, 90 30, 110 60 C 90 90, 30 90, 10 60z" stroke="#F2C879" strokeOpacity=".75" strokeWidth="2" />
+    <circle cx="60" cy="60" r="18" stroke="url(#alma-intro-g)" strokeWidth="2.4" />
+    <circle cx="60" cy="60" r="7" fill="#FFE3A8" />
+    <path className="alma-intro-ln" d="M60 10 V24 M60 96 V110 M10 60 H2 M118 60 H110" stroke="url(#alma-intro-g)" strokeWidth="2" />
+  </g>
 )
 
-const ReadingIcon = () => (
-  <svg width="98" height="120" viewBox="0 0 60 72" fill="none">
-    <rect x="8" y="4" width="44" height="64" rx="7" stroke="#7C9CE4" strokeWidth="1" opacity="0.3" fill="none"/>
-    <path d="M18 26 h24M18 38 h16M18 50 h20" stroke="#7C9CE4" strokeWidth="1.5" strokeLinecap="round" opacity="0.7"/>
-    <circle cx="46" cy="54" r="9" fill="var(--bg-primary)" stroke="#7C9CE4" strokeWidth="1" opacity="0.9"/>
-    <path d="M42 54 l3 3 5-6" stroke="#7C9CE4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
+const Documento = () => (
+  <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="26" y="14" width="62" height="84" rx="8" stroke="#F2C879" strokeOpacity=".75" strokeWidth="2" />
+    <path className="alma-intro-ln" d="M38 36 H76 M38 50 H76 M38 64 H62" stroke="url(#alma-intro-g)" strokeWidth="2.4" />
+    <circle cx="86" cy="90" r="18" fill="#0C1031" stroke="url(#alma-intro-g)" strokeWidth="2.4" />
+    <path d="M78 90 l6 6 l10 -12" stroke="#FFE3A8" strokeWidth="2.6" />
+  </g>
 )
 
-const GLYPHS = [<PalmIcon />, <ScanIcon />, <ReadingIcon />]
+const ICONES = [<Mao key="mao" />, <Olho key="olho" />, <Documento key="doc" />]
 
 export function Intro({ onContinue, onBack }: Props) {
   const { t } = useTranslation()
   const [slide, setSlide] = useState(0)
+  useFundo('onboarding')
 
   const SLIDES = [
     { chapter: t('intro.ch1'), titleA: t('intro.t1a'), titleB: t('intro.t1b'), body: t('intro.b1') },
@@ -49,45 +50,78 @@ export function Intro({ onContinue, onBack }: Props) {
   const s = SLIDES[slide]
 
   return (
-    <div className="h-full flex flex-col pb-8">
-      <div className="grid grid-cols-3 items-center px-6 pt-6">
+    <div className="h-full flex flex-col px-6 pt-[calc(22px+env(safe-area-inset-top,0px))] pb-[30px]">
+      <div className="flex items-center justify-between h-11">
         <button
+          type="button"
+          aria-label={t('common.back')}
           onClick={slide === 0 ? onBack : () => setSlide((p) => p - 1)}
-          className="text-text-secondary active:text-text-primary transition-colors justify-self-start"
+          className="w-11 h-11 -ml-2.5 flex items-center justify-center"
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M11 5l-7 7 7 7" />
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9C3DD" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+            <path d="M19 12H5M11 6l-6 6 6 6" />
           </svg>
         </button>
-        <div className="flex gap-1.5 justify-center">
+        <div className="flex gap-1.5" aria-label={`${slide + 1}/3`}>
           {SLIDES.map((_, i) => (
-            <div key={i} style={{ width: 28, height: 1.5, background: i <= slide ? 'var(--accent)' : 'var(--border-subtle)', borderRadius: 1, transition: 'background 0.5s' }} />
+            <span
+              key={i}
+              className="block h-1 rounded transition-all duration-300"
+              style={
+                i === slide
+                  ? { width: 30, background: 'linear-gradient(90deg, #FFD98E, #F49AC1)', boxShadow: '0 0 10px rgba(244,154,193,.6)' }
+                  : { width: 18, background: i < slide ? 'rgba(242,200,121,.6)' : 'rgba(255,255,255,.15)' }
+              }
+            />
           ))}
         </div>
-        <div />
+        <span className="w-[34px]" />
       </div>
 
-      <div key={slide} className="flex-1 flex flex-col px-6" style={{ animation: 'fade-in 350ms ease forwards' }}>
-        <div className="my-auto flex flex-col items-center gap-6">
-          <div className="flex flex-col items-center gap-4">
-            {GLYPHS[slide]}
-            <Eyebrow>{s.chapter}</Eyebrow>
-          </div>
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 36, fontWeight: 300, lineHeight: 1.2, letterSpacing: '-0.01em', color: 'var(--text-primary)', whiteSpace: 'pre-line', textAlign: 'center', width: '100%' }}>
-            {s.titleA}
-            <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>{s.titleB}</em>
-          </h2>
-          <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.65, textAlign: 'center' }}>
-            {s.body}
-          </p>
-        </div>
+      {/* Ilustração em órbita: anéis girando + núcleo pulsando + ícone do capítulo */}
+      <div aria-hidden="true" className="relative mx-auto mt-[46px]" style={{ width: 240, height: 240 }}>
+        <svg className="absolute inset-0" width="240" height="240" viewBox="0 0 240 240" style={{ animation: 'alma-spin 30s linear infinite' }}>
+          <circle cx="120" cy="120" r="116" fill="none" stroke="#F2C879" strokeOpacity=".4" strokeDasharray="2 7" />
+          <circle cx="120" cy="4" r="3.5" fill="#FFE3A8" />
+          <circle cx="20" cy="178" r="2.5" fill="#E26AA0" />
+        </svg>
+        <svg className="absolute" width="196" height="196" viewBox="0 0 196 196" style={{ left: 22, top: 22, animation: 'alma-spinr 18s linear infinite' }}>
+          <defs>
+            <linearGradient id="alma-intro-oa" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="#7C5CFF" /><stop offset=".5" stopColor="#E26AA0" /><stop offset="1" stopColor="#3FD6C2" />
+            </linearGradient>
+          </defs>
+          <circle cx="98" cy="98" r="94" fill="none" stroke="url(#alma-intro-oa)" strokeWidth="1.5" strokeDasharray="180 120" />
+        </svg>
+        <div className="absolute rounded-full" style={{ left: 50, top: 50, width: 140, height: 140, background: 'radial-gradient(circle, rgba(124,92,255,.35) 0%, rgba(124,92,255,0) 70%)', animation: 'alma-core 3s ease-in-out infinite' }} />
+        <svg key={slide} className="absolute" width="120" height="120" viewBox="0 0 120 120" style={{ left: 60, top: 60 }}>
+          <defs>
+            <linearGradient id="alma-intro-g" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="#FFE3A8" /><stop offset=".6" stopColor="#F49AC1" /><stop offset="1" stopColor="#9C86FF" />
+            </linearGradient>
+          </defs>
+          {ICONES[slide]}
+        </svg>
       </div>
 
-      <div className="px-6">
-        <Button variant="primary" fullWidth onClick={isLast ? onContinue : () => setSlide((p) => p + 1)}>
-          {isLast ? t('intro.begin') : t('common.next')}
-        </Button>
+      <div key={`t${slide}`} className="flex flex-col items-center mt-[30px]" style={{ animation: 'alma-rise .6s ease-out both' }}>
+        <span className="text-[12px] tracking-[4px] uppercase text-gold font-medium">{s.chapter}</span>
+        <h1 className="alma-display mt-3.5 text-center text-[36px]" style={{ whiteSpace: 'pre-line' }}>
+          {s.titleA}
+          <span className="alma-grad-text">{s.titleB}</span>
+        </h1>
+        <p className="mt-4 text-center text-[16px] leading-[1.55] text-text-secondary max-w-[310px]">{s.body}</p>
       </div>
+
+      <div className="flex-grow" />
+      <button type="button" className="alma-btn" onClick={isLast ? onContinue : () => setSlide((p) => p + 1)}>
+        <span>{isLast ? t('intro.begin') : t('common.next')}</span>
+        {!isLast && (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2A1A05" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        )}
+      </button>
     </div>
   )
 }

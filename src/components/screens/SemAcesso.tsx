@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Button } from '@/components/ui'
+import { useFundo } from '@/components/ui/AuroraFundo'
 import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/store/app'
 
@@ -8,6 +8,7 @@ const CHECKOUT_URL = import.meta.env.VITE_BLUEN_CHECKOUT_URL ?? '#'
 export function SemAcesso() {
   const { t } = useTranslation()
   const reset = useAppStore((s) => s.reset)
+  useFundo('login')
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -17,25 +18,25 @@ export function SemAcesso() {
 
   return (
     <div className="h-full flex flex-col items-center justify-center px-8 gap-6 text-center">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#7C9CE4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.7">
-        <rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 1 1 8 0v4" />
-      </svg>
-
-      <div className="flex flex-col gap-3">
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 26, fontWeight: 300, color: 'var(--text-primary)', lineHeight: 1.3 }}>
-          {t('semAcesso.title')}<br />
-          <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>{t('semAcesso.titleItalic')}</em>
-        </h1>
-        <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: 320 }}>
-          {t('semAcesso.body')}
-        </p>
+      <div className="alma-r1 flex items-center justify-center w-[74px] h-[74px] rounded-[22px]" style={{ background: 'linear-gradient(135deg, rgba(242,200,121,.25), rgba(124,92,255,.25))', border: '1px solid rgba(242,200,121,.45)', boxShadow: '0 10px 40px rgba(124,92,255,.35)', animation: 'alma-floaty 5s ease-in-out infinite' }}>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#FFE3A8" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 1 1 8 0v4" />
+        </svg>
       </div>
 
-      <div className="flex flex-col gap-3 w-full" style={{ maxWidth: 280 }}>
-        <Button variant="primary" fullWidth onClick={() => { window.location.href = CHECKOUT_URL }}>
-          {t('semAcesso.cta')}
-        </Button>
-        <button onClick={handleSignOut} className="text-xs text-text-muted underline underline-offset-2">
+      <div className="alma-r2 flex flex-col gap-3">
+        <h1 className="alma-display text-[32px]">
+          {t('semAcesso.title')}<br />
+          <span className="alma-grad-text">{t('semAcesso.titleItalic')}</span>
+        </h1>
+        <p className="text-[15px] leading-[1.6] text-text-secondary max-w-[320px]">{t('semAcesso.body')}</p>
+      </div>
+
+      <div className="alma-r3 flex flex-col gap-3 w-full">
+        <button type="button" className="alma-btn" onClick={() => { window.location.href = CHECKOUT_URL }}>
+          <span>{t('semAcesso.cta')}</span>
+        </button>
+        <button type="button" onClick={handleSignOut} className="min-h-11 text-[14px] text-text-muted underline underline-offset-2">
           {t('semAcesso.signOut')}
         </button>
       </div>

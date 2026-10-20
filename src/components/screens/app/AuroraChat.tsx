@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Spinner, Hairline } from '@/components/ui'
+import { Spinner } from '@/components/ui'
+import { useFundo } from '@/components/ui/AuroraFundo'
 import { AuroraAvatar, AuroraRetrato } from '@/components/ui/Aurora'
 import { supabase } from '@/lib/supabase'
 import { track, Events } from '@/lib/analytics'
@@ -11,27 +12,25 @@ interface Props {
   profile: Profile
 }
 
+// Referência: app/reference/L12-Aurora — usuária em dourado (Jost, texto escuro),
+// Aurora em vidro com borda dourada (Cormorant 19px).
 function MessageBubble({ msg }: { msg: ChatMessage }) {
   const isUser = msg.role === 'user'
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-      {!isUser && (
-        <div className="mr-3 mt-0.5">
-          <AuroraAvatar tamanho={28} />
-        </div>
-      )}
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`} style={{ animation: 'alma-pop .4s ease-out both' }}>
       <div
-        className={`max-w-[78%] px-4 py-3 rounded-2xl ${isUser ? 'rounded-br-sm' : 'rounded-bl-sm'}`}
-        style={{
-          background: isUser ? 'rgba(124, 156, 228,0.12)' : 'var(--bg-surface)',
-          border: isUser ? '1px solid rgba(124, 156, 228,0.2)' : '1px solid var(--border-subtle)',
-        }}
+        className="max-w-[82%] px-4 py-3"
+        style={
+          isUser
+            ? { borderRadius: '20px 20px 6px 20px', background: 'linear-gradient(180deg, #FBE0A6, #E7B865 60%, #D9A54A)', color: '#2A1A05', boxShadow: '0 6px 20px rgba(242,180,90,.25)' }
+            : { borderRadius: '20px 20px 20px 6px', background: 'rgba(255,255,255,.07)', border: '1px solid rgba(242,200,121,.25)', backdropFilter: 'blur(8px)', color: '#FBF4E4' }
+        }
       >
-        <p style={{ fontFamily: isUser ? 'var(--font-sans)' : 'var(--font-serif)', fontSize: isUser ? 14 : 15, lineHeight: 1.65, color: 'var(--text-primary)', letterSpacing: isUser ? 0 : '0.003em' }}>
+        <p className="m-0" style={isUser ? { fontFamily: 'var(--font-ui)', fontSize: 15, lineHeight: 1.45 } : { fontFamily: 'var(--font-display)', fontSize: 19, lineHeight: 1.35 }}>
           {msg.content}
         </p>
-        <p className="text-[10px] text-text-muted mt-1 text-right">
-          {new Date(msg.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+        <p className="m-0 mt-1 text-right text-[10px]" style={{ color: isUser ? 'rgba(42,26,5,.6)' : '#8E89AE' }}>
+          {new Date(msg.created_at).toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit' })}
         </p>
       </div>
     </div>
@@ -40,13 +39,10 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
 
 function TypingIndicator() {
   return (
-    <div className="flex items-center gap-3">
-      <AuroraAvatar tamanho={28} />
-      <div className="flex gap-1 px-4 py-3 rounded-2xl rounded-bl-sm" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
-        {[0, 1, 2].map((i) => (
-          <span key={i} className="w-1.5 h-1.5 rounded-full bg-text-muted animate-pulse-accent" style={{ animationDelay: `${i * 0.2}s` }} />
-        ))}
-      </div>
+    <div className="self-start flex gap-[5px] px-4 py-3.5" style={{ borderRadius: '20px 20px 20px 6px', background: 'rgba(255,255,255,.07)', border: '1px solid rgba(242,200,121,.25)' }}>
+      {['#F2C879', '#F49AC1', '#9C86FF'].map((cor, i) => (
+        <span key={cor} className="w-[7px] h-[7px] rounded-full" style={{ background: cor, animation: `alma-dot 1.2s ease-in-out infinite ${i * 0.15}s` }} />
+      ))}
     </div>
   )
 }
@@ -59,6 +55,7 @@ export function AuroraChat({ profile }: Props) {
   const [sending, setSending] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  useFundo('aurora')
 
   const SUGGESTIONS = [t('aurora.s1'), t('aurora.s2'), t('aurora.s3'), t('aurora.s4'), t('aurora.s5')]
   const QUICK_REPLIES = [t('aurora.q1'), t('aurora.q2'), t('aurora.q3')]
@@ -152,47 +149,47 @@ export function AuroraChat({ profile }: Props) {
 
   const isEmpty = messages.length === 0 && !loading
 
+  const status = t('aurora.status').replace(/^\s*●\s*/, '')
+
   return (
     <div className="h-full flex flex-col">
-      <div className="px-5 pt-12 pb-4 flex items-center gap-3">
-        <AuroraAvatar tamanho={36} destacado />
+      {/* Cabeçalho: retrato com ponto verde pulsando */}
+      <div className="flex items-center gap-3 px-5 pb-3.5 pt-[calc(26px+env(safe-area-inset-top,0px))]" style={{ background: 'linear-gradient(180deg, rgba(12,16,49,.95), rgba(12,16,49,0))' }}>
+        <div className="relative flex-shrink-0">
+          <AuroraAvatar tamanho={46} />
+          <span className="absolute right-0 bottom-0 w-[11px] h-[11px] rounded-full" style={{ background: '#3FD6C2', border: '2px solid #0C1031', animation: 'alma-ping 1.6s ease-out infinite' }} />
+        </div>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 20, fontWeight: 300, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
-            {t('aurora.title')}
-          </h1>
-          <p className="text-[11px] text-text-muted tracking-wider">{t('aurora.status')}</p>
+          <h1 className="alma-display text-[22px] leading-none">{t('aurora.title')}</h1>
+          <p className="m-0 mt-1 text-[12px] text-teal-text">{status}</p>
         </div>
       </div>
 
-      <Hairline className="mx-5" />
-
-      <div className="flex-1 scroll-area px-5 py-5">
+      <div className="flex-1 scroll-area px-[18px] py-2">
         {loading ? (
           <div className="flex items-center justify-center h-full">
-            <Spinner size={24} className="text-accent" />
+            <Spinner size={24} className="text-gold" />
           </div>
         ) : isEmpty ? (
           <div className="flex flex-col h-full">
-            <div className="flex-1 flex flex-col items-center justify-center gap-4">
-              <AuroraRetrato tamanho={132} />
-              <p style={{ fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
-                Madame Aurora
-              </p>
-              <p style={{ fontFamily: 'var(--font-serif)', fontSize: 18, fontWeight: 300, color: 'var(--text-primary)', lineHeight: 1.4, textAlign: 'center' }}>
-                {t('aurora.emptyTitle')}<br/>
-                <em style={{ color: 'var(--text-secondary)', fontSize: 15 }}>{t('aurora.emptySubtitle')}</em>
+            <div className="flex-1 flex flex-col items-center justify-center gap-3">
+              <AuroraRetrato tamanho={112} />
+              <p className="alma-label">Madame Aurora</p>
+              <p className="alma-display text-center text-[24px] font-medium">
+                {t('aurora.emptyTitle')}<br />
+                <em className="text-[18px] text-text-secondary font-normal">{t('aurora.emptySubtitle')}</em>
               </p>
             </div>
             <div className="flex flex-col gap-2 pb-4">
               {SUGGESTIONS.map((s) => (
-                <button key={s} onClick={() => send(s)} className="text-left px-4 py-3 rounded-xl text-sm text-text-secondary transition-colors" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+                <button key={s} type="button" onClick={() => send(s)} className="alma-option !min-h-0 !py-3 !text-[14px] text-text-secondary">
                   {s}
                 </button>
               ))}
             </div>
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
             {messages.map((msg) => <MessageBubble key={msg.id} msg={msg} />)}
             {sending && <TypingIndicator />}
             <div ref={bottomRef} />
@@ -200,40 +197,50 @@ export function AuroraChat({ profile }: Props) {
         )}
       </div>
 
-      {messages.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto no-scrollbar px-4 py-2" style={{ background: 'var(--bg-primary)' }}>
-          {QUICK_REPLIES.map((reply) => (
-            <button key={reply} onClick={() => send(reply)} disabled={sending} className="flex-shrink-0 px-4 py-2 rounded-full text-xs text-text-secondary whitespace-nowrap" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
-              {reply}
-            </button>
-          ))}
-        </div>
-      )}
-
-      <div className="px-4 pb-28 pt-3" style={{ borderTop: '1px solid var(--border-subtle)', background: 'var(--bg-primary)' }}>
-        <div className="flex items-end gap-3 px-4 py-3 rounded-2xl" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
+      {/* Sugestões roláveis + campo em pílula com borda dourada; fica acima da barra de abas */}
+      <div className="flex flex-col gap-2.5 px-3.5 pt-2 pb-[calc(96px+env(safe-area-inset-bottom,0px))]">
+        {messages.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-0.5">
+            {QUICK_REPLIES.map((reply) => (
+              <button
+                key={reply}
+                type="button"
+                onClick={() => send(reply)}
+                disabled={sending}
+                className="flex-shrink-0 h-[38px] px-3.5 rounded-pill text-[13px] text-[#EDE6D6] whitespace-nowrap hover:border-gold"
+                style={{ border: '1px solid rgba(242,200,121,.35)', background: 'rgba(12,16,49,.7)', backdropFilter: 'blur(10px)' }}
+              >
+                {reply}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="flex items-end gap-2 min-h-14 py-1.5 pl-[18px] pr-1.5 rounded-[28px]" style={{ background: 'rgba(255,255,255,.07)', border: '1.5px solid rgba(242,200,121,.35)', backdropFilter: 'blur(12px)', boxShadow: '0 0 30px rgba(124,92,255,.2)' }}>
           <textarea
             ref={inputRef}
             value={input}
+            aria-label={t('aurora.placeholder')}
             onChange={(e) => { setInput(e.target.value); e.target.style.height = 'auto'; e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px` }}
             onKeyDown={handleKeyDown}
             placeholder={t('aurora.placeholder')}
             rows={1}
-            className="flex-1 bg-transparent resize-none outline-none text-text-primary placeholder:text-text-muted"
-            style={{ fontFamily: 'var(--font-sans)', fontSize: 16, lineHeight: 1.5, maxHeight: 120 }}
+            className="flex-1 min-w-0 self-center bg-transparent resize-none outline-none text-cream placeholder:text-[#8E89AE] py-2"
+            style={{ fontFamily: 'var(--font-ui)', fontSize: 16, lineHeight: 1.5, maxHeight: 120 }}
           />
           <button
+            type="button"
+            aria-label="Enviar"
             onClick={() => send(input)}
             disabled={!input.trim() || sending}
-            className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-opacity"
-            style={{ background: input.trim() && !sending ? 'var(--accent)' : 'var(--border-subtle)', opacity: input.trim() && !sending ? 1 : 0.5 }}
+            className="flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center transition-opacity"
+            style={{ background: 'linear-gradient(180deg, #FBE0A6, #E7B865 55%, #C98F35)', boxShadow: '0 4px 16px rgba(242,180,90,.45)', opacity: input.trim() && !sending ? 1 : 0.5 }}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={input.trim() && !sending ? 'var(--bg-primary)' : 'var(--text-muted)'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M5 12h14M13 5l7 7-7 7" />
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2A1A05" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 19V5M5 12l7-7 7 7" />
             </svg>
           </button>
         </div>
-        <p className="text-center text-[10px] text-text-muted mt-2">{t('aurora.disclaimer')}</p>
+        <p className="m-0 -mt-0.5 text-center text-[11px] text-[#8E89AE]">{t('aurora.disclaimer')}</p>
       </div>
     </div>
   )

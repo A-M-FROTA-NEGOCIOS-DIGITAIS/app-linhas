@@ -1,23 +1,12 @@
-import { Button, Eyebrow, Hairline } from '@/components/ui'
 import { track, Events } from '@/lib/analytics'
+import { AuroraAvatar } from '@/components/ui/Aurora'
+import { useFundo } from '@/components/ui/AuroraFundo'
 
 interface Props {
   preview: string
   name: string
   onSkip?: () => void
 }
-
-const CheckIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7C9CE4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M5 12l5 5L20 6" />
-  </svg>
-)
-
-const LockIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 1 1 8 0v4" />
-  </svg>
-)
 
 const FEATURES = [
   'Leitura completa com 6 capítulos personalizados',
@@ -29,93 +18,92 @@ const FEATURES = [
 
 const CHECKOUT_URL = import.meta.env.VITE_BLUEN_CHECKOUT_URL ?? '#'
 
+/** Primeira frase nítida, o resto borrado (a leitura real aparece, mas só o começo dá para ler). */
+function partirPrevia(texto: string): [string, string] {
+  const fim = texto.search(/[.…!?](\s|$)/)
+  if (fim < 0 || fim > 220) {
+    const corte = texto.lastIndexOf(' ', 160)
+    return corte > 0 ? [texto.slice(0, corte) + '…', texto.slice(corte)] : [texto, '']
+  }
+  return [texto.slice(0, fim + 1), texto.slice(fim + 1).trim()]
+}
+
+// Referência: app/reference/L08-Paywall
 export function Paywall({ preview, name, onSkip }: Props) {
+  useFundo('paywall')
   const handleComprar = () => {
     track(Events.TRIAL_STARTED, { product: 'leitura_core', amount_cents: 4700 })
     window.location.href = CHECKOUT_URL
   }
 
+  const texto = preview || `${name}, sua palma revela um padrão que você provavelmente já sentiu, mas nunca soube nomear...`
+  const [nitido, borrado] = partirPrevia(texto)
+
   return (
-    <div className="h-full flex flex-col">
-      {/* Preview da leitura */}
-      <div className="relative px-6 pt-10 pb-2" style={{ maxHeight: '34%' }}>
-        <Eyebrow className="mb-4">Sua leitura foi gerada</Eyebrow>
-        <div className="relative overflow-hidden" style={{ maxHeight: 180 }}>
-          <p className="reading-text text-sm leading-relaxed line-clamp-6">
-            {preview || `${name}, sua palma revela um padrão que você provavelmente já sentiu, mas nunca soube nomear...`}
+    <div className="h-full overflow-y-auto no-scrollbar">
+      <div className="flex flex-col px-[22px] pt-[calc(40px+env(safe-area-inset-top,0px))] pb-[30px]">
+        <span className="alma-r1 flex items-center gap-2 text-[11px] tracking-[3px] uppercase text-teal-text">
+          <span className="w-2 h-2 rounded-full" style={{ background: '#3FD6C2', boxShadow: '0 0 10px #3FD6C2', animation: 'alma-blink 2.6s ease-in-out infinite' }} />
+          Sua leitura foi gerada
+        </span>
+
+        {/* Prévia: começo nítido, resto borrado, selo de bloqueado */}
+        <div className="alma-r1 relative mt-4 rounded-[24px] overflow-hidden px-5 pt-5 pb-[22px]" style={{ background: 'rgba(255,255,255,.05)', border: '1px solid rgba(242,200,121,.3)' }}>
+          <p className="m-0 font-serif text-[24px] leading-[1.3] text-cream">{nitido}</p>
+          <p aria-hidden="true" className="m-0 mt-3 font-serif text-[20px] leading-[1.35] text-text-primary select-none max-h-[110px] overflow-hidden" style={{ filter: 'blur(5px)' }}>
+            {borrado || texto}
           </p>
-          <div
-            className="absolute bottom-0 left-0 right-0 h-24"
-            style={{ background: 'linear-gradient(transparent, var(--bg-primary))' }}
-          />
-        </div>
-        <div className="flex items-center gap-2 mt-2 text-text-secondary text-xs">
-          <LockIcon />
-          <span>Leitura completa bloqueada</span>
-        </div>
-      </div>
-
-      <Hairline className="mx-6 mt-2" />
-
-      <div className="flex-1 flex flex-col px-6 pt-4 pb-6 scroll-area gap-4">
-        {/* Título da oferta */}
-        <div>
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 300, color: 'var(--text-primary)', lineHeight: 1.3 }}>
-            Leitura Completa<br />
-            <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>por Madame Aurora</em>
-          </h2>
+          <div className="absolute inset-x-0 bottom-0 h-[90px] flex items-end justify-center pb-3.5" style={{ background: 'linear-gradient(180deg, rgba(12,16,49,0), rgba(12,16,49,.92))' }}>
+            <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-pill text-[13px] text-gold-light" style={{ background: 'rgba(242,200,121,.14)', border: '1px solid rgba(242,200,121,.5)' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFE3A8" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+              Leitura completa bloqueada
+            </span>
+          </div>
         </div>
 
-        {/* Features */}
-        <div className="flex flex-col gap-2">
+        <div className="alma-r2 flex items-center gap-3.5 mt-[30px]">
+          <AuroraAvatar tamanho={56} />
+          <div>
+            <h1 className="alma-display text-[32px] leading-none">Leitura Completa</h1>
+            <span className="font-serif italic text-[20px] alma-grad-text">por Madame Aurora</span>
+          </div>
+        </div>
+
+        <div className="alma-r2 flex flex-col gap-3 mt-5">
           {FEATURES.map((f) => (
-            <div key={f} className="flex items-start gap-3 text-sm text-text-primary">
-              <span className="mt-0.5 flex-shrink-0"><CheckIcon /></span>
-              {f}
+            <div key={f} className="flex items-start gap-3">
+              <span className="flex items-center justify-center w-6 h-6 rounded-full flex-shrink-0" style={{ background: 'linear-gradient(135deg, #FFE3A8, #E7B865)' }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2A1A05" strokeWidth="3" strokeLinecap="round" aria-hidden="true"><path d="M5 12l5 5 9-10" /></svg>
+              </span>
+              <span className="text-[15.5px] leading-[1.4] text-[#EDE6D6]">{f}</span>
             </div>
           ))}
         </div>
 
-        <Hairline />
-
-        {/* Preço */}
+        {/* Caixa de preço com pulso */}
         <div
-          style={{
-            padding: '16px', borderRadius: 8,
-            border: '1px solid var(--accent)',
-            background: 'rgba(124, 156, 228,0.06)',
-          }}
+          className="alma-r3 mt-[26px] px-5 py-[18px] rounded-[24px] flex items-center justify-between"
+          style={{ background: 'linear-gradient(180deg, rgba(28,33,86,.9), rgba(12,16,49,.95))', border: '1.5px solid rgba(242,200,121,.55)', boxShadow: '0 0 0 6px rgba(242,200,121,.06), 0 20px 60px rgba(124,92,255,.3)', animation: 'alma-rise .7s ease-out both .35s, alma-pulse 2.8s ease-in-out infinite 1.2s' }}
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}>
-                Pagamento único
-              </p>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-                Acesso vitalício, sem assinatura
-              </p>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <p style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 600, color: 'var(--accent)', lineHeight: 1 }}>
-                R$47
-              </p>
-            </div>
+          <div>
+            <div className="text-[15px] text-cream font-medium">Pagamento único</div>
+            <div className="text-[13px] text-text-muted mt-0.5">Acesso vitalício, sem assinatura</div>
+          </div>
+          <div className="flex items-start gap-[3px]">
+            <span className="text-[16px] mt-2 text-gold">R$</span>
+            <span className="font-serif text-[54px] leading-none font-semibold" style={{ background: 'linear-gradient(180deg, #FFF0CC, #E7B865 60%, #C98F35)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>47</span>
           </div>
         </div>
 
-        <Button variant="primary" fullWidth onClick={handleComprar}>
-          Revelar minha leitura completa
-        </Button>
-
-        <p className="text-xs text-text-muted text-center">
-          Pagamento seguro • Acesso imediato após confirmação
+        <button type="button" className="alma-btn alma-r3 mt-[18px]" onClick={handleComprar}>
+          <span>Revelar minha leitura completa</span>
+        </button>
+        <p className="mt-3 flex items-center justify-center gap-1.5 text-center text-[12px] text-[#8E89AE]">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#3FD6C2" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6z" /></svg>
+          Pagamento seguro · Acesso imediato após confirmação
         </p>
-
         {onSkip && (
-          <button
-            className="text-xs text-text-muted underline underline-offset-2 text-center"
-            onClick={onSkip}
-          >
+          <button type="button" className="flex items-center justify-center min-h-11 mt-1.5 text-[14px] text-text-muted" onClick={onSkip}>
             Talvez depois
           </button>
         )}

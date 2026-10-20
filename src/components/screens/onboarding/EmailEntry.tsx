@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button } from '@/components/ui'
+import { BotaoVoltar, SetaCta, Spinner, semSeta } from '@/components/ui'
+import { useFundo } from '@/components/ui/AuroraFundo'
 import { supabase } from '@/lib/supabase'
 
 interface Props {
@@ -9,11 +10,31 @@ interface Props {
   isLogin?: boolean
 }
 
+/** Envelope flutuando (login e verificação). Referência: app/reference/L03-Login */
+export function IconeEnvelope() {
+  return (
+    <div
+      aria-hidden="true"
+      className="flex items-center justify-center"
+      style={{
+        width: 74, height: 74, borderRadius: 22, animation: 'alma-floaty 5s ease-in-out infinite',
+        background: 'linear-gradient(135deg, rgba(242,200,121,.25), rgba(124,92,255,.25))',
+        border: '1px solid rgba(242,200,121,.45)', boxShadow: '0 10px 40px rgba(124,92,255,.35)',
+      }}
+    >
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#FFE3A8" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="5" width="18" height="14" rx="3" /><path d="M3.5 7l8.5 6 8.5-6" />
+      </svg>
+    </div>
+  )
+}
+
 export function EmailEntry({ onSuccess, onBack, isLogin }: Props) {
   const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  useFundo('login')
 
   const handleSend = async () => {
     const trimmed = email.trim().toLowerCase()
@@ -40,55 +61,40 @@ export function EmailEntry({ onSuccess, onBack, isLogin }: Props) {
   }
 
   return (
-    <div className="h-full flex flex-col px-6 pt-6 pb-8">
-      <button onClick={onBack} className="text-text-secondary active:text-text-primary transition-colors mb-8 self-start">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M19 12H5M11 5l-7 7 7 7" />
-        </svg>
-      </button>
+    <div className="h-full flex flex-col px-6 pt-[calc(22px+env(safe-area-inset-top,0px))] pb-[30px] overflow-y-auto no-scrollbar">
+      <BotaoVoltar onClick={onBack} />
 
-      <div className="flex-1 flex flex-col justify-center gap-8">
-        <div className="flex flex-col gap-3">
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 34, fontWeight: 300, lineHeight: 1.2, color: 'var(--text-primary)' }}>
-            {isLogin
-              ? <>{t('emailEntry.titleReturning')}<br /><em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>{t('emailEntry.titleReturningItalic')}</em></>
-              : <>{t('emailEntry.titleNew')}<br /><em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>{t('emailEntry.titleNewItalic')}</em></>}
-          </h2>
-          <p style={{ fontSize: 14, color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)', lineHeight: 1.6 }}>
-            {isLogin ? t('emailEntry.subtitleReturning') : t('emailEntry.subtitleNew')}
-          </p>
-        </div>
+      <div className="mt-[70px]"><IconeEnvelope /></div>
 
-        <div className="flex flex-col gap-3">
-          <input
-            type="email"
-            inputMode="email"
-            autoFocus
-            value={email}
-            onChange={(e) => { setEmail(e.target.value); setError(null) }}
-            placeholder={t('emailEntry.placeholder')}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            style={{
-              background: 'var(--bg-surface)',
-              border: `1px solid ${error ? '#8B4040' : email ? 'var(--accent)' : 'var(--border-subtle)'}`,
-              borderRadius: 8,
-              padding: '14px 16px',
-              fontSize: 16,
-              color: 'var(--text-primary)',
-              fontFamily: 'var(--font-sans)',
-              outline: 'none',
-              width: '100%',
-            }}
-          />
-          {error && (
-            <p style={{ fontSize: 13, color: '#8B4040', fontFamily: 'var(--font-sans)' }}>{error}</p>
-          )}
-        </div>
+      <div className="flex flex-col" style={{ animation: 'alma-rise .5s ease-out both' }}>
+        <h1 className="alma-display mt-[26px] text-[38px] leading-[1.05]">
+          {isLogin ? t('emailEntry.titleReturning') : t('emailEntry.titleNew')}
+          <br />
+          <span className="alma-grad-text">{isLogin ? t('emailEntry.titleReturningItalic') : t('emailEntry.titleNewItalic')}</span>
+        </h1>
+        <p className="mt-3.5 text-[15px] leading-[1.5] text-text-secondary">
+          {isLogin ? t('emailEntry.subtitleReturning') : t('emailEntry.subtitleNew')}
+        </p>
+
+        <input
+          type="email"
+          inputMode="email"
+          autoFocus
+          aria-label={t('emailEntry.placeholder')}
+          value={email}
+          onChange={(e) => { setEmail(e.target.value); setError(null) }}
+          placeholder={t('emailEntry.placeholder')}
+          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+          className="alma-input w-full mt-7"
+          style={{ height: 58, padding: '0 18px', borderRadius: 18, fontSize: 17, backdropFilter: 'blur(8px)', ...(error ? { borderColor: 'var(--danger)' } : {}) }}
+        />
+        {error && <p role="alert" className="mt-2.5 text-[13px] text-status-error">{error}</p>}
       </div>
 
-      <Button variant="primary" fullWidth loading={loading} disabled={!email.trim()} onClick={handleSend}>
-        {t('emailEntry.sendCode')}
-      </Button>
+      <div className="flex-grow min-h-6" />
+      <button type="button" className="alma-btn" disabled={!email.trim() || loading} onClick={handleSend} style={{ opacity: !email.trim() ? 0.55 : 1 }}>
+        {loading ? <Spinner size={18} /> : <><span>{semSeta(t('emailEntry.sendCode'))}</span><SetaCta /></>}
+      </button>
     </div>
   )
 }

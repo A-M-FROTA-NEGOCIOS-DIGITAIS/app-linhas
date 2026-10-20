@@ -1,4 +1,4 @@
-import React, { useState, forwardRef } from 'react'
+import React, { forwardRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 
@@ -11,21 +11,27 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = 'primary', fullWidth, loading, className, children, disabled, ...props }, ref) => {
-    const base =
-      'inline-flex items-center justify-center gap-2 font-sans text-sm font-medium tracking-tight rounded-md transition-all duration-300 ease-out-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 disabled:opacity-45 disabled:cursor-not-allowed select-none'
+    // Visual aurora: primário = pílula dourada com brilho passando (.alma-btn);
+    // secundário = contorno dourado (.alma-btn-secondary); ghost = texto discreto.
     const variants = {
-      primary:   'bg-accent text-bg-primary border border-accent hover:bg-accent-deep hover:border-accent-deep active:opacity-80',
-      secondary: 'bg-transparent text-accent border border-accent hover:bg-accent/10 active:opacity-80',
-      ghost:     'bg-transparent text-text-secondary border border-transparent hover:text-text-primary active:opacity-80',
+      primary: 'alma-btn',
+      secondary: 'alma-btn-secondary px-6',
+      ghost: 'inline-flex items-center justify-center gap-2 h-12 px-4 rounded-pill bg-transparent border border-transparent font-sans text-[15px] text-text-secondary hover:text-text-primary',
     }
     return (
       <button
         ref={ref}
         disabled={disabled || loading}
-        className={cn(base, variants[variant], fullWidth && 'w-full', 'py-[14px] px-6', className)}
+        className={cn(
+          variants[variant],
+          variant !== 'primary' && fullWidth && 'w-full',
+          variant === 'primary' && !fullWidth && 'w-auto px-8',
+          'select-none transition-all duration-300 disabled:opacity-45 disabled:cursor-not-allowed',
+          className,
+        )}
         {...props}
       >
-        {loading ? <Spinner size={16} /> : children}
+        {loading ? <Spinner size={18} /> : variant === 'primary' ? <span className="inline-flex items-center gap-2.5">{children}</span> : children}
       </button>
     )
   }
@@ -44,7 +50,6 @@ interface FieldProps {
 }
 
 export function Field({ label, value, onChange, placeholder, type = 'text', error, required }: FieldProps) {
-  const [focused, setFocused] = useState(false)
   return (
     <div className="flex flex-col gap-1.5">
       {label && <Eyebrow>{label}{required && <span className="text-accent ml-1">*</span>}</Eyebrow>}
@@ -53,19 +58,9 @@ export function Field({ label, value, onChange, placeholder, type = 'text', erro
         value={value ?? ''}
         placeholder={placeholder}
         onChange={(e) => onChange?.(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        className={cn(
-          'bg-bg-surface rounded-md px-4 py-[14px] text-base text-text-primary font-sans outline-none transition-all duration-300',
-          'border placeholder:text-text-muted',
-          error
-            ? 'border-status-error/70'
-            : focused
-            ? 'border-accent shadow-[0_0_0_2px_rgba(124, 156, 228,0.18)]'
-            : 'border-border-subtle',
-        )}
+        className={cn('alma-input w-full', error && '!border-status-error/70')}
       />
-      {error && <p className="text-xs text-status-error/80">{error}</p>}
+      {error && <p className="text-xs text-status-error">{error}</p>}
     </div>
   )
 }
@@ -83,9 +78,9 @@ export function Card({ children, onClick, className, goldBorder }: CardProps) {
     <div
       onClick={onClick}
       className={cn(
-        'bg-bg-surface rounded-md border transition-all duration-300',
-        goldBorder ? 'border-accent/50' : 'border-border-subtle hover:border-border-medium',
-        onClick && 'cursor-pointer active:opacity-80',
+        'alma-glass transition-all duration-300',
+        goldBorder ? '!border-[rgba(242,200,121,0.35)]' : 'hover:border-border-medium',
+        onClick && 'cursor-pointer hover:-translate-y-0.5 active:opacity-80',
         className,
       )}
     >
@@ -97,7 +92,7 @@ export function Card({ children, onClick, className, goldBorder }: CardProps) {
 // ── Eyebrow ───────────────────────────────────────────────────────────────────
 export function Eyebrow({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn('text-xs font-medium tracking-widest uppercase text-accent font-sans', className)}>
+    <div className={cn('alma-eyebrow', className)}>
       {children}
     </div>
   )
@@ -140,15 +135,7 @@ interface ChipProps {
 
 export function Chip({ children, active, onClick }: ChipProps) {
   return (
-    <button
-      onClick={onClick}
-      className={cn(
-        'text-xs font-sans tracking-wide px-3 py-1.5 rounded-pill border transition-all duration-300',
-        active
-          ? 'border-accent text-accent'
-          : 'border-border-subtle text-text-secondary',
-      )}
-    >
+    <button type="button" onClick={onClick} aria-pressed={!!active} className="alma-chip">
       {children}
     </button>
   )
@@ -165,14 +152,14 @@ export function TopBar({ title, onBack, right }: TopBarProps) {
   return (
     <div className="flex items-center gap-3 px-5 py-3.5 min-h-[48px]">
       {onBack && (
-        <button onClick={onBack} className="text-text-secondary active:text-text-primary transition-colors">
+        <button onClick={onBack} aria-label="Voltar" className="flex items-center justify-center w-10 h-10 -ml-2 rounded-full text-gold-text hover:bg-white/5 transition-colors">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M11 5l-7 7 7 7" />
           </svg>
         </button>
       )}
       {title && (
-        <div className="flex-1 text-xs font-medium tracking-widest uppercase text-text-secondary font-sans">
+        <div className="flex-1 alma-label">
           {title}
         </div>
       )}
@@ -191,29 +178,29 @@ export interface TabDef {
 // Ícones prontos reaproveitáveis por qualquer tela que monte seu próprio TabBar
 export const TabBarIcons = {
   today: ({ size = 22 }: { size?: number }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="3.5" /><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
     </svg>
   ),
   readings: ({ size = 22 }: { size?: number }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M2 5.5c3-1.2 6.5-1 10 1.2 3.5-2.2 7-2.4 10-1.2V19c-3-1.2-6.5-1-10 1.2C8.5 18 5 17.8 2 19z" /><path d="M12 6.7v13.5" />
     </svg>
   ),
   aurora: ({ size = 22 }: { size?: number }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2L9.09 8.26 2 9.27l5 4.87-1.18 6.88L12 17.77l6.18 3.25L17 14.14l5-4.87-7.09-1.01z" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z" />
     </svg>
   ),
   you: ({ size = 22 }: { size?: number }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-7 8-7s8 3 8 7" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
+      <circle cx="12" cy="8" r="4" /><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" />
     </svg>
   ),
   grid: ({ size = 22 }: { size?: number }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" />
-      <rect x="14" y="14" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
+      <rect x="4" y="4" width="6.5" height="6.5" rx="1.5" /><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" />
+      <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" /><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" />
     </svg>
   ),
 }
@@ -238,24 +225,19 @@ export function TabBar({ active, onChange, tabs }: TabBarProps) {
     label: t(`tabBar.${tab.id}`),
   }))
   return (
-    <div className="absolute left-3 right-3 bottom-3 bg-bg-primary/80 backdrop-blur-xl border border-border-subtle rounded-[28px] px-2 py-3 flex justify-around z-10">
-      {resolvedTabs.map(({ id, icon: Icon, label }) => {
-        const isActive = active === id
-        return (
-          <button
-            key={id}
-            onClick={() => onChange(id)}
-            className={cn(
-              'flex flex-col items-center gap-1 px-3 py-1.5 transition-colors duration-300',
-              isActive ? 'text-accent' : 'text-text-secondary',
-            )}
-          >
-            <Icon size={22} />
-            <span className="text-[9px] font-sans tracking-[0.16em] uppercase">{label}</span>
-          </button>
-        )
-      })}
-    </div>
+    <nav aria-label="Navegação principal" className="alma-tabbar" style={{ ['--abas' as string]: resolvedTabs.length }}>
+      {resolvedTabs.map(({ id, icon: Icon, label }) => (
+        <button
+          key={id}
+          type="button"
+          onClick={() => onChange(id)}
+          aria-current={active === id ? 'page' : undefined}
+        >
+          <Icon size={22} />
+          <span>{label}</span>
+        </button>
+      ))}
+    </nav>
   )
 }
 
@@ -275,10 +257,10 @@ export function Toast({ message, type = 'default', onDismiss }: ToastProps) {
   return (
     <div
       className={cn(
-        'fixed top-4 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-md border text-sm font-sans animate-fade-up',
+        'fixed top-4 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-pill border text-sm font-sans animate-fade-up backdrop-blur-xl',
         type === 'error'
-          ? 'bg-status-error/20 border-status-error/40 text-text-primary'
-          : 'bg-bg-elevated border-border-subtle text-text-primary',
+          ? 'bg-[rgba(255,157,176,0.15)] border-[rgba(255,157,176,0.45)] text-text-primary'
+          : 'bg-[rgba(12,16,49,0.85)] border-[rgba(242,200,121,0.35)] text-text-primary',
       )}
     >
       {message}
@@ -288,3 +270,32 @@ export function Toast({ message, type = 'default', onDismiss }: ToastProps) {
 
 // ── utils ─────────────────────────────────────────────────────────────────────
 export { cn }
+
+// ── BotaoVoltar ───────────────────────────────────────────────────────────────
+/** Seta de voltar das telas do fluxo (referências L02–L06). */
+export function BotaoVoltar({ onClick, className }: { onClick: () => void; className?: string }) {
+  const { t } = useTranslation()
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={t('common.back')}
+      className={cn('w-11 h-11 -ml-2.5 flex items-center justify-center flex-shrink-0', className)}
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9C3DD" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+        <path d="M19 12H5M11 6l-6 6 6 6" />
+      </svg>
+    </button>
+  )
+}
+
+/** Seta → do botão dourado. Os textos antigos que terminam em "→" usam semSeta(). */
+export function SetaCta() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2A1A05" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
+  )
+}
+
+export const semSeta = (texto: string) => texto.replace(/\s*→\s*$/, '')

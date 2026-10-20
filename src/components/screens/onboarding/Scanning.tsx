@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui'
-import { AuroraRetrato } from '@/components/ui/Aurora'
+import { useFundo } from '@/components/ui/AuroraFundo'
+import { OrbitaAurora, EtapasEspera } from '@/components/ui/Orbita'
 
 interface Props {
   onComplete: (analysis: unknown) => void
@@ -47,6 +48,7 @@ export function Scanning({ onComplete, imageDataUrl, userId, onBack, handType = 
   const [tentativa, setTentativa] = useState(0)
   const tentativaAnalisadaRef = useRef(-1)
   const onCompleteRef = useRef(onComplete)
+  useFundo('scan')
   onCompleteRef.current = onComplete
 
   const MESSAGES = [
@@ -125,16 +127,18 @@ export function Scanning({ onComplete, imageDataUrl, userId, onBack, handType = 
 
     return (
       <div className="h-full flex flex-col items-center justify-center px-8 gap-6">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#8B4040" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" />
-        </svg>
+        <div className="alma-card flex items-center justify-center w-[74px] h-[74px] !rounded-[22px]" style={{ borderColor: 'rgba(255,157,176,.45)' }}>
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#FF9DB0" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" />
+          </svg>
+        </div>
         <div className="text-center">
-          <p className="text-base text-text-primary mb-2">
+          <p className="alma-display text-[28px] mb-2">
             {chaveImagem ? t(chaveImagem) : t('scanning.errorGeneric')}
           </p>
-          {chaveImagem && <p className="text-sm text-text-secondary">{t('scanning.errorHint')}</p>}
+          {chaveImagem && <p className="text-[15px] text-text-secondary">{t('scanning.errorHint')}</p>}
         </div>
-        <div className="w-full max-w-[280px] flex flex-col gap-2">
+        <div className="w-full flex flex-col gap-2">
           <Button variant="primary" fullWidth onClick={primaria.onClick}>{primaria.label}</Button>
           {secundaria && (
             <Button variant="ghost" fullWidth onClick={secundaria.onClick}>{secundaria.label}</Button>
@@ -144,26 +148,21 @@ export function Scanning({ onComplete, imageDataUrl, userId, onBack, handType = 
     )
   }
 
+  // Padrão do Processando do quiz: órbitas com o retrato no núcleo, frase em itálico,
+  // barra de progresso aurora e as etapas da leitura.
+  const etapas = MESSAGES.slice(1)
   return (
-    <div className="h-full flex flex-col items-center justify-center px-8 gap-10" style={{ background: 'radial-gradient(ellipse at 50% 40%, rgba(124, 156, 228,0.06), transparent 60%)' }}>
-      <div className="relative flex items-center justify-center" style={{ width: 160, height: 160 }}>
-        <svg width="160" height="160" viewBox="0 0 160 160" className="absolute animate-spin-slow">
-          <circle cx="80" cy="80" r="78" stroke="#7C9CE4" strokeWidth="0.5" strokeDasharray="8 6" opacity="0.4"/>
-        </svg>
-        <svg width="140" height="140" viewBox="0 0 140 140" className="absolute" style={{ animation: 'spin-slow 4s linear infinite reverse' }}>
-          <circle cx="70" cy="70" r="68" stroke="#7C9CE4" strokeWidth="0.8" strokeDasharray="4 8" opacity="0.3"/>
-        </svg>
-        <AuroraRetrato tamanho={104} />
+    <div className="h-full flex flex-col items-center px-7 pt-[calc(60px+env(safe-area-inset-top,0px))] pb-10 overflow-y-auto no-scrollbar">
+      <div className="font-serif text-[18px] tracking-[9px] pl-[9px] text-gold-text">ALMA</div>
+      <div className="mt-8"><OrbitaAurora tamanho={280} /></div>
+      <h1 key={msgIndex} className="alma-display mt-7 text-center text-[28px] italic" style={{ animation: 'alma-reveal .8s ease-out both' }}>
+        {MESSAGES[0]}
+      </h1>
+      <div className="alma-progress w-full mt-[22px] overflow-hidden">
+        <div className="alma-progress__fill transition-[width] duration-700" style={{ width: `${progress}%` }} />
       </div>
-
-      <div className="text-center flex flex-col gap-3" key={msgIndex} style={{ animation: 'fade-in 400ms ease forwards' }}>
-        <p style={{ fontFamily: 'var(--font-serif)', fontSize: 20, fontWeight: 400, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
-          {MESSAGES[msgIndex]}
-        </p>
-      </div>
-
-      <div className="w-full max-w-[220px] h-px bg-border-subtle rounded-full overflow-hidden">
-        <div className="h-full bg-accent rounded-full transition-all duration-700" style={{ width: `${progress}%` }} />
+      <div className="w-full mt-[26px]">
+        <EtapasEspera etapas={etapas} atual={Math.min(msgIndex, etapas.length - 1)} />
       </div>
     </div>
   )

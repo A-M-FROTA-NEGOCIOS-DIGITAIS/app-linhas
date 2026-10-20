@@ -1,33 +1,32 @@
+@import './styles/alma-tokens.css';
+@import './styles/alma-app.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@font-face {
-  font-family: 'Tenor Sans';
-  src: url('/fonts/TenorSans-Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
+/*
+ * Variáveis antigas do app, agora apontando para o visual aurora (mesmo do funil,
+ * styles/alma-tokens.css). As telas que ainda usam var(--accent), var(--bg-surface)
+ * etc. passam a ter o dourado, o vidro e os tons creme sem precisar mexer em cada uma.
+ */
 :root {
-  --bg-primary:    #070A14;
-  --bg-surface:    #0E1322;
-  --bg-elevated:   #171E33;
-  --text-primary:   #EEF1F8;
-  --text-secondary: #929BB2;
-  --text-muted:     #565E75;
-  --accent:        #7C9CE4;
-  --accent-deep:   #4661B0;
-  --accent-soft:   #2C3A63;
-  --color-success: #6E8FA8;
-  --color-error:   #8B4040;
-  --border-subtle: rgba(124, 156, 228, 0.15);
-  --border-medium: rgba(124, 156, 228, 0.30);
-  --border-strong: rgba(124, 156, 228, 0.55);
-  --font-serif:    'Cormorant Garamond', Georgia, serif;
-  --font-sans:     'Inter', system-ui, sans-serif;
-  --font-display:  'Tenor Sans', serif;
+  --bg-primary:    var(--night-0);
+  --bg-surface:    var(--glass);
+  --bg-elevated:   rgba(255, 255, 255, 0.09);
+  --text-primary:   var(--text);
+  --text-secondary: var(--text-2);
+  --text-muted:     var(--text-3);
+  --accent:        var(--gold);
+  --accent-deep:   var(--gold-deep);
+  --accent-soft:   rgba(242, 200, 121, 0.18);
+  --color-success: var(--teal);
+  --color-error:   var(--danger);
+  --border-subtle: var(--glass-border);
+  --border-medium: rgba(242, 200, 121, 0.30);
+  --border-strong: rgba(242, 200, 121, 0.55);
+  --font-serif:    var(--font-display);
+  --font-sans:     var(--font-ui);
   --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
   --dur-fast:   180ms;
   --dur-base:   300ms;
@@ -47,9 +46,9 @@ html, body, #root {
 }
 
 body {
-  background: var(--bg-primary);
+  background: var(--night-0);
   color: var(--text-primary);
-  font-family: var(--font-sans);
+  font-family: var(--font-ui);
   font-size: 15px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -64,12 +63,14 @@ input, textarea, select {
   font-size: 16px;
 }
 
+/* Coluna central de até 440px sobre o fundo aurora em tela cheia (desktop). */
 #root {
   display: flex;
   flex-direction: column;
-  max-width: 430px;
+  max-width: 440px;
   margin: 0 auto;
   position: relative;
+  z-index: 1;
   overflow: hidden;
 }
 
@@ -80,6 +81,8 @@ input, textarea, select {
   scrollbar-width: none;
 }
 .scroll-area::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
 
 /* Typewriter animation */
 @keyframes blink {
@@ -94,10 +97,9 @@ input, textarea, select {
 
 /* Reading typography */
 .reading-text {
-  font-family: var(--font-serif);
-  font-size: 17px;
-  line-height: 1.75;
-  letter-spacing: -0.01em;
-  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: 19px;
+  line-height: 1.7;
+  color: var(--text);
 }
 .reading-text p + p { margin-top: 20px; }

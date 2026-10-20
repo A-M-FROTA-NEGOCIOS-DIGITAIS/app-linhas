@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, Eyebrow } from '@/components/ui'
+import { BotaoVoltar, SetaCta } from '@/components/ui'
+import { useFundo } from '@/components/ui/AuroraFundo'
 import type { Intention } from '@/types'
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
 export function IntentionScreen({ onContinue, onBack, initialValue, eyebrow }: Props) {
   const { t } = useTranslation()
   const [selected, setSelected] = useState<Intention | null>(initialValue ?? null)
+  useFundo('pergunta')
 
   const OPTIONS: { value: Intention; label: string; sub: string; icon: React.ReactNode }[] = [
     {
@@ -81,58 +83,45 @@ export function IntentionScreen({ onContinue, onBack, initialValue, eyebrow }: P
   ]
 
   return (
-    <div className="h-full flex flex-col px-6 pt-6 pb-8">
-      {onBack && (
-        <button onClick={onBack} className="text-text-secondary active:text-text-primary transition-colors self-start mb-4">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M11 5l-7 7 7 7" />
-          </svg>
-        </button>
-      )}
-      <div className="flex flex-col gap-3 mb-8">
-        <Eyebrow>{eyebrow ?? t('intention.eyebrow')}</Eyebrow>
-        <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 30, fontWeight: 300, lineHeight: 1.2, letterSpacing: '-0.01em', color: 'var(--text-primary)' }}>
+    <div className="h-full flex flex-col px-6 pt-[calc(22px+env(safe-area-inset-top,0px))] pb-[26px]">
+      {onBack && <BotaoVoltar onClick={onBack} />}
+      <div className="alma-r1 flex flex-col gap-2 mt-3 mb-6">
+        <span className="text-[12px] tracking-[2px] uppercase text-gold">{eyebrow ?? t('intention.eyebrow')}</span>
+        <h1 className="alma-display text-[34px]">
           {t('intention.title')}<br />
-          <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>{t('intention.titleItalic')}</em>
-        </h2>
-        <p style={{ fontSize: 14, color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)', lineHeight: 1.55 }}>
-          {t('intention.subtitle')}
-        </p>
+          <span className="alma-grad-text">{t('intention.titleItalic')}</span>
+        </h1>
+        <p className="text-[14px] leading-[1.55] text-text-muted">{t('intention.subtitle')}</p>
       </div>
 
-      <div className="flex-1 flex flex-col gap-2.5 overflow-y-auto scroll-area -mx-1 px-1">
+      <div className="alma-r2 flex-1 flex flex-col gap-2.5 overflow-y-auto scroll-area -mx-1 px-1">
         {OPTIONS.map(({ value, label, sub, icon }) => {
           const isActive = selected === value
           return (
-            <button
-              key={value}
-              onClick={() => setSelected(value)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left',
-                padding: '14px 16px', borderRadius: 8,
-                border: `1px solid ${isActive ? 'var(--accent)' : 'var(--border-subtle)'}`,
-                background: isActive ? 'rgba(124, 156, 228,0.07)' : 'var(--bg-surface)',
-                transition: 'all 0.2s ease', width: '100%', cursor: 'pointer',
-              }}
-            >
-              <span style={{ color: isActive ? 'var(--accent)' : 'var(--text-muted)', flexShrink: 0, transition: 'color 0.2s' }}>{icon}</span>
-              <span className="flex-1 min-w-0">
-                <span style={{ display: 'block', fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 500, color: isActive ? 'var(--accent)' : 'var(--text-primary)', transition: 'color 0.2s' }}>{label}</span>
-                <span style={{ display: 'block', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--text-secondary)', marginTop: 2, lineHeight: 1.4 }}>{sub}</span>
+            <button key={value} type="button" aria-pressed={isActive} onClick={() => setSelected(value)} className="alma-option" style={{ backdropFilter: 'blur(8px)' }}>
+              <span
+                className="flex items-center justify-center flex-shrink-0 rounded-full"
+                style={{
+                  width: 34, height: 34,
+                  ...(isActive
+                    ? { background: 'linear-gradient(135deg, #FFE3A8, #E7B865)', color: '#2A1A05' }
+                    : { background: 'rgba(242,200,121,.1)', color: '#F2C879', boxShadow: 'inset 0 0 0 1px rgba(242,200,121,.35)' }),
+                }}
+              >
+                {icon}
               </span>
-              <span style={{ width: 18, height: 18, borderRadius: '50%', border: `1.5px solid ${isActive ? 'var(--accent)' : 'var(--border-medium)'}`, background: isActive ? 'var(--accent)' : 'transparent', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
-                {isActive && <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--bg-primary)' }} />}
+              <span className="flex-1 min-w-0">
+                <span className="block text-[15.5px] font-medium text-text-primary">{label}</span>
+                <span className="block mt-0.5 text-[13px] leading-[1.4] text-text-muted">{sub}</span>
               </span>
             </button>
           )
         })}
       </div>
 
-      <div className="pt-6">
-        <Button variant="primary" fullWidth disabled={!selected} onClick={() => selected && onContinue(selected)}>
-          {t('common.continue')}
-        </Button>
-      </div>
+      <button type="button" className="alma-btn mt-5" disabled={!selected} style={{ height: 56, opacity: selected ? 1 : 0.55 }} onClick={() => selected && onContinue(selected)}>
+        <span>{t('common.continue')}</span><SetaCta />
+      </button>
     </div>
   )
 }

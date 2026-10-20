@@ -4,36 +4,43 @@ export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      // Visual aurora (styles/alma-tokens.css): dourado no lugar do azul, vidro nos cartões.
       colors: {
         bg: {
-          primary: '#070A14',
-          surface: '#0E1322',
-          elevated: '#171E33',
+          primary: '#05071A',
+          surface: 'rgba(255,255,255,0.055)',
+          elevated: 'rgba(255,255,255,0.09)',
         },
         accent: {
-          DEFAULT: '#7C9CE4',
-          deep: '#4661B0',
-          soft: '#2C3A63',
+          DEFAULT: '#F2C879',
+          deep: '#C98F35',
+          soft: '#3A3020',
         },
         text: {
-          primary: '#EEF1F8',
-          secondary: '#929BB2',
-          muted: '#565E75',
+          primary: '#F6EEDD',
+          secondary: '#D4CFE6',
+          muted: '#B7B1D0',
         },
         border: {
-          subtle: 'rgba(124,156,228,0.15)',
-          medium: 'rgba(124,156,228,0.30)',
-          strong: 'rgba(124,156,228,0.55)',
+          subtle: 'rgba(255,255,255,0.12)',
+          medium: 'rgba(242,200,121,0.30)',
+          strong: 'rgba(242,200,121,0.55)',
         },
         status: {
-          success: '#6E8FA8',
-          error: '#8B4040',
+          success: '#3FD6C2',
+          error: '#FF9DB0',
         },
+        gold: { DEFAULT: '#F2C879', light: '#FFE3A8', text: '#F2D9A6', deep: '#C98F35' },
+        rose: { DEFAULT: '#E26AA0', soft: '#F49AC1', text: '#F7C9DD' },
+        violet: { DEFAULT: '#7C5CFF', soft: '#9C86FF', text: '#CFC4FF' },
+        teal: { DEFAULT: '#3FD6C2', soft: '#7FF0DD', text: '#9FF0E2' },
+        cream: '#FBF4E4',
+        ink: '#2A1A05',
       },
       fontFamily: {
-        serif: ['"Cormorant Garamond"', 'Cormorant', 'Georgia', 'serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['"Tenor Sans"', 'serif'],
+        serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        sans: ['Jost', 'system-ui', 'sans-serif'],
+        display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
       },
       fontSize: {
         'xs':   ['11px', { lineHeight: '14px' }],

@@ -41,8 +41,10 @@ export function getMoonPhase(): string {
   return 'waningCrescent'
 }
 
+/** Signo (nome em inglês, chave de tradução em zodiac.*). A data AAAA-MM-DD é lida como dia
+ * local: new Date('1992-03-21') é meia-noite UTC, que no Brasil ainda é dia 20. */
 export function getZodiacSign(date: string): string {
-  const d = new Date(date)
+  const d = new Date(/^\d{4}-\d{2}-\d{2}$/.test(date) ? `${date}T00:00:00` : date)
   const m = d.getMonth() + 1
   const day = d.getDate()
   if ((m === 3 && day >= 21) || (m === 4 && day <= 19)) return 'Aries'
@@ -79,4 +81,10 @@ export function compressImage(file: File, maxSize = 1024, quality = 0.85): Promi
     img.onerror = reject
     img.src = url
   })
+}
+
+/** Símbolo de cada signo (para a linha do perfil). */
+export const SIMBOLO_SIGNO: Record<string, string> = {
+  Aries: '♈︎', Taurus: '♉︎', Gemini: '♊︎', Cancer: '♋︎', Leo: '♌︎', Virgo: '♍︎',
+  Libra: '♎︎', Scorpio: '♏︎', Sagittarius: '♐︎', Capricorn: '♑︎', Aquarius: '♒︎', Pisces: '♓︎',
 }

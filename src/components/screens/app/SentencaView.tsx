@@ -1,3 +1,5 @@
+import { BotaoVoltar } from '@/components/ui'
+import { useFundo } from '@/components/ui/AuroraFundo'
 import type { Reading } from '@/types'
 
 interface Props {
@@ -5,13 +7,8 @@ interface Props {
   onBack: () => void
 }
 
-const BackIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M19 12H5M11 5l-7 7 7 7" />
-  </svg>
-)
-
 export function SentencaView({ reading, onBack }: Props) {
+  useFundo('revelacao')
   const handleDownload = () => {
     if (!reading.imagem_url) return
     const a = document.createElement('a')
@@ -21,42 +18,29 @@ export function SentencaView({ reading, onBack }: Props) {
   }
 
   return (
-    <div className="h-full flex flex-col px-6 pt-12 pb-8">
-      <button onClick={onBack} className="text-text-secondary active:text-text-primary transition-colors mb-6 self-start">
-        <BackIcon />
-      </button>
+    <div className="h-full flex flex-col px-6 pt-[calc(22px+env(safe-area-inset-top,0px))] pb-8">
+      <BotaoVoltar onClick={onBack} />
 
-      <p style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)', fontFamily: 'var(--font-sans)', marginBottom: 8 }}>
-        A Sentença
-      </p>
-      <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 24, fontWeight: 300, color: 'var(--text-primary)', marginBottom: 24 }}>
-        Sua leitura em uma frase.
+      <p className="alma-r1 alma-eyebrow mt-5">A Sentença</p>
+      <h1 className="alma-r1 alma-display mt-2 text-[32px]">
+        Sua leitura em <span className="alma-grad-text">uma frase.</span>
       </h1>
 
-      <div className="flex-1 flex items-center justify-center">
+      <div className="alma-r2 flex-1 flex items-center justify-center py-6">
         {reading.imagem_url ? (
-          <img
-            src={reading.imagem_url}
-            alt="Sua Sentença"
-            style={{ maxWidth: '100%', maxHeight: '60vh', borderRadius: 12, border: '1px solid var(--border-subtle)' }}
-          />
+          <div className="alma-aurora-border" style={{ boxShadow: '0 20px 60px rgba(124,92,255,.3)' }}>
+            <img src={reading.imagem_url} alt="Sua Sentença" className="block max-w-full rounded-[25px]" style={{ maxHeight: '58vh' }} />
+          </div>
         ) : (
-          <p style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontStyle: 'italic', color: 'var(--accent)', textAlign: 'center' }}>
+          <p className="font-serif italic text-[28px] leading-[1.3] text-center alma-grad-text">
             {reading.full_content}
           </p>
         )}
       </div>
 
       {reading.imagem_url && (
-        <button
-          onClick={handleDownload}
-          style={{
-            marginTop: 24, padding: '12px 24px', borderRadius: 6,
-            border: '1px solid var(--accent)', color: 'var(--accent)',
-            fontFamily: 'var(--font-sans)', fontSize: 14, background: 'transparent',
-          }}
-        >
-          Baixar para compartilhar
+        <button type="button" className="alma-btn" onClick={handleDownload}>
+          <span>Baixar para compartilhar</span>
         </button>
       )}
     </div>
