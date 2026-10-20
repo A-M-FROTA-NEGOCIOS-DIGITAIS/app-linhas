@@ -10,7 +10,7 @@
       <stop offset="0" stop-color="#FFE3A8"/><stop offset=".6" stop-color="#E7B865"/><stop offset="1" stop-color="#F49AC1"/>
     </linearGradient>
     <radialGradient id="halo"><stop offset="0" stop-color="#F2C879" stop-opacity=".45"/><stop offset=".55" stop-color="#E26AA0" stop-opacity=".12"/><stop offset="1" stop-color="#E26AA0" stop-opacity="0"/></radialGradient>
-    <clipPath id="forma"><rect width="512" height="512" rx="112"/></clipPath>
+    <clipPath id="forma"><rect width="512" height="512" rx="0"/></clipPath>
   </defs>
   <g clip-path="url(#forma)">
     <rect width="512" height="512" fill="url(#ceu)"/>

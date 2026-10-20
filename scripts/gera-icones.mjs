@@ -51,21 +51,23 @@ const normal = icone({ raio: 112, escala: 15 })
 // Maskable: o sistema pode recortar em círculo, então o fundo vai até a borda e a lua
 // encolhe para caber na zona segura de 80%.
 const maskable = icone({ raio: 0, escala: 12 })
+// iPhone: ele mesmo arredonda os cantos; com canto próprio sobram bordas pretas.
+const apple = icone({ raio: 0, escala: 15 })
 // Favicon: lua maior, para ler em 16–32px.
 const favicon = icone({ raio: 112, escala: 17 })
 
 writeFileSync('public/icons/app-icon.svg', favicon)
-writeFileSync('public/icons/apple-touch-icon.svg', normal)
+writeFileSync('public/icons/apple-touch-icon.svg', apple)
 
 const saidas = [
   ['public/icons/icon-512.png', normal, 512],
   ['public/icons/icon-192.png', normal, 192],
-  ['public/icons/apple-touch-icon.png', normal, 180],
+  ['public/icons/apple-touch-icon.png', apple, 180],
   ['public/icons/icon-maskable.png', maskable, 512],
   ['public/icons/favicon-32.png', favicon, 32],
 ]
 
 for (const [caminho, svg, tamanho] of saidas) {
-  await sharp(Buffer.from(svg), { density: 288 }).resize(tamanho, tamanho).png().toFile(caminho)
+  await sharp(Buffer.from(svg), { density: 288 }).resize(tamanho, tamanho).png({ compressionLevel: 9, adaptiveFiltering: true }).toFile(caminho)
   console.log(caminho.padEnd(38), tamanho + 'x' + tamanho)
 }
