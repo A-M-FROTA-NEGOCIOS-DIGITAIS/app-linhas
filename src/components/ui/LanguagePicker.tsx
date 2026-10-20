@@ -11,30 +11,24 @@ const LANGS: { code: Lang; label: string }[] = [
 
 interface Props {
   className?: string
+  /** Ocupa a largura toda (tela Você); no splash fica do tamanho do conteúdo. */
+  largo?: boolean
 }
 
-export function LanguagePicker({ className }: Props) {
-  const { i18n } = useTranslation()
+/** Seletor de idioma em pílula segmentada (ativo = dourado). */
+export function LanguagePicker({ className, largo }: Props) {
+  const { i18n, t } = useTranslation()
   const active = i18n.language as Lang
 
   return (
-    <div className={`flex items-center gap-1 ${className ?? ''}`}>
+    <div role="group" aria-label={t('splash.language')} className={`alma-seg ${largo ? 'w-full' : ''} ${className ?? ''}`}>
       {LANGS.map(({ code, label }) => (
         <button
           key={code}
+          type="button"
           onClick={() => setLanguage(code)}
-          style={{
-            fontFamily: 'var(--font-sans)',
-            fontSize: 11,
-            letterSpacing: '0.1em',
-            padding: '5px 10px',
-            borderRadius: 20,
-            border: `1px solid ${active === code ? 'var(--accent)' : 'var(--border-subtle)'}`,
-            background: active === code ? 'rgba(124, 156, 228,0.1)' : 'transparent',
-            color: active === code ? 'var(--accent)' : 'var(--text-muted)',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-          }}
+          aria-pressed={active === code}
+          style={{ letterSpacing: 2 }}
         >
           {label}
         </button>

@@ -1,17 +1,13 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { Assinatura, Releitura } from '@/types'
+import { BotaoVoltar } from '@/components/ui'
+import { useFundo } from '@/components/ui/AuroraFundo'
 
 interface Props {
   userId: string
   onBack: () => void
 }
-
-const BackIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M19 12H5M11 5l-7 7 7 7" />
-  </svg>
-)
 
 const CHECKOUT_URL = import.meta.env.VITE_BLUEN_CHECKOUT_URL ?? '#'
 
@@ -25,6 +21,7 @@ export function DespertarView({ userId, onBack }: Props) {
   const [releituras, setReleituras] = useState<Releitura[]>([])
   const [temMestra, setTemMestra] = useState(false)
   const [carregado, setCarregado] = useState(false)
+  useFundo('estante')
 
   useEffect(() => {
     Promise.all([
@@ -43,24 +40,25 @@ export function DespertarView({ userId, onBack }: Props) {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex-1 overflow-y-auto scroll-area px-6 pt-12 pb-8">
-        <button onClick={onBack} className="text-text-secondary active:text-text-primary transition-colors mb-6">
-          <BackIcon />
-        </button>
+      <div className="flex-1 overflow-y-auto scroll-area px-6 pt-[calc(22px+env(safe-area-inset-top,0px))] pb-8">
+        <BotaoVoltar onClick={onBack} />
 
-        <p style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)', fontFamily: 'var(--font-sans)', marginBottom: 8 }}>
-          O Despertar
-        </p>
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 24, fontWeight: 300, color: 'var(--text-primary)', marginBottom: 24, lineHeight: 1.3 }}>
+        {/* Ícone do Despertar: re-leitura a cada três meses (faixa verde-água da Estante) */}
+        <span className="alma-r1 flex items-center justify-center w-[60px] h-[60px] rounded-[18px] mt-5" style={{ background: 'linear-gradient(160deg, #3FD6C2, #7C5CFF)', boxShadow: '0 10px 30px rgba(63,214,194,.35)' }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5" /></svg>
+        </span>
+
+        <p className="alma-r1 mt-4 text-[11px] tracking-[3px] uppercase text-teal-text">O Despertar</p>
+        <h1 className="alma-r1 alma-display mt-2 mb-6 text-[32px]">
           Sua marca muda com o tempo.<br />
-          <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>Acompanhe a evolução dela.</em>
+          <span className="alma-grad-text">Acompanhe a evolução dela.</span>
         </h1>
 
         {assinatura?.status === 'ativa' ? (
           <>
             <div
-              className="px-5 py-4 mb-8"
-              style={{ borderRadius: 8, border: '1px solid var(--accent)', background: 'rgba(124, 156, 228,0.06)' }}
+              className="px-5 py-4 mb-8 rounded-[22px]"
+              style={{ background: 'linear-gradient(135deg, rgba(63,214,194,.14), rgba(124,92,255,.14))', border: '1px solid rgba(63,214,194,.35)' }}
             >
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)' }}>
                 Assinatura ativa · próxima re-leitura em {formatarData(assinatura.proxima_releitura)}
@@ -78,10 +76,10 @@ export function DespertarView({ userId, onBack }: Props) {
                     <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>{formatarData(r.created_at)}</p>
                     {(r.capitulos ?? []).map((c, i) => (
                       <div key={i} className="mb-4">
-                        <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 17, fontStyle: 'italic', color: 'var(--text-primary)', marginBottom: 6 }}>
+                        <h3 className="alma-display italic text-[22px] mb-2">
                           {c.titulo}
                         </h3>
-                        <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7 }}>{c.conteudo}</p>
+                        <p className="reading-text m-0">{c.conteudo}</p>
                       </div>
                     ))}
                   </div>
@@ -94,15 +92,8 @@ export function DespertarView({ userId, onBack }: Props) {
             <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 24 }}>
               O Despertar é a assinatura trimestral de Madame Aurora — a cada 90 dias, uma nova leitura mostrando como sua marca evoluiu.
             </p>
-            <a
-              href={CHECKOUT_URL}
-              style={{
-                display: 'inline-block', padding: '12px 24px', borderRadius: 6,
-                background: 'var(--accent)', color: 'var(--bg-primary)',
-                fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600, textDecoration: 'none',
-              }}
-            >
-              Assinar o Despertar
+            <a href={CHECKOUT_URL} className="alma-btn">
+              <span>Assinar o Despertar</span>
             </a>
           </>
         ) : (

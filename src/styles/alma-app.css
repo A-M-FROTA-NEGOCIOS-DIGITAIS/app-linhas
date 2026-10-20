@@ -1,0 +1,157 @@
+/* =========================================================================
+   ALMA — peças do app sobre os tokens do visual aurora (alma-tokens.css)
+   ========================================================================= */
+
+/* ---------- Entrada escalonada (fade + subida) ---------- */
+.alma-r1 { animation: alma-rise .7s ease-out both .05s; }
+.alma-r2 { animation: alma-rise .7s ease-out both .2s; }
+.alma-r3 { animation: alma-rise .7s ease-out both .35s; }
+.alma-r4 { animation: alma-rise .7s ease-out both .5s; }
+.alma-r5 { animation: alma-rise .7s ease-out both .65s; }
+
+/* ---------- Tipos ---------- */
+.alma-display { font-family: var(--font-display); font-weight: 600; color: var(--cream); line-height: 1.08; margin: 0; }
+.alma-label { font-family: var(--font-ui); font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-3); }
+.alma-serif-italic { font-family: var(--font-display); font-style: italic; }
+
+/* ---------- Fundo: manchas posicionadas por tela (AuroraFundo) ---------- */
+.alma-bg__blob { position: absolute; border-radius: 50%; will-change: transform; transition: opacity .8s ease; }
+.alma-bg__blob--a { animation: alma-drift1 16s ease-in-out infinite; }
+.alma-bg__blob--b { animation: alma-drift2 19s ease-in-out infinite; }
+.alma-bg__blob--c { animation: alma-drift3 22s ease-in-out infinite; }
+.alma-bg__palma { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .5; pointer-events: none; }
+.alma-bg__palma path { stroke-dasharray: 260; animation: alma-draw 6s ease-in-out infinite; }
+.alma-bg__palma path:nth-child(3) { animation-delay: .8s; }
+.alma-bg__palma path:nth-child(4) { animation-delay: 1.6s; }
+
+/* ---------- Chips / pílulas ---------- */
+.alma-chip {
+  display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 16px;
+  border-radius: var(--r-pill); border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.05);
+  color: var(--text-2); font-family: var(--font-ui); font-size: 14px; cursor: pointer; white-space: nowrap;
+  transition: border-color .25s, background .25s, color .25s;
+}
+.alma-chip:hover { border-color: var(--gold); }
+.alma-chip[aria-pressed="true"], .alma-chip.is-on {
+  background: var(--grad-gold); border-color: transparent; color: var(--ink); font-weight: 600;
+}
+.alma-chip--rose { border-color: rgba(244,154,193,.45); background: rgba(226,106,160,.12); color: var(--rose-text); }
+
+/* Pílula informativa (data, fase da lua, tipo de mão) */
+.alma-pill {
+  display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--r-pill);
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); font-size: 12px; color: #EDE6D6;
+}
+
+/* ---------- Segmentado (idioma, gênero) ---------- */
+.alma-seg { display: flex; gap: 6px; padding: 4px; border-radius: var(--r-pill); background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); }
+.alma-seg button {
+  flex: 1; min-width: 52px; height: 36px; border-radius: var(--r-pill); border: none; cursor: pointer;
+  background: transparent; color: var(--text-4); font-family: var(--font-ui); font-size: 13px; font-weight: 600; letter-spacing: 1px;
+  transition: background .25s, color .25s, box-shadow .25s;
+}
+.alma-seg button[aria-pressed="true"] {
+  background: linear-gradient(135deg, rgba(242,200,121,.3), rgba(226,106,160,.2)); color: var(--gold-light);
+  box-shadow: inset 0 0 0 1px rgba(242,200,121,.6);
+}
+
+/* ---------- Cartões ---------- */
+.alma-card { padding: 18px; border-radius: var(--r-card); background: var(--glass); border: 1px solid rgba(255,255,255,.1); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.alma-card--gold { border-color: rgba(242,200,121,.3); }
+.alma-card--aurora { background: linear-gradient(135deg, rgba(124,92,255,.2), rgba(226,106,160,.12)); border: 1px solid rgba(156,134,255,.35); }
+.alma-card--link { transition: transform .25s ease; cursor: pointer; text-align: left; width: 100%; color: inherit; font: inherit; }
+.alma-card--link:hover { transform: translateY(-2px); }
+.alma-aurora-border__inner { border-radius: 25px; background: linear-gradient(160deg, rgba(28,33,86,.96), rgba(12,16,49,.97)); }
+
+/* Barra fina de progresso/energia, crescendo ao aparecer */
+.alma-bar { height: 6px; border-radius: 6px; background: rgba(255,255,255,.08); overflow: hidden; }
+.alma-bar > span { display: block; height: 100%; border-radius: inherit; animation: alma-grow 1.6s ease-out both .4s; }
+
+/* ---------- Equalizador (voz tocando) ---------- */
+.alma-eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 14px; }
+.alma-eq span { width: 2px; height: 14px; border-radius: 1px; transform-origin: bottom; animation: alma-eq 1s ease-in-out infinite; }
+.alma-eq span:nth-child(1) { background: var(--gold); }
+.alma-eq span:nth-child(2) { background: var(--rose-soft); animation-delay: .2s; }
+.alma-eq span:nth-child(3) { background: var(--violet-soft); animation-delay: .4s; }
+.alma-eq span:nth-child(4) { background: var(--teal); animation-delay: .1s; }
+.alma-eq--parado span { animation: none; transform: scaleY(.45); }
+
+/* ---------- Retrato da Madame Aurora ---------- */
+.alma-retrato { position: relative; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.alma-retrato__moldura { position: relative; border-radius: 50%; padding: 3px; background: var(--grad-frame); }
+.alma-retrato__moldura--halo { animation: alma-halo 5s ease-in-out infinite; }
+.alma-retrato__foto { display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; object-position: 50% 22%; }
+.alma-retrato__anel { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; animation: alma-spin 40s linear infinite; }
+.alma-retrato__anel--cor { inset: 6.2%; width: 87.6%; height: 87.6%; animation: alma-spinr 26s linear infinite; }
+.alma-retrato__onda { position: absolute; border-radius: 50%; border: 1.5px solid rgba(242,200,121,.6); animation: alma-ring 2.4s ease-out infinite; pointer-events: none; }
+.alma-retrato__onda + .alma-retrato__onda { border-color: rgba(226,106,160,.55); animation-delay: 1.2s; }
+
+/* Ponto "online" pulsando */
+.alma-online { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); animation: alma-ping 1.8s ease-out infinite; }
+
+/* ---------- Barra de abas flutuante ---------- */
+.alma-tabbar {
+  position: absolute; left: 12px; right: 12px; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); z-index: 20;
+  height: 70px; border-radius: 26px; background: rgba(12,16,49,.8); border: 1px solid rgba(255,255,255,.1);
+  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: 0 10px 40px rgba(0,0,0,.45);
+  display: grid; grid-template-columns: repeat(var(--abas, 5), minmax(0, 1fr));
+}
+.alma-tabbar button {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  border: none; background: none; cursor: pointer; color: var(--text-4); font-family: var(--font-ui);
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; transition: color .25s;
+}
+.alma-tabbar button[aria-current="page"] { color: var(--gold-light); font-weight: 600; }
+.alma-tabbar button[aria-current="page"]::before {
+  content: ""; position: absolute; top: 6px; width: 34px; height: 34px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(242,200,121,.35), rgba(242,200,121,0) 70%);
+}
+.alma-tabbar svg, .alma-tabbar span { position: relative; }
+/* conteúdo das abas não fica atrás da barra */
+.alma-com-tabbar { padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px)); }
+
+/* ---------- Órbita (onboarding, processando, boas-vindas) ---------- */
+.alma-orbita { position: relative; display: flex; align-items: center; justify-content: center; }
+.alma-orbita__anel { position: absolute; border-radius: 50%; border: 1px dashed rgba(242,200,121,.35); animation: alma-spin 30s linear infinite; }
+.alma-orbita__anel--2 { border: 1px solid rgba(156,134,255,.3); animation: alma-spinr 22s linear infinite; }
+.alma-orbita__nucleo { position: relative; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: radial-gradient(circle, rgba(242,200,121,.28), rgba(124,92,255,.12) 60%, rgba(12,16,49,0) 72%); animation: alma-core 4s ease-in-out infinite; }
+
+/* Indicador de passo em traços */
+.alma-passos { display: flex; gap: 6px; }
+.alma-passos span { width: 18px; height: 4px; border-radius: 4px; background: rgba(255,255,255,.15); transition: width .4s, background .4s; }
+.alma-passos span[aria-current="step"] { width: 34px; background: linear-gradient(90deg, #FFD98E, #F49AC1); }
+
+/* Texto revelado frase a frase */
+.alma-revelar { animation: alma-reveal 1s ease-out both; }
+
+/* ---------- Switch ---------- */
+.alma-switch { position: relative; width: 46px; height: 28px; border-radius: 999px; border: none; cursor: pointer; background: rgba(255,255,255,.14); transition: background .25s; flex-shrink: 0; }
+.alma-switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: transform .25s; }
+.alma-switch[aria-checked="true"] { background: var(--grad-gold); }
+.alma-switch[aria-checked="true"]::after { transform: translateX(18px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .alma-r1, .alma-r2, .alma-r3, .alma-r4, .alma-r5, .alma-revelar { opacity: 1 !important; transform: none !important; filter: none !important; }
+}
+
+/* Brilho da lua do logo */
+@keyframes alma-lua-brilho { 0%,100% { filter: drop-shadow(0 0 6px rgba(242,200,121,.5)); } 50% { filter: drop-shadow(0 0 16px rgba(226,106,160,.8)); } }
+
+/* Linhas se desenhando nos ícones do onboarding */
+.alma-intro-ln { stroke-dasharray: 200; animation: alma-draw-200 6s ease-in-out infinite; }
+.alma-intro-ln--2 { animation-delay: .8s; }
+.alma-intro-ln--3 { animation-delay: 1.6s; }
+@keyframes alma-draw-200 { 0% { stroke-dashoffset: 200; } 45%, 70% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -200; } }
+
+/* Scan da palma */
+.alma-scan-ln { stroke-dasharray: 240; animation: alma-draw 5s ease-in-out infinite; }
+.alma-scan-ln--2 { animation-delay: .7s; }
+.alma-scan-ln--3 { animation-delay: 1.4s; }
+@keyframes alma-respira { 0%,100% { opacity: .5; } 50% { opacity: 1; } }
+
+/* Boas-vindas: estrelas caindo e ondas saindo da órbita */
+@keyframes alma-cair { 0% { transform: translateY(-20px) rotate(0); opacity: 0; } 10% { opacity: 1; } 100% { transform: translateY(100vh) rotate(540deg); opacity: .2; } }
+@keyframes alma-onda { 0% { transform: scale(.6); opacity: 0; } 30% { opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
+
+/* Chat: mensagem entrando */
+@keyframes alma-pop { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }

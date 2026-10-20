@@ -292,6 +292,20 @@ const ptBR = {
     aurora: 'Aurora',
     you: 'Você',
   },
+  zodiac: {
+    Aries: 'Áries',
+    Taurus: 'Touro',
+    Gemini: 'Gêmeos',
+    Cancer: 'Câncer',
+    Leo: 'Leão',
+    Virgo: 'Virgem',
+    Libra: 'Libra',
+    Scorpio: 'Escorpião',
+    Sagittarius: 'Sagitário',
+    Capricorn: 'Capricórnio',
+    Aquarius: 'Aquário',
+    Pisces: 'Peixes',
+  },
 }
 
 export default ptBR

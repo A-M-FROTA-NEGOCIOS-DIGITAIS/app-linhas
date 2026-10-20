@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button } from '@/components/ui'
+import { BotaoVoltar, SetaCta, Spinner, semSeta } from '@/components/ui'
+import { useFundo } from '@/components/ui/AuroraFundo'
 import { supabase } from '@/lib/supabase'
+import { IconeEnvelope } from './EmailEntry'
 
 interface Props {
   email: string
@@ -9,6 +11,7 @@ interface Props {
   onBack: () => void
 }
 
+// Referência: app/reference/L03-Login (passo do código)
 export function VerifyEmail({ email, onSuccess, onBack }: Props) {
   const { t } = useTranslation()
   const [code, setCode] = useState('')
@@ -16,7 +19,10 @@ export function VerifyEmail({ email, onSuccess, onBack }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [resending, setResending] = useState(false)
   const [resent, setResent] = useState(false)
+  const [focado, setFocado] = useState(true)
   const verificandoRef = useRef(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+  useFundo('login')
 
   const handleVerify = async () => {
     if (code.length !== 6 || verificandoRef.current) return
@@ -61,28 +67,51 @@ export function VerifyEmail({ email, onSuccess, onBack }: Props) {
     setTimeout(() => setResent(false), 4000)
   }
 
+  // "Não recebeu? Reenviar código" → pergunta normal + link dourado
+  const reenviar = t('verifyEmail.resend')
+  const corte = reenviar.indexOf('?')
+  const [antesLink, textoLink] = corte >= 0 ? [reenviar.slice(0, corte + 1), reenviar.slice(corte + 1).trim()] : ['', reenviar]
+
   return (
-    <div className="h-full flex flex-col px-6 pt-6 pb-8">
-      <button onClick={onBack} className="text-text-secondary active:text-text-primary transition-colors mb-8 self-start">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M19 12H5M11 5l-7 7 7 7" />
-        </svg>
-      </button>
+    <div className="h-full flex flex-col px-6 pt-[calc(22px+env(safe-area-inset-top,0px))] pb-[30px] overflow-y-auto no-scrollbar">
+      <BotaoVoltar onClick={onBack} />
 
-      <div className="flex-1 flex flex-col justify-center gap-8">
-        <div className="flex flex-col gap-3">
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 32, fontWeight: 300, lineHeight: 1.2, color: 'var(--text-primary)' }}>
-            {t('verifyEmail.title')}<br />
-            <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>{t('verifyEmail.titleItalic')}</em>
-          </h2>
-          <p style={{ fontSize: 14, color: 'var(--text-secondary)', fontFamily: 'var(--font-sans)', lineHeight: 1.6 }}>
-            {t('verifyEmail.codeSent')}{' '}
-            <span style={{ color: 'var(--text-primary)' }}>{email}</span>
-          </p>
-        </div>
+      <div className="mt-[70px]"><IconeEnvelope /></div>
 
-        <div className="flex flex-col gap-3">
+      <div className="flex flex-col" style={{ animation: 'alma-rise .5s ease-out both' }}>
+        <h1 className="alma-display mt-[26px] text-[38px] leading-[1.05]">
+          {t('verifyEmail.title')}
+          <br />
+          <span className="alma-grad-text">{t('verifyEmail.titleItalic')}</span>
+        </h1>
+        <p className="mt-3.5 text-[15px] leading-[1.5] text-text-secondary">
+          {t('verifyEmail.codeSent')} <strong className="text-cream font-medium">{email}</strong>
+        </p>
+
+        {/* 6 caixas desenhadas sobre o campo real (que segue recebendo o autopreenchimento do código) */}
+        <div className="relative mt-7" onClick={() => inputRef.current?.focus()}>
+          <div role="presentation" className="grid grid-cols-6 gap-2">
+            {Array.from({ length: 6 }, (_, i) => {
+              const digito = code[i]
+              const atual = focado && i === code.length && code.length < 6
+              return (
+                <span
+                  key={i}
+                  className="flex items-center justify-center"
+                  style={{
+                    height: 62, borderRadius: 16, fontFamily: 'var(--font-display)', fontSize: 32, color: '#FFE3A8',
+                    background: digito ? 'rgba(242,200,121,.12)' : 'rgba(255,255,255,.06)',
+                    border: `1.5px solid ${error ? 'var(--danger)' : digito ? 'rgba(242,200,121,.6)' : atual ? '#F2C879' : 'rgba(255,255,255,.14)'}`,
+                    boxShadow: atual ? '0 0 0 4px rgba(242,200,121,.15), 0 0 24px rgba(226,106,160,.3)' : 'none',
+                  }}
+                >
+                  {digito ?? (atual && <span className="cursor-blink" style={{ width: 2, height: 28, background: '#FFE3A8' }} />)}
+                </span>
+              )
+            })}
+          </div>
           <input
+            ref={inputRef}
             type="text"
             inputMode="numeric"
             autoComplete="one-time-code"
@@ -90,54 +119,34 @@ export function VerifyEmail({ email, onSuccess, onBack }: Props) {
             maxLength={6}
             value={code}
             autoFocus
+            aria-label={t('verifyEmail.codeSent')}
+            onFocus={() => setFocado(true)}
+            onBlur={() => setFocado(false)}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-            placeholder="000000"
-            style={{
-              background: 'var(--bg-surface)',
-              border: `1px solid ${error ? '#8B4040' : code.length > 0 ? 'var(--accent)' : 'var(--border-subtle)'}`,
-              borderRadius: 8,
-              padding: '16px',
-              fontSize: 28,
-              letterSpacing: '0.4em',
-              color: 'var(--text-primary)',
-              fontFamily: 'var(--font-sans)',
-              outline: 'none',
-              width: '100%',
-              textAlign: 'center',
-            }}
+            className="absolute inset-0 w-full h-full opacity-0"
+            style={{ caretColor: 'transparent' }}
           />
-          {error && (
-            <p style={{ fontSize: 13, color: '#8B4040', fontFamily: 'var(--font-sans)' }}>{error}</p>
-          )}
         </div>
+        {error && <p role="alert" className="mt-2.5 text-[13px] text-status-error">{error}</p>}
 
-        <button
-          onClick={handleResend}
-          disabled={resending || resent}
-          style={{
-            fontSize: 13,
-            color: resent ? 'var(--accent)' : 'var(--text-muted)',
-            fontFamily: 'var(--font-sans)',
-            background: 'none',
-            border: 'none',
-            padding: 0,
-            cursor: resending || resent ? 'default' : 'pointer',
-            textAlign: 'left',
-          }}
-        >
-          {resent ? t('verifyEmail.resent') : resending ? t('verifyEmail.resending') : t('verifyEmail.resend')}
-        </button>
+        <p className="mt-[18px] text-[14px] text-text-muted">
+          {resent ? (
+            <span className="text-gold">{t('verifyEmail.resent')}</span>
+          ) : resending ? (
+            t('verifyEmail.resending')
+          ) : (
+            <>
+              {antesLink}{' '}
+              <button type="button" onClick={handleResend} className="text-gold underline underline-offset-2">{textoLink}</button>
+            </>
+          )}
+        </p>
       </div>
 
-      <Button
-        variant="primary"
-        fullWidth
-        disabled={code.length !== 6}
-        loading={loading}
-        onClick={handleVerify}
-      >
-        {t('verifyEmail.confirm')}
-      </Button>
+      <div className="flex-grow min-h-6" />
+      <button type="button" className="alma-btn" disabled={code.length !== 6 || loading} onClick={handleVerify} style={{ opacity: code.length !== 6 ? 0.55 : 1 }}>
+        {loading ? <Spinner size={18} /> : <><span>{semSeta(t('verifyEmail.confirm'))}</span><SetaCta /></>}
+      </button>
     </div>
   )
 }

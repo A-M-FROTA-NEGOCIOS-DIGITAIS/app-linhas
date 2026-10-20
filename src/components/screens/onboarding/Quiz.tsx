@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { Button } from '@/components/ui'
+import { BotaoVoltar, SetaCta } from '@/components/ui'
+import { AuroraAvatar } from '@/components/ui/Aurora'
+import { useFundo } from '@/components/ui/AuroraFundo'
 
 interface Opcao {
   id: string
@@ -99,8 +101,8 @@ export function QuizScreen({ onContinue, onBack }: Props) {
   const [saindo, setSaindo] = useState(false)
 
   const pergunta = PERGUNTAS[indice]
+  useFundo('pergunta')
   const total = PERGUNTAS.length
-  const progresso = ((indice) / total) * 100
 
   const avancar = () => {
     if (!selecionada) return
@@ -132,88 +134,81 @@ export function QuizScreen({ onContinue, onBack }: Props) {
     }, 180)
   }
 
-  return (
-    <div className="h-full flex flex-col px-6 pt-6 pb-8">
-      {/* Cabeçalho */}
-      <div className="flex items-center gap-4 mb-6">
-        <button onClick={voltar} className="text-text-secondary active:text-text-primary transition-colors flex-shrink-0">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M11 5l-7 7 7 7" />
-          </svg>
-        </button>
+  // Destaque em gradiente nas últimas palavras da pergunta, como na referência L05.
+  const palavras = pergunta.texto.split(' ')
+  const corte = Math.max(1, palavras.length - 3)
+  const inicioPergunta = palavras.slice(0, corte).join(' ')
+  const fimPergunta = palavras.slice(corte).join(' ')
 
-        {/* Barra de progresso */}
-        <div className="flex-1 flex items-center gap-1.5">
+  return (
+    <div className="h-full flex flex-col px-[22px] pt-[calc(22px+env(safe-area-inset-top,0px))] pb-[26px]">
+      {/* Cabeçalho: voltar · progresso em 7 segmentos · contador */}
+      <div className="flex items-center gap-3 h-11">
+        <BotaoVoltar onClick={voltar} />
+        <div className="flex-grow grid gap-1" style={{ gridTemplateColumns: `repeat(${total}, minmax(0, 1fr))` }}>
           {PERGUNTAS.map((_, i) => (
-            <div
+            <span
               key={i}
-              className="flex-1 h-0.5 rounded-full transition-all duration-400"
-              style={{ background: i <= indice ? 'var(--accent)' : 'var(--border-subtle)' }}
+              className="h-1 rounded transition-all duration-300"
+              style={
+                i <= indice
+                  ? { background: 'linear-gradient(90deg, #FFD98E, #F49AC1)', boxShadow: '0 0 8px rgba(244,154,193,.6)' }
+                  : { background: 'rgba(255,255,255,.15)' }
+              }
             />
           ))}
         </div>
-
-        <span style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-sans)', flexShrink: 0 }}>
-          {indice + 1}/{total}
-        </span>
+        <span className="text-[12px] tracking-[1px] text-gold flex-shrink-0">{indice + 1}/{total}</span>
       </div>
 
-      {/* Pergunta */}
-      <div
-        className="mb-8 transition-opacity duration-200"
-        style={{ opacity: saindo ? 0 : 1 }}
-      >
-        <p style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', fontFamily: 'var(--font-sans)', marginBottom: 10 }}>
-          Madame Aurora pergunta
-        </p>
-        <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 26, fontWeight: 300, lineHeight: 1.25, letterSpacing: '-0.01em', color: 'var(--text-primary)' }}>
-          {pergunta.texto}
-        </h2>
-      </div>
+      <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar transition-opacity duration-200" style={{ opacity: saindo ? 0 : 1 }}>
+        <div key={pergunta.id} className="alma-r1 flex items-center gap-3 mt-[26px]">
+          <AuroraAvatar tamanho={48} />
+          <div className="flex flex-col gap-0.5">
+            <span className="text-[11px] tracking-[3px] text-gold">MADAME AURORA</span>
+            <span className="text-[13px] text-[#C9C3DD]">pergunta</span>
+          </div>
+        </div>
 
-      {/* Opções */}
-      <div
-        className="flex-1 flex flex-col gap-2.5 transition-opacity duration-200"
-        style={{ opacity: saindo ? 0 : 1 }}
-      >
-        {pergunta.opcoes.map((opcao) => {
-          const ativa = selecionada === opcao.id
-          return (
-            <button
-              key={opcao.id}
-              onClick={() => setSelecionada(opcao.id)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 14,
-                textAlign: 'left', padding: '14px 16px', borderRadius: 8,
-                border: `1px solid ${ativa ? 'var(--accent)' : 'var(--border-subtle)'}`,
-                background: ativa ? 'rgba(124, 156, 228,0.07)' : 'var(--bg-surface)',
-                transition: 'all 0.2s ease', width: '100%', cursor: 'pointer',
-              }}
-            >
-              <span
-                style={{
-                  width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
-                  border: `1.5px solid ${ativa ? 'var(--accent)' : 'var(--border-medium)'}`,
-                  background: ativa ? 'var(--accent)' : 'transparent',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transition: 'all 0.2s',
-                }}
+        <h1 key={`h${pergunta.id}`} className="alma-r1 alma-display mt-4 text-[31px] leading-[1.1]">
+          {inicioPergunta} <span className="alma-grad-text">{fimPergunta}</span>
+        </h1>
+
+        <div key={`o${pergunta.id}`} className="alma-r2 flex flex-col gap-2.5 mt-[22px]">
+          {pergunta.opcoes.map((opcao, i) => {
+            const ativa = selecionada === opcao.id
+            return (
+              <button
+                key={opcao.id}
+                type="button"
+                aria-pressed={ativa}
+                onClick={() => setSelecionada(opcao.id)}
+                className="alma-option"
+                style={{ minHeight: 66, padding: '12px 14px', backdropFilter: 'blur(8px)' }}
               >
-                {ativa && <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--bg-primary)' }} />}
-              </span>
-              <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: ativa ? 'var(--accent)' : 'var(--text-primary)', lineHeight: 1.4, transition: 'color 0.2s' }}>
-                {opcao.texto}
-              </span>
-            </button>
-          )
-        })}
+                <span
+                  className="flex items-center justify-center flex-shrink-0 rounded-full font-serif font-semibold text-[18px]"
+                  style={{
+                    width: 34, height: 34,
+                    ...(ativa
+                      ? { background: 'linear-gradient(135deg, #FFE3A8, #E7B865)', color: '#2A1A05' }
+                      : { background: 'rgba(242,200,121,.1)', color: '#F2C879', boxShadow: 'inset 0 0 0 1px rgba(242,200,121,.35)' }),
+                  }}
+                >
+                  {'ABCD'[i] ?? opcao.id.toUpperCase()}
+                </span>
+                <span className="flex-grow text-left text-[15.5px] leading-[1.35] text-text-primary">{opcao.texto}</span>
+              </button>
+            )
+          })}
+        </div>
+        <div className="flex-grow min-h-6" />
       </div>
 
-      <div className="pt-6">
-        <Button variant="primary" fullWidth disabled={!selecionada} onClick={avancar}>
-          {indice < total - 1 ? 'Próxima' : 'Ver minha leitura'}
-        </Button>
-      </div>
+      <button type="button" className="alma-btn" disabled={!selecionada} onClick={avancar} style={{ height: 56, opacity: selecionada ? 1 : 0.55 }}>
+        <span>{indice < total - 1 ? 'Próxima' : 'Ver minha leitura'}</span>
+        <SetaCta />
+      </button>
     </div>
   )
 }

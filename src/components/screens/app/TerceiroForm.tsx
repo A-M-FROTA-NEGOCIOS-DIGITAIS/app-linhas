@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Button } from '@/components/ui'
+import { BotaoVoltar, SetaCta } from '@/components/ui'
+import { useFundo } from '@/components/ui/AuroraFundo'
 import { TelaGerando } from '@/components/ui/TelaGerando'
 import { supabase } from '@/lib/supabase'
 
@@ -10,11 +11,6 @@ interface Props {
   onBack: () => void
 }
 
-const BackIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M19 12H5M11 5l-7 7 7 7" />
-  </svg>
-)
 
 const MENSAGENS = [
   'Madame Aurora está lendo o encontro das duas histórias…',
@@ -26,15 +22,8 @@ const MENSAGENS = [
 // Campo com rotulo. Sem rotulo, o input de data vazio no iOS vira uma caixa
 // cinza sem nenhuma indicacao do que e — foi o "campo estranho" relatado.
 const campoStyle: React.CSSProperties = {
-  background: 'var(--bg-surface)',
-  border: '1px solid var(--border-subtle)',
-  borderRadius: 8,
-  padding: '14px 16px',
-  fontSize: 16,
-  color: 'var(--text-primary)',
-  fontFamily: 'var(--font-sans)',
-  outline: 'none',
   width: '100%',
+  colorScheme: 'dark',
   // O iOS desenha o proprio controle em input[type=date] e ignora parte do
   // estilo. Sem isto ele fica visivelmente diferente dos outros dois campos.
   WebkitAppearance: 'none',
@@ -45,7 +34,7 @@ const campoStyle: React.CSSProperties = {
 function Campo({ rotulo, children }: { rotulo: string; children: React.ReactNode }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span style={{ fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
+      <span className="text-[11px] tracking-[2.5px] uppercase text-gold">
         {rotulo}
       </span>
       {children}
@@ -59,6 +48,7 @@ export function TerceiroForm({ userId, produto, onDone, onBack }: Props) {
   const [relacao, setRelacao] = useState('')
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
+  useFundo('perfil')
 
   const titulo = produto === 'compatibilidade' ? 'Compatibilidade' : 'Quem Você Ama'
 
@@ -95,15 +85,13 @@ export function TerceiroForm({ userId, produto, onDone, onBack }: Props) {
   }
 
   return (
-    <div className="h-full flex flex-col px-6 pt-12 pb-8 scroll-area">
-      <button onClick={onBack} className="text-text-secondary active:text-text-primary transition-colors mb-6 self-start">
-        <BackIcon />
-      </button>
+    <div className="h-full flex flex-col px-6 pt-[calc(22px+env(safe-area-inset-top,0px))] pb-8 scroll-area">
+      <BotaoVoltar onClick={onBack} />
 
-      <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 24, fontWeight: 300, color: 'var(--text-primary)', marginBottom: 8 }}>
-        {titulo}
+      <h1 className="alma-r1 alma-display mt-5 mb-2 text-[34px]">
+        <span className="alma-grad-text">{titulo}</span>
       </h1>
-      <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 24, lineHeight: 1.6 }}>
+      <p className="alma-r1 mb-6 text-[15px] leading-[1.6] text-text-secondary">
         Conte pra Madame Aurora sobre essa pessoa — a leitura é sobre como você vive seu padrão nessa relação.
       </p>
 
@@ -114,6 +102,7 @@ export function TerceiroForm({ userId, produto, onDone, onBack }: Props) {
             value={nome}
             onChange={(e) => setNome(e.target.value)}
             placeholder="Como você a chama"
+            className="alma-input"
             style={campoStyle}
           />
         </Campo>
@@ -123,6 +112,7 @@ export function TerceiroForm({ userId, produto, onDone, onBack }: Props) {
             type="date"
             value={dataNascimento}
             onChange={(e) => setDataNascimento(e.target.value)}
+            className="alma-input"
             style={campoStyle}
           />
         </Campo>
@@ -133,20 +123,21 @@ export function TerceiroForm({ userId, produto, onDone, onBack }: Props) {
             value={relacao}
             onChange={(e) => setRelacao(e.target.value)}
             placeholder="namorado, ex, paquera…"
+            className="alma-input"
             style={campoStyle}
           />
         </Campo>
 
         {erro && (
-          <p style={{ fontSize: 13, color: '#8B4040', fontFamily: 'var(--font-sans)', lineHeight: 1.5 }}>
+          <p role="alert" className="text-[13px] leading-[1.5] text-status-error">
             {erro}
           </p>
         )}
       </div>
 
-      <Button variant="primary" fullWidth disabled={!nome.trim()} onClick={handleSubmit}>
-        Gerar minha leitura
-      </Button>
+      <button type="button" className="alma-btn mt-6" disabled={!nome.trim()} onClick={handleSubmit} style={{ opacity: nome.trim() ? 1 : 0.55 }}>
+        <span>Gerar minha leitura</span><SetaCta />
+      </button>
     </div>
   )
 }
