@@ -822,33 +822,99 @@ async function jaTemLeitura(supabase: any, userId: string, produto: string): Pro
   return !!data
 }
 
+// --- Audio pelo OpenRouter, um trecho por execucao ---
+// A leitura inteira (~7 min) numa execucao so estourava o limite de tempo/CPU da edge
+// function (o MP3 e codificado aqui, em JS) e morria calada. Agora cada trecho roda
+// numa chamada propria, em paralelo, e grava sua parte em audios/partes/<leitura>/<hash>/;
+// a ultima que termina emenda tudo e grava o audio_url. Se alguma morrer, a proxima
+// tentativa (trava expirada + app) so regrava as partes que faltam.
+
+const blocosDoAudio = (core: { full_content?: string | null }) => dividirParaTts(String(core.full_content ?? ''), 700)
+
+async function pastaDoAudio(core: { id: string; full_content?: string | null }): Promise<string> {
+  const hash = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(String(core.full_content ?? '')))
+  const hex = Array.from(new Uint8Array(hash).slice(0, 6), (b) => b.toString(16).padStart(2, '0')).join('')
+  return `partes/${core.id}/${hex}`
+}
+
+// deno-lint-ignore no-explicit-any
+async function partesProntas(supabase: any, pasta: string): Promise<Set<number>> {
+  const { data } = await supabase.storage.from('audios').list(pasta, { limit: 1000 })
+  return new Set(((data ?? []) as { name: string }[]).map((f) => parseInt(f.name, 10)).filter((n) => !Number.isNaN(n)))
+}
+
 // deno-lint-ignore no-explicit-any
 async function gerarAudioOpenRouter(supabase: any, userId: string, core: any) {
-  const chave = Deno.env.get('OPENROUTER_API_KEY')!
+  const total = blocosDoAudio(core).length
+  if (total === 0) throw new Error('audio: leitura sem texto')
+  const pasta = await pastaDoAudio(core)
+  const prontas = await partesProntas(supabase, pasta)
+  if (prontas.size >= total) return await emendarAudio(supabase, userId, core, pasta, total)
+
+  const url = `${Deno.env.get('SUPABASE_URL')}/functions/v1/gerar-produto`
+  const chave = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  const faltam = Array.from({ length: total }, (_, i) => i).filter((i) => !prontas.has(i))
+  const respostas = await Promise.all(faltam.map((i) =>
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${chave}` },
+      body: JSON.stringify({ trecho_audio: { user_id: userId, core_id: core.id, i } }),
+    }).then((r) => r.ok).catch(() => false)
+  ))
+  const falhas = respostas.filter((ok) => !ok).length
+  if (falhas) throw new Error(`audio: ${falhas} de ${faltam.length} trecho(s) nao comecaram`)
+  console.log(`Audio de ${userId}: ${faltam.length} de ${total} trecho(s) em gravacao`)
+  return { em_partes: true, trechos: total }
+}
+
+/** Grava um trecho (chamado pela propria funcao) e, se for o ultimo, emenda o audio. */
+// deno-lint-ignore no-explicit-any
+async function gravarTrechoAudio(supabase: any, userId: string, coreId: string, i: number) {
+  const { data: core } = await supabase.from('readings').select('id, full_content, audio_url').eq('id', coreId).eq('user_id', userId).single()
+  if (!core || core.audio_url) return
+  const blocos = blocosDoAudio(core)
+  if (i < 0 || i >= blocos.length) throw new Error(`audio: trecho ${i} fora da leitura`)
+  const pasta = await pastaDoAudio(core)
+
   const modelo = Deno.env.get('OPENROUTER_MODELO_AUDIO') ?? 'openai/gpt-audio-mini'
   const voz = Deno.env.get('OPENROUTER_VOZ') ?? 'shimmer'
-  // Trechos curtos: o modelo de voz improvisa menos e uma falha regrava pouco.
-  const blocos = dividirParaTts(String(core.full_content ?? ''), 700)
-  const partes: Uint8Array[] = new Array(blocos.length)
-  let proximo = 0
-  const trabalhador = async () => {
-    while (proximo < blocos.length) {
-      const i = proximo++
-      const r = await gerarFalaOpenRouter(blocos[i], { chave, modelo, voz, instrucao: INSTRUCAO_LEITURA, Encoder: Mp3Encoder }, 4)
-      if (!r.ok) throw new Error(`audio: trecho ${i + 1}/${blocos.length} falhou: ${r.motivo}`)
-      partes[i] = semId3(r.bytes)
-    }
+  const r = await gerarFalaOpenRouter(blocos[i], {
+    chave: Deno.env.get('OPENROUTER_API_KEY')!, modelo, voz, instrucao: INSTRUCAO_LEITURA, Encoder: Mp3Encoder,
+  }, 4)
+  if (!r.ok) throw new Error(`audio: trecho ${i + 1}/${blocos.length} falhou: ${r.motivo}`)
+  const { error } = await supabase.storage.from('audios')
+    .upload(`${pasta}/${i}.mp3`, semId3(r.bytes), { contentType: 'audio/mpeg', upsert: true })
+  if (error) throw new Error(`audio: falha ao subir trecho ${i + 1}: ${error.message}`)
+
+  if ((await partesProntas(supabase, pasta)).size >= blocos.length) {
+    await emendarAudio(supabase, userId, core, pasta, blocos.length)
   }
-  await Promise.all(Array.from({ length: 4 }, trabalhador))
+}
+
+// deno-lint-ignore no-explicit-any
+async function emendarAudio(supabase: any, userId: string, core: any, pasta: string, total: number) {
+  const partes: Uint8Array[] = []
+  for (let i = 0; i < total; i++) {
+    const { data, error } = await supabase.storage.from('audios').download(`${pasta}/${i}.mp3`)
+    if (error || !data) throw new Error(`audio: trecho ${i + 1} sumiu do storage`)
+    partes.push(new Uint8Array(await data.arrayBuffer()))
+  }
   const audio = emendar(partes)
-  console.log(`Audio de ${userId} (${modelo}): ${blocos.length} trecho(s), ${audio.length} bytes`)
 
   const path = `${userId}-${Date.now()}.mp3`
   const { error: uploadErr } = await supabase.storage.from('audios').upload(path, audio, { contentType: 'audio/mpeg' })
   if (uploadErr) throw new Error(`Falha ao subir audio para o storage: ${uploadErr.message}`)
   const { data: urlData } = supabase.storage.from('audios').getPublicUrl(path)
-  const { error: updateErr } = await supabase.from('readings').update({ audio_url: urlData.publicUrl }).eq('id', core.id)
+  // Dois ultimos trechos podem terminar juntos: so o primeiro grava a URL.
+  const { data: gravou, error: updateErr } = await supabase.from('readings')
+    .update({ audio_url: urlData.publicUrl }).eq('id', core.id).is('audio_url', null).select('id')
   if (updateErr) throw new Error(`Falha ao salvar audio_url na leitura: ${updateErr.message}`)
+  if (!gravou?.length) {
+    await supabase.storage.from('audios').remove([path])
+    return { audio_url: null, ja_existia: true }
+  }
+  await supabase.storage.from('audios').remove(Array.from({ length: total }, (_, i) => `${pasta}/${i}.mp3`))
+  console.log(`Audio de ${userId}: ${total} trecho(s), ${audio.length} bytes`)
   return { audio_url: urlData.publicUrl }
 }
 
@@ -856,7 +922,27 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const { user_id, produto, idioma = 'pt-BR', contexto_terceiro, segunda_palma_analise, assincrono = false } = await req.json()
+    const corpo = await req.json()
+
+    // Trecho do audio: chamada interna da propria funcao (ver gerarAudioOpenRouter).
+    if (corpo?.trecho_audio) {
+      const chaveServico = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      if (req.headers.get('Authorization') !== `Bearer ${chaveServico}`) {
+        return new Response(JSON.stringify({ error: 'nao autorizado' }), { status: 401, headers: corsHeaders })
+      }
+      const { user_id: uid, core_id, i } = corpo.trecho_audio
+      const sb = createClient(Deno.env.get('SUPABASE_URL')!, chaveServico)
+      const tarefa = gravarTrechoAudio(sb, uid, core_id, Number(i)).catch(async (e) => {
+        console.error(`audio p/ ${uid} falhou: ${e}`)
+        await sb.from('compras').update({ geracao_iniciada_em: null, geracao_erro: String(e).slice(0, 500) })
+          .eq('user_id', uid).eq('produto', 'audio').eq('status', 'aprovado')
+      })
+      if (typeof EdgeRuntime !== 'undefined') EdgeRuntime.waitUntil(tarefa)
+      else await tarefa
+      return new Response(JSON.stringify({ received: true, trecho: i }), { status: 202, headers: corsHeaders })
+    }
+
+    const { user_id, produto, idioma = 'pt-BR', contexto_terceiro, segunda_palma_analise, assincrono = false } = corpo
 
     if (!user_id || !produto) {
       return new Response(JSON.stringify({ error: 'Missing user_id or produto' }), {
