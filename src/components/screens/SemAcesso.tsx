@@ -3,7 +3,8 @@ import { useFundo } from '@/components/ui/AuroraFundo'
 import { supabase } from '@/lib/supabase'
 import { useAppStore } from '@/store/app'
 
-const CHECKOUT_URL = import.meta.env.VITE_BLUEN_CHECKOUT_URL ?? '#'
+// A venda acontece no funil (quiz + checkout da Hotmart); a Bluen está desativada.
+const CHECKOUT_URL = import.meta.env.VITE_COMPRA_URL ?? 'https://quiz.almaurora.com'
 
 export function SemAcesso() {
   const { t } = useTranslation()

@@ -10,11 +10,18 @@
 // 3. na primeira vez que vê a compra da Leitura Completa, grava o que veio do funil:
 //    nome e nascimento no perfil, quiz e leitura da mão em `sessoes` e a leitura pronta
 //    em `readings`. Com o nome preenchido, o app não pede o quiz de novo.
+// 4. com a compra aprovada, manda gerar em segundo plano todo produto automático que a
+//    pessoa comprou e ainda não tem (Mestra, Ano Interior, Capítulo, Ritual, Sentença,
+//    Áudio). Um upsell que chega antes da leitura completa falha e é gerado de novo na
+//    próxima compra aprovada ou quando a pessoa abre a Estante.
 //
 // Deploy: supabase functions deploy compra-funil --no-verify-jwt
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { lerPedido, textoCompleto, chaveTransacao, dataValida, segredoValido } from './logica.ts'
+import { dispararGeracoes } from '../_shared/produtos.ts'
+
+declare const EdgeRuntime: { waitUntil(p: Promise<unknown>): void } | undefined
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -124,6 +131,20 @@ serve(async (req) => {
       // Sem capítulos (motor do funil falhou), a sessão fica pendente e o app gera a
       // leitura com o gerar-leitura a partir do quiz e da leitura da mão.
       dadosAplicados = true
+    }
+
+    // 4. gera os produtos automáticos comprados (o gerar-produto ignora o que já existe)
+    if (p.status === 'aprovado') {
+      const { data: compradas } = await supabase
+        .from('compras').select('produto').eq('user_id', userId).eq('status', 'aprovado')
+      const produtos = (compradas ?? []).map((c: { produto: string }) => c.produto)
+      const disparo = dispararGeracoes(produtos, {
+        userId,
+        supabaseUrl: Deno.env.get('SUPABASE_URL')!,
+        chaveServico: Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+      })
+      if (typeof EdgeRuntime !== 'undefined') EdgeRuntime.waitUntil(disparo)
+      else await disparo
     }
 
     console.log(

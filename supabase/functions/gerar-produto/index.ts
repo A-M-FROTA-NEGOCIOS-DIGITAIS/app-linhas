@@ -1,6 +1,15 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Anthropic from 'npm:@anthropic-ai/sdk'
+import { Mp3Encoder } from 'npm:@breezystack/lamejs@1.2.7'
+import { gerarFalaOpenRouter, INSTRUCAO_LEITURA } from '../_shared/voz.ts'
+import { semId3, emendar } from '../_shared/mp3.ts'
+import { ehAutomatico, travaExpirada, TRAVA_MINUTOS } from '../_shared/produtos.ts'
+
+// Testes do app sem compra (mesma lista do App.tsx).
+const ADMIN_EMAILS = ['jmorais@unigranrio.br']
+
+declare const EdgeRuntime: { waitUntil(p: Promise<unknown>): void } | undefined
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -722,9 +731,15 @@ Retorne APENAS o JSON:
   return { ok: true, imagem_url: urlData.publicUrl }
 }
 
-// --- Audio: TTS via ElevenLabs (aguarda configuracao se a chave nao existir) ---
+// --- Audio: voz da Aurora pelo OpenRouter (padrao) ou ElevenLabs ---
+// TTS_PROVEDOR=elevenlabs volta para a ElevenLabs; sem a variavel, usa o OpenRouter
+// quando OPENROUTER_API_KEY existe. O gpt-audio-mini le a leitura inteira por centavos
+// (a ElevenLabs/gpt-audio custavam quase o preco do produto). Cada trecho tem a
+// transcricao conferida e o silencio aparado; trecho improvisado ou mudo e regravado.
 // deno-lint-ignore no-explicit-any
 async function gerarAudioTts(supabase: any, userId: string, core: any) {
+  const provedor = Deno.env.get('TTS_PROVEDOR') ?? (Deno.env.get('OPENROUTER_API_KEY') ? 'openrouter' : 'elevenlabs')
+  if (provedor === 'openrouter') return gerarAudioOpenRouter(supabase, userId, core)
   const apiKey = Deno.env.get('ELEVENLABS_API_KEY')
   if (!apiKey) {
     console.warn(`ELEVENLABS_API_KEY nao configurada — audio para ${userId} fica pendente`)
@@ -794,11 +809,54 @@ async function gerarAudioTts(supabase: any, userId: string, core: any) {
   return { audio_url: urlData.publicUrl }
 }
 
+// deno-lint-ignore no-explicit-any
+async function jaTemLeitura(supabase: any, userId: string, produto: string): Promise<boolean> {
+  const { data } = await supabase
+    .from('readings')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('produto', produto)
+    .eq('qualidade_aprovada', true)
+    .limit(1)
+    .maybeSingle()
+  return !!data
+}
+
+// deno-lint-ignore no-explicit-any
+async function gerarAudioOpenRouter(supabase: any, userId: string, core: any) {
+  const chave = Deno.env.get('OPENROUTER_API_KEY')!
+  const modelo = Deno.env.get('OPENROUTER_MODELO_AUDIO') ?? 'openai/gpt-audio-mini'
+  const voz = Deno.env.get('OPENROUTER_VOZ') ?? 'shimmer'
+  // Trechos curtos: o modelo de voz improvisa menos e uma falha regrava pouco.
+  const blocos = dividirParaTts(String(core.full_content ?? ''), 700)
+  const partes: Uint8Array[] = new Array(blocos.length)
+  let proximo = 0
+  const trabalhador = async () => {
+    while (proximo < blocos.length) {
+      const i = proximo++
+      const r = await gerarFalaOpenRouter(blocos[i], { chave, modelo, voz, instrucao: INSTRUCAO_LEITURA, Encoder: Mp3Encoder }, 4)
+      if (!r.ok) throw new Error(`audio: trecho ${i + 1}/${blocos.length} falhou: ${r.motivo}`)
+      partes[i] = semId3(r.bytes)
+    }
+  }
+  await Promise.all(Array.from({ length: 4 }, trabalhador))
+  const audio = emendar(partes)
+  console.log(`Audio de ${userId} (${modelo}): ${blocos.length} trecho(s), ${audio.length} bytes`)
+
+  const path = `${userId}-${Date.now()}.mp3`
+  const { error: uploadErr } = await supabase.storage.from('audios').upload(path, audio, { contentType: 'audio/mpeg' })
+  if (uploadErr) throw new Error(`Falha ao subir audio para o storage: ${uploadErr.message}`)
+  const { data: urlData } = supabase.storage.from('audios').getPublicUrl(path)
+  const { error: updateErr } = await supabase.from('readings').update({ audio_url: urlData.publicUrl }).eq('id', core.id)
+  if (updateErr) throw new Error(`Falha ao salvar audio_url na leitura: ${updateErr.message}`)
+  return { audio_url: urlData.publicUrl }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const { user_id, produto, idioma = 'pt-BR', contexto_terceiro, segunda_palma_analise } = await req.json()
+    const { user_id, produto, idioma = 'pt-BR', contexto_terceiro, segunda_palma_analise, assincrono = false } = await req.json()
 
     if (!user_id || !produto) {
       return new Response(JSON.stringify({ error: 'Missing user_id or produto' }), {
@@ -846,6 +904,52 @@ serve(async (req) => {
     }
     if (!profile) return new Response(JSON.stringify({ error: 'Perfil não encontrado' }), { status: 404, headers: jsonHeaders })
 
+    // Só gera o que foi comprado (antes qualquer chamada gerava, para qualquer conta).
+    const { data: compra } = await supabase
+      .from('compras')
+      .select('id, geracao_iniciada_em')
+      .eq('user_id', user_id)
+      .eq('produto', produto)
+      .eq('status', 'aprovado')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    const ehAdmin = ADMIN_EMAILS.includes(String(profile.email ?? '').toLowerCase())
+    if (!compra && !ehAdmin) {
+      return new Response(JSON.stringify({ error: 'produto não comprado', produto }), { status: 403, headers: jsonHeaders })
+    }
+
+    // Já gerado: devolve sem gastar outra geração (a compra dispara pelo funil e o app
+    // tenta de novo ao abrir a Estante; os dois podem chegar aqui).
+    if (produto === 'audio' ? !!core?.audio_url : ehAutomatico(produto) && await jaTemLeitura(supabase, user_id, produto)) {
+      return new Response(JSON.stringify({ received: true, produto, ja_existia: true }), { headers: jsonHeaders })
+    }
+
+    // Trava: uma geração por compra de cada vez (só nos automáticos; os que esperam
+    // dados da pessoa seguem como antes).
+    if (compra && ehAutomatico(produto)) {
+      if (!travaExpirada(compra.geracao_iniciada_em)) {
+        return new Response(JSON.stringify({ received: true, produto, em_andamento: true }), { status: 202, headers: jsonHeaders })
+      }
+      const limite = new Date(Date.now() - TRAVA_MINUTOS * 60_000).toISOString()
+      const { data: travou } = await supabase
+        .from('compras')
+        .update({ geracao_iniciada_em: new Date().toISOString(), geracao_erro: null })
+        .eq('id', compra.id)
+        .or(`geracao_iniciada_em.is.null,geracao_iniciada_em.lt.${limite}`)
+        .select('id')
+      if (!travou?.length) {
+        return new Response(JSON.stringify({ received: true, produto, em_andamento: true }), { status: 202, headers: jsonHeaders })
+      }
+    }
+
+    // Falha: registra na compra e solta a trava, para a próxima tentativa poder gerar.
+    const registrarFalha = async (motivo: string) => {
+      console.error(`gerar-produto ${produto} p/ ${user_id} falhou: ${motivo}`)
+      if (compra) await supabase.from('compras').update({ geracao_iniciada_em: null, geracao_erro: motivo.slice(0, 500) }).eq('id', compra.id)
+    }
+
+    const gerar = async (): Promise<Record<string, unknown> | Response> => {
     let resultado: Record<string, unknown>
 
     switch (produto) {
@@ -881,10 +985,41 @@ serve(async (req) => {
         return new Response(JSON.stringify({ error: `produto desconhecido: ${produto}` }), { status: 400, headers: jsonHeaders })
     }
 
+    return resultado
+    }
+
+    // Em segundo plano (compra-funil e app): responde na hora e gera depois. A trava e o
+    // "já existe" acima evitam gerar em dobro.
+    if (assincrono && typeof EdgeRuntime !== 'undefined') {
+      EdgeRuntime.waitUntil(
+        gerar()
+          .then(async (r) => {
+            if (r instanceof Response) await registrarFalha(`resposta ${r.status}: ${(await r.text()).slice(0, 200)}`)
+            else if (r?.erro) await registrarFalha('geracao_falhou')
+          })
+          .catch((e) => registrarFalha(String(e))),
+      )
+      return new Response(JSON.stringify({ received: true, produto, em_andamento: true }), { status: 202, headers: jsonHeaders })
+    }
+
+    let resultado: Record<string, unknown>
+    try {
+      const r = await gerar()
+      if (r instanceof Response) {
+        if (!r.ok) await registrarFalha(`resposta ${r.status}`)
+        return r
+      }
+      resultado = r
+    } catch (e) {
+      await registrarFalha(String(e))
+      throw e
+    }
+
     // Falha de geracao nao pode sair como 200. Antes desta guarda, um
     // `{erro:true}` virava sucesso HTTP e so era detectado por quem conhecesse
     // a chave `erro` em portugues no corpo da resposta.
     if (resultado?.erro) {
+      await registrarFalha('geracao_falhou')
       return new Response(JSON.stringify({ error: 'geracao_falhou', produto }), {
         status: 502, headers: jsonHeaders,
       })
