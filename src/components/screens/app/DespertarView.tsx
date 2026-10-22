@@ -6,17 +6,18 @@ import { useFundo } from '@/components/ui/AuroraFundo'
 
 interface Props {
   userId: string
+  /** Link de compra do catálogo (produtos_catalogo.checkout_url do despertar). */
+  checkoutUrl?: string | null
   onBack: () => void
 }
 
-const CHECKOUT_URL = import.meta.env.VITE_BLUEN_CHECKOUT_URL ?? '#'
 
 function formatarData(iso?: string) {
   if (!iso) return ''
   return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
 }
 
-export function DespertarView({ userId, onBack }: Props) {
+export function DespertarView({ userId, checkoutUrl, onBack }: Props) {
   const [assinatura, setAssinatura] = useState<Assinatura | null>(null)
   const [releituras, setReleituras] = useState<Releitura[]>([])
   const [temMestra, setTemMestra] = useState(false)
@@ -92,9 +93,15 @@ export function DespertarView({ userId, onBack }: Props) {
             <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 24 }}>
               O Despertar é a assinatura trimestral de Madame Aurora — a cada 90 dias, uma nova leitura mostrando como sua marca evoluiu.
             </p>
-            <a href={CHECKOUT_URL} className="alma-btn">
-              <span>Assinar o Despertar</span>
-            </a>
+            {checkoutUrl ? (
+              <a href={checkoutUrl} className="alma-btn">
+                <span>Assinar o Despertar</span>
+              </a>
+            ) : (
+              <button type="button" className="alma-btn" disabled style={{ opacity: 0.55 }}>
+                <span>Em breve</span>
+              </button>
+            )}
           </>
         ) : (
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 }}>

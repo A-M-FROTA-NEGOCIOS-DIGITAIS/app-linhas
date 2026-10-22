@@ -4,6 +4,7 @@ import { TabBar, TabBarIcons, type TabDef } from '@/components/ui'
 import { useAppStore } from '@/store/app'
 import { supabase } from '@/lib/supabase'
 import { useBiblioteca } from '@/hooks/useBiblioteca'
+import { useGeracaoPendente } from '@/lib/geracao'
 import { Today } from './app/Today'
 import { Readings } from './app/Readings'
 import { AuroraChat } from './app/AuroraChat'
@@ -65,6 +66,8 @@ export function AppShell({ onSignOut }: Props) {
   const [overlay, setOverlay] = useState<Overlay>(null)
   const [temaFiltro, setTemaFiltro] = useState<string | null>(null)
   const biblioteca = useBiblioteca(profile?.id ?? null)
+  // O que foi comprado e ainda não ficou pronto é gerado e acompanhado aqui.
+  useGeracaoPendente(profile?.id ?? null, biblioteca.itens, biblioteca.recarregar)
 
   if (!profile) return null
 
@@ -160,7 +163,13 @@ export function AppShell({ onSignOut }: Props) {
       return <SentencaView reading={overlay.reading} onBack={fecharOverlay} />
     }
     if (overlay.type === 'despertar') {
-      return <DespertarView userId={profile.id} onBack={fecharOverlay} />
+      return (
+        <DespertarView
+          userId={profile.id}
+          checkoutUrl={biblioteca.itens.find((i) => i.produto === 'despertar')?.checkout_url}
+          onBack={fecharOverlay}
+        />
+      )
     }
     if (overlay.type === 'terceiro') {
       return (

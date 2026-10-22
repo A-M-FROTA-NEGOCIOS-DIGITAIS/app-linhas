@@ -16,7 +16,8 @@ const FEATURES = [
   'Acesso vitalício à sua leitura no app',
 ]
 
-const CHECKOUT_URL = import.meta.env.VITE_BLUEN_CHECKOUT_URL ?? '#'
+// A venda acontece no funil (quiz + checkout da Hotmart); a Bluen está desativada.
+const CHECKOUT_URL = import.meta.env.VITE_COMPRA_URL ?? 'https://quiz.almaurora.com'
 
 /** Primeira frase nítida, o resto borrado (a leitura real aparece, mas só o começo dá para ler). */
 function partirPrevia(texto: string): [string, string] {
